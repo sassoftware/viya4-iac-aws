@@ -274,7 +274,7 @@ variable "sg_ingress_rules" {
 
   default = [
     {
-      name                   = "SAS-HTTP"
+      name                   = "INGRESS-HTTP"
       description            = "Allow HTTP from source"
       from_port              = 80
       to_port                = 80
@@ -283,7 +283,7 @@ variable "sg_ingress_rules" {
       cidr_blocks            = []
     },
     {
-      name                   = "SAS-HTTPS"
+      name                   = "INGRESS-HTTPS"
       description            = "Allow HTTPS from source"
       from_port              = 443
       to_port                = 443
@@ -292,7 +292,7 @@ variable "sg_ingress_rules" {
       cidr_blocks            = []
     },
     {
-      name                   = "SAS-SSH"
+      name                   = "INGRESS-SSH"
       description            = "Allow SSH from source"
       from_port              = 22
       to_port                = 22
@@ -301,7 +301,7 @@ variable "sg_ingress_rules" {
       cidr_blocks            = []
     },
     {
-      name                   = "SAS-kubectl"
+      name                   = "INGRESS-kubectl"
       description            = "Allow kubectl from source"
       from_port              = 8443
       to_port                = 8443
@@ -310,7 +310,7 @@ variable "sg_ingress_rules" {
       cidr_blocks            = []
     },
     {
-      name                   = "SAS-CAS"
+      name                   = "INGRESS-CAS"
       description            = "Allow CAS from source"
       from_port              = 5570
       to_port                = 5570
