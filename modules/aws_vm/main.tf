@@ -40,7 +40,7 @@ resource "aws_instance" "vm" {
   count               = var.create_vm ? 1 : 0
   ami                 = data.aws_ami.centos.id
   instance_type       = var.machine_type
-  user_data           = var.user_data
+  user_data           = (var.cloud_init != "" ? var.cloud_init : null)
   key_name = aws_key_pair.admin[0].key_name
 
   vpc_security_group_ids = var.security_group_ids

@@ -12,7 +12,7 @@ variable "machine_type" {
   default = "m5.4xlarge"
 }
 
-variable "user_data" {
+variable "cloud_init" {
   default = ""
 }
 
