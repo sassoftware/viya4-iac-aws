@@ -154,6 +154,28 @@ resource "aws_efs_mount_target" "efs-mt" {
   subnet_id      = element(module.vpc.private_subnets, count.index)
 }
 
+# Processing the cloud-init/jump/cloud-config template file
+data "template_file" "jump-cloudconfig" {
+  template = file("${path.module}/cloud-init/jump/cloud-config")
+  vars = {
+    rwx_filestore_endpoint = aws_efs_file_system.efs-fs.dns_name
+    rwx_filestore_path     = "/"
+  }
+
+  depends_on = [aws_efs_file_system.efs-fs,aws_efs_mount_target.efs-mt]
+}
+
+# Defining the cloud-config to use
+data "template_cloudinit_config" "jump" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = "${data.template_file.jump-cloudconfig.rendered}"
+  }
+}
+
 # Jump BOX
 module "jump" {
   source = "./modules/aws_vm"
@@ -168,6 +190,8 @@ module "jump" {
   os_disk_iops                    = var.os_disk_iops
 
   create_vm = var.create_jump_vm
+
+  cloud_init                      = data.template_cloudinit_config.jump.rendered
 
 }
 
