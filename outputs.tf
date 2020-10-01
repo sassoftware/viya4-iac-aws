@@ -50,7 +50,7 @@ output "jump_public_dns" {
 }
 
 output "postgres_fqdn" {
-  value = var.create_postgres ? module.db.this_db_instance_endpoint : ""
+  value = var.create_postgres ? module.db.this_db_instance_address : ""
 }
 
 output "postgres_admin" {
@@ -59,6 +59,14 @@ output "postgres_admin" {
 
 output "postgres_password" {
   value = var.create_postgres ? module.db.this_db_instance_password : ""
+}
+
+output "postgres_server_name" {
+  value = var.create_postgres ? module.db.this_db_instance_id : ""
+}
+
+output "postgres_server_port" {
+  value = var.create_postgres ? module.db.this_db_instance_port : ""
 }
 
 output "nat_ip" {
