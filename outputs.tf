@@ -49,6 +49,19 @@ output "jump_public_dns" {
   value = var.create_jump_vm ? module.jump.public_dns : ""
 }
 
+
+output jump_private_key_pem {
+  value = var.create_jump_vm ? module.jump.private_key_pem : null
+}
+
+output jump_public_key_pem {
+  value = var.create_jump_vm ? module.jump.public_key_pem : null
+}
+
+output jump_public_key_openssh {
+  value = var.create_jump_vm ? module.jump.public_key_openssh : null
+}
+
 output "postgres_fqdn" {
   value = var.create_postgres ? module.db.this_db_instance_address : ""
 }
