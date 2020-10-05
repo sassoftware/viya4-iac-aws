@@ -163,6 +163,7 @@ data "template_file" "jump-cloudconfig" {
   vars = {
     rwx_filestore_endpoint = aws_efs_file_system.efs-fs.dns_name
     rwx_filestore_path     = "/"
+    vm_admin               = var.jump_vm_admin
   }
 
   depends_on = [aws_efs_file_system.efs-fs,aws_efs_mount_target.efs-mt]
@@ -193,6 +194,7 @@ module "jump" {
   os_disk_iops                    = var.os_disk_iops
 
   create_vm = var.create_jump_vm
+  vm_admin  = var.jump_vm_admin
 
   cloud_init                      = data.template_cloudinit_config.jump.rendered
 

@@ -21,6 +21,11 @@ variable "postgres_administrator_login" {
   default = "pgadmin"
 }
 
+variable "vm_admin" {
+  description = "OS Admin User for VMs of AKS Cluster nodes"
+  default     = "azureuser"
+}
+
 variable "ssh_public_key" {
   description = "Path to ssh public key"
   default = ""
