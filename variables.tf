@@ -350,9 +350,13 @@ variable "sg_egress_rules" {
   ]
 }
 
-# For future Jump/NFS VM
 variable create_jump_vm {
   default = true
+}
+
+variable "jump_vm_admin" {
+  description = "OS Admin User for Jump VM"
+  default     = "jumpuser"
 }
 
 variable "data_disk_count" {
@@ -395,7 +399,7 @@ variable "os_disk_iops" {
 variable "create_postgres" {
   description = "Boolean flag to create (or not) an AWS Postgres DB (RDS)"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "postgres_server_name" {

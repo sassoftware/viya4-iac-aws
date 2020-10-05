@@ -41,6 +41,10 @@ output "jump_public_ip" {
   value = var.create_jump_vm ? module.jump.public_ip_address : ""
 }
 
+output jump_admin_username {
+  value = var.create_jump_vm ? module.jump.admin_username : ""
+}
+
 output "jump_private_dns" {
   value = var.create_jump_vm ? module.jump.private_dns : ""
 }
@@ -48,7 +52,6 @@ output "jump_private_dns" {
 output "jump_public_dns" {
   value = var.create_jump_vm ? module.jump.public_dns : ""
 }
-
 
 output jump_private_key_pem {
   value = var.create_jump_vm ? module.jump.private_key_pem : null
