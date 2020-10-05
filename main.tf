@@ -4,15 +4,17 @@
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.13.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "3.9.0"
+    }
+  }
   
-  # Experimental features
-  # https://www.terraform.io/docs/configuration/terraform.html#experimental-language-features
-  # experiments = [variable_validation]
 }
 
 provider "aws" {
-  version = ">= 2.28.1"
   region  = var.location
 }
 
