@@ -25,23 +25,35 @@ data "aws_ami" "centos" {
   }
 }
 
-resource "aws_key_pair" "admin" {
-  count      = var.create_vm ? 1 : 0
-  key_name   = "${var.name}-vmadmin"
-  public_key = file(var.ssh_public_key)
-  tags       = var.tags
-}
-
 data "null_data_source" "ebs_disk" {
   count = var.data_disk_count
 }
 
+resource "tls_private_key" "private_key" {
+  count = var.ssh_public_key == "" ? 1 : 0
+  algorithm = "RSA"
+}
+
+data "tls_public_key" "public_key" {
+  count = var.ssh_public_key == "" ? 1 : 0
+  private_key_pem = element(coalescelist(tls_private_key.private_key.*.private_key_pem), 0)
+}
+
+locals {
+  ssh_public_key = var.ssh_public_key != "" ? file(var.ssh_public_key) : element(coalescelist(data.tls_public_key.public_key.*.public_key_openssh, [""]), 0)
+}
+
+resource "aws_key_pair" "admin" {
+  key_name = "${var.name}-admin"
+  public_key = local.ssh_public_key
+}
+
 resource "aws_instance" "vm" {
-  count               = var.create_vm ? 1 : 0
-  ami                 = data.aws_ami.centos.id
-  instance_type       = var.machine_type
-  user_data           = (var.cloud_init != "" ? var.cloud_init : null)
-  key_name = aws_key_pair.admin[0].key_name
+  count         = var.create_vm ? 1 : 0
+  ami           = data.aws_ami.centos.id
+  instance_type = var.machine_type
+  user_data     = (var.cloud_init != "" ? var.cloud_init : null)
+  key_name      = aws_key_pair.admin.key_name
 
   vpc_security_group_ids = var.security_group_ids
   subnet_id = var.subnet_id

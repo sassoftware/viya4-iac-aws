@@ -4,15 +4,17 @@
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.13.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "3.9.0"
+    }
+  }
   
-  # Experimental features
-  # https://www.terraform.io/docs/configuration/terraform.html#experimental-language-features
-  # experiments = [variable_validation]
 }
 
 provider "aws" {
-  version = ">= 2.28.1"
   region  = var.location
 }
 
@@ -58,10 +60,10 @@ provider "kubernetes" {
 # VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.6.0"
+  version = "2.55.0"
 
   name                 = "${var.prefix}-vpc"
-  cidr                 = "${var.vpc_cidr}"
+  cidr                 = var.vpc_cidr
   azs                  = data.aws_availability_zones.available.names
   private_subnets      = var.private_subnets
   public_subnets       = var.public_subnets
@@ -108,6 +110,7 @@ resource "aws_security_group" "sg" {
     }
   }
 
+  # For pod access on the internal network
   ingress {
     description = "Allow Postgres"
     from_port   = 5432
@@ -172,7 +175,7 @@ data "template_cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content      = "${data.template_file.jump-cloudconfig.rendered}"
+    content      = data.template_file.jump-cloudconfig.rendered
   }
 }
 
@@ -195,7 +198,7 @@ module "jump" {
 
 }
 
-# EBS CSI driver IAM Policy for EKS worker nodes
+# EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
   version = "~> 2.0"
@@ -318,7 +321,7 @@ module "eks" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source = "terraform-aws-modules/rds/aws"
-  version = "~> 2.0"
+  version = "~> 2.18.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 
@@ -360,7 +363,7 @@ module "db" {
   major_engine_version = var.postgres_server_version
 
   # Snapshot name upon DB deletion
-  final_snapshot_identifier = (var.postgres_server_name == "" ? "${var.prefix}" : var.postgres_server_name)
+  final_snapshot_identifier = (var.postgres_server_name == "" ? var.prefix : var.postgres_server_name)
 
   # Database Deletion Protection
   deletion_protection = var.postgres_deletion_protection

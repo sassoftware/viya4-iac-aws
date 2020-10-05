@@ -317,6 +317,15 @@ variable "sg_ingress_rules" {
       protocol               = "tcp"
       # TODO: remove before publishing externally
       cidr_blocks            = []
+    },
+    {
+      name                   = "INGRESS-POSTGRES"
+      description            = "Allow Postgres from source"
+      from_port              = 5432
+      to_port                = 5432
+      protocol               = "tcp"
+      # TODO: remove before publishing externally
+      cidr_blocks            = []
     }
   ]
 }

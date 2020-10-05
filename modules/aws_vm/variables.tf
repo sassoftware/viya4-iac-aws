@@ -23,7 +23,7 @@ variable "postgres_administrator_login" {
 
 variable "ssh_public_key" {
   description = "Path to ssh public key"
-  default = "~/.ssh/id_rsa.pub"
+  default = ""
 }
 
 variable "security_group_ids" {
