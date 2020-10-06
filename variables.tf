@@ -433,7 +433,7 @@ variable "postgres_storage_encrypted" {
   default = false
 }
 
-variable "postgres_postgres_administrator_login" {
+variable "postgres_administrator_login" {
   default = "pgadmin"
 }
 
