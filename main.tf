@@ -339,7 +339,7 @@ module "db" {
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
   # user cannot be used as it is a reserved word used by the engine"
-  username = var.postgres_postgres_administrator_login
+  username = var.postgres_administrator_login
   password = var.postgres_administrator_password
   port     = var.postgres_server_port
 
