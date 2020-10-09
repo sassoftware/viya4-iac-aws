@@ -1,6 +1,6 @@
 ## Global
 variable "prefix" {
-  description = "A prefix used in the name for all the Azure resources created by this script. The prefix string must start with lowercase letter and contain only alphanumeric characters."
+  description = "A prefix used in the name for all the cloud resources created by this script. The prefix string must start with lowercase letter and contain only alphanumeric characters."
   type        = string
 
   # validation {
