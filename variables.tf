@@ -445,6 +445,10 @@ variable "postgres_db_name" {
   default = "SharedServices"
 }
 
+variable "postgres_multi_az" {
+  default = false
+}
+
 variable "postgres_deletion_protection" {
   default = false
 }
