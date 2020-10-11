@@ -1,20 +1,22 @@
-#!NOTE!# These are only a subset of inputs from variables.tf
-# Customize this file to add any more inputs from 'variables.tf' file that you want to change
-# and change the values according to your need
-prefix                          = "viya-tst1"
-location                        = "us-east-1"
-#
-# If you provide a public key this will be used for all vm's created
-# If a public key is not provided as public_key will be generated along
-# with it's private_key counter parts. This will also generated outpout
-# for the articated associated with this key.
-#
-# ssh_public_key                  = "~/.ssh/id_rsa.pub"
+# !NOTE! - These are only a subset of variables.tf provided for sample.
+# Customize this file to add any variables from 'variables.tf' that you want 
+# to change their default values. 
+
+# ****************  REQUIRED VARIABLES  ****************
+# These values MUST be provided to run Terraform commands
+prefix                                  = "<prefix-value>"
+location                                = "<aws-location-value>" # e.g., "us-east-1"
+tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
+
+# These values are required to access Kubernetes cluster and run kubectl commands
+cluster_endpoint_public_access_cidrs    = []  # e.g., ["123.45.6.89/32"]
+# ****************  REQUIRED VARIABLES  ****************
+
+# When a ssh key value is provided it will be used for all VMs or else a ssh key will be auto generated and available in outputs
+ssh_public_key                  = "~/.ssh/id_rsa.pub"
 
 ## Cluster config
 kubernetes_version                    = "1.17"
-cluster_endpoint_public_access_cidrs  = []
-tags                                  = { project_name = "viya", environment = "test-std" }
 
 ## Cluster Node Pools config
 
