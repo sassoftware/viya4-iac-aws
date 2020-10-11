@@ -41,7 +41,7 @@ variable "tags" {
 
 ## Default Nodepool config
 variable "create_default_nodepool" {
-  description = "Flag to create (or not) Stateful Node Pool"
+  description = "Create Default Node Pool"
   type        = bool
   default     = true
 }
@@ -82,7 +82,7 @@ variable "default_nodepool_labels" {
 
 # CAS Nodepool config
 variable "create_cas_nodepool" {
-  description = "Flag to create (or not) Stateful Node Pool"
+  description = "Create CAS Node Pool"
   type        = bool
   default     = true
 }
@@ -123,7 +123,7 @@ variable "cas_nodepool_labels" {
 
 # Compute Nodepool config
 variable "create_compute_nodepool" {
-  description = "Flag to create (or not) Stateful Node Pool"
+  description = "Create Compute Node Pool"
   type        = bool
   default     = true
 }
@@ -164,7 +164,7 @@ variable "compute_nodepool_labels" {
 
 # stateless Nodepool config
 variable "create_stateless_nodepool" {
-  description = "Flag to create (or not) Stateful Node Pool"
+  description = "Create Stateless Node Pool"
   type        = bool
   default     = true
 }
@@ -205,7 +205,7 @@ variable "stateless_nodepool_labels" {
 
 # stateful Nodepool config
 variable "create_stateful_nodepool" {
-  description = "Flag to create (or not) Stateful Node Pool"
+  description = "Create the Stateful Node Pool"
   type        = bool
   default     = true
 }
@@ -397,7 +397,7 @@ variable "os_disk_iops" {
 
 ## PostgresSQL
 variable "create_postgres" {
-  description = "Boolean flag to create (or not) an AWS Postgres DB (RDS)"
+  description = "Create an AWS Postgres DB (RDS)"
   type        = bool
   default     = false
 }
@@ -441,19 +441,11 @@ variable "postgres_administrator_password" {
   default = ""
 }
 
-variable "postgres_db_owner" {
-  default = ""
-}
-
-variable "postgres_db_environment" {
-  default = ""
-}
-
 variable "postgres_db_name" {
   default = "SharedServices"
 }
 
-variable "postgress_multi_az" {
+variable "postgres_multi_az" {
   default = false
 }
 

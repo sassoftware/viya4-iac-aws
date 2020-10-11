@@ -374,7 +374,7 @@ module "db" {
   # Database Deletion Protection
   deletion_protection = var.postgres_deletion_protection
   
-  multi_az = var.postgress_multi_az
+  multi_az = var.postgres_multi_az
 
   parameters = var.postgres_parameters
   options = var.postgres_options
