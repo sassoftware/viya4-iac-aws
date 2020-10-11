@@ -64,6 +64,8 @@ module "vpc" {
 
   name                 = "${var.prefix}-vpc"
   cidr                 = var.vpc_cidr
+  # NOTE - Only have a list of 2 AZs. Then only look for these subnets in the EFS mount below.
+  # azs                  = slice( data.aws_availability_zones.available.names, 0,1 )
   azs                  = data.aws_availability_zones.available.names
   private_subnets      = var.private_subnets
   public_subnets       = var.public_subnets
@@ -152,6 +154,7 @@ resource "aws_efs_file_system" "efs-fs" {
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
+  # NOTE - Testing. use num_azs = 2
   count          = length(module.vpc.private_subnets)
   file_system_id = aws_efs_file_system.efs-fs.id
   subnet_id      = element(module.vpc.private_subnets, count.index)
@@ -193,8 +196,9 @@ module "jump" {
   os_disk_delete_on_termination   = var.os_disk_delete_on_termination
   os_disk_iops                    = var.os_disk_iops
 
-  create_vm = var.create_jump_vm
-  vm_admin  = var.jump_vm_admin
+  create_vm                       = var.create_jump_vm
+  vm_admin                        = var.jump_vm_admin
+  ssh_public_key                  = var.ssh_public_key
 
   cloud_init                      = data.template_cloudinit_config.jump.rendered
 
