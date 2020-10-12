@@ -8,6 +8,7 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
   >- Managed Amazon Elastic Kubernetes Service(EKS)
   >- Managed Node Groups with required Labels and Taints
   >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
+  >- Amazon Elastic Block Storage (EBS)
   >- Amazon Elastic File System(EFS)
   >- Amazon Relational Database Service(RDS)
 
@@ -37,16 +38,15 @@ git clone https://github.com/sassoftware/viya4-iac-aws
 cd viya4-iac-aws
 ```
 
-### !!!!! TODO: Fix this subsection !!!!! Authenticating Terraform to access AWS
+### Authenticating Terraform to access AWS
 
 Export these environment variables values, see [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details or simply refer to [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
 
 ```bash
 # export needed IDs and Secrets
-export TF_VAR_subscription_id="SUBSCRIPTION_ID"
-export TF_VAR_tenant_id="TENANT_ID"
-export TF_VAR_client_id="SP_APPID"
-export TF_VAR_client_secret="SP_PASSWD"
+export AWS_ACCESS_KEY_ID=[Access key ID]
+export AWS_SECRET_ACCESS_KEY=[Secret access key]
+export AWS_DEFAULT_REGION='us-east-1'
 ```
 
 ### Customize Input Values
