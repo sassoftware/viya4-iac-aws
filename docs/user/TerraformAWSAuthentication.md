@@ -20,7 +20,6 @@ Run these commands to initialize the environment for the project. These commands
 # export needed ids and secrets
 export AWS_ACCESS_KEY_ID=[Access key ID]
 export AWS_SECRET_ACCESS_KEY=[Secret access key]
-export AWS_DEFAULT_REGION='us-east-1'
 ```
 
 **TIP:** These commands can be stored in a file outside of this repo in a secure file. \
