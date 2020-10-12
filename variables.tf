@@ -258,7 +258,13 @@ variable "public_subnets" {
 # Subnets - eks/misc
 variable "private_subnets" {
   description = "List of private subnets for use in the AWS EKS cluster"
-  default = ["192.168.0.0/18", "192.168.64.0/18", "192.168.128.0/25", "192.168.128.128/25"]
+  default = ["192.168.0.0/18", "192.168.64.0/18"]
+}
+
+# Subnets - database
+variable "database_subnets" {
+  description = "List of private subnets for use in the AWS EKS cluster"
+  default = ["192.168.128.0/25", "192.168.128.128/25"]
 }
 
 # Network Security Rules
