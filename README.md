@@ -57,7 +57,7 @@ Create a file named `terraform.tfvars` to customize any input variable value. Fo
 
 When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
 
-### IAM Policies
+### IAM Policy
 
 Along with the authentication items listed above you'll need to create an IAM policy with the [devops-iac-eks-policy.json](files/devops-iac-eks-policy.json) provided. Once that policy has been creted you'll need to asociate that policy with the user who's `Access key ID` is being used above.
 
