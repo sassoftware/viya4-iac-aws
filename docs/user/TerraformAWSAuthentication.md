@@ -2,7 +2,7 @@
 
 Terraform supports multiple ways of authenticating to AAWS. This project chooses to use Environment Variables, see [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#environment-variables). In order to create and destroy AWS resources on your behalf, Terraform also needs information about AWS Profile. 
 
-You can [set these variables in your `main.tf` file](../../main.tf) by adding the entries to the provider block which when updated would look like:
+You can [set these variables in your `main.tf` file](../../main.tf) by adding the entries to the `provider` block which when updated would look like:
 
 ```
 provider "aws" {
