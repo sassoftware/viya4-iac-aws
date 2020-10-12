@@ -46,7 +46,6 @@ Export these environment variables values, see [Authenticating Terraform to acce
 # export needed IDs and Secrets
 export AWS_ACCESS_KEY_ID=[Access key ID]
 export AWS_SECRET_ACCESS_KEY=[Secret access key]
-export AWS_DEFAULT_REGION='us-east-1'
 ```
 
 ### IAM Policy
