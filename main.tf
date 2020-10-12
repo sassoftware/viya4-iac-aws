@@ -69,7 +69,7 @@ module "vpc" {
   azs                  = data.aws_availability_zones.available.names
   private_subnets      = var.private_subnets
   public_subnets       = var.public_subnets
-  # database_subnets     = [module.vpc.private_subnets.2, module.vpc.private_subnets.3]
+  database_subnets     = var.database_subnets
   enable_nat_gateway   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true
@@ -360,7 +360,7 @@ module "db" {
   # enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   # DB subnet group
-  subnet_ids = [module.vpc.private_subnets[2],module.vpc.private_subnets[3]]
+  subnet_ids = module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${var.postgres_server_version}"
