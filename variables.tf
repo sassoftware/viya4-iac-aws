@@ -46,6 +46,32 @@ variable "aws_secret_access_key" {
   default     = ""
 }
 
+## Public Access
+variable "default_public_access_cidrs" {
+  description = "List of CIDRs to access created resources"
+  type        = list(string)
+  default     = null
+}
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "List of CIDRs to access Kubernetes cluster"
+  type        = list(string)
+  default     = null
+}
+
+variable "vm_public_access_cidrs" {
+  description = "List of CIDRs to access jump or nfs VM"
+  type        = list(string)
+  default     = null
+}
+
+variable "postgres_public_access_cidrs" {
+  description = "List of CIDRs to access PostgreSQL server"
+  type        = list(string)
+  default     = null
+}
+
+
 
 ## Provider Specific 
 variable "ssh_public_key" {
@@ -56,12 +82,6 @@ variable "ssh_public_key" {
 variable "kubernetes_version" {
     description = "The EKS cluster K8s version"
     default = "1.18"
-}
-
-variable "cluster_endpoint_public_access_cidrs" {
-  description = "List of CIDRs allowed to access the cluster"
-  type        = list
-  default     = []
 }
 
 variable "tags" {
@@ -298,94 +318,6 @@ variable "database_subnets" {
   default     = ["192.168.128.0/25", "192.168.128.128/25"]
 }
 
-# Network Security Rules
-variable "sg_ingress_rules" {
-  type = list(object({
-    name        = string
-    description = string
-    from_port   = number
-    to_port     = number
-    protocol    = string
-    cidr_blocks = list(string)
-  }))
-
-  default = [
-    {
-      name        = "INGRESS-HTTP"
-      description = "Allow HTTP from source"
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    },
-    {
-      name        = "INGRESS-HTTPS"
-      description = "Allow HTTPS from source"
-      from_port   = 443
-      to_port     = 443
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    },
-    {
-      name        = "INGRESS-SSH"
-      description = "Allow SSH from source"
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    },
-    {
-      name        = "INGRESS-kubectl"
-      description = "Allow kubectl from source"
-      from_port   = 8443
-      to_port     = 8443
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    },
-    {
-      name        = "INGRESS-CAS"
-      description = "Allow CAS from source"
-      from_port   = 5570
-      to_port     = 5570
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    },
-    {
-      name        = "INGRESS-POSTGRES"
-      description = "Allow Postgres from source"
-      from_port   = 5432
-      to_port     = 5432
-      protocol    = "tcp"
-      # TODO: remove before publishing externally
-      cidr_blocks = []
-    }
-  ]
-}
-
-variable "sg_egress_rules" {
-  type = list(object({
-    description = string
-    from_port   = number
-    to_port     = number
-    protocol    = string
-    cidr_blocks = list(string)
-  }))
-
-  default = [
-    {
-      description = "Allow all outbound traffic."
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
-}
 
 variable create_jump_vm {
   default = true

@@ -50,7 +50,12 @@ data "aws_eks_cluster_auth" "cluster" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "${var.prefix}-eks"
+  cluster_name                         = "${var.prefix}-eks"
+  default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
+  vm_public_access_cidrs               = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
+  cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
+  cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
+  postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 }
 
 # EKS Provider
@@ -106,39 +111,14 @@ resource "aws_security_group" "sg" {
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
-  dynamic "ingress" {
-    for_each = var.sg_ingress_rules
-    content {
-      description = ingress.value.description
-      from_port   = ingress.value.from_port
-      to_port     = ingress.value.to_port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr_blocks
-    }
+  egress {
+    description = "Allow all outbound traffic."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-
-  # For pod access on the internal network
-  ingress {
-    description = "Allow Postgres"
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    self        = true
-  }
-
-  dynamic "egress" {
-    for_each = var.sg_egress_rules
-    content {
-      description = egress.value.description
-      from_port   = egress.value.from_port
-      to_port     = egress.value.to_port
-      protocol    = egress.value.protocol
-      cidr_blocks = egress.value.cidr_blocks
-    }
-  }
-
   tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
-
 }
 
 resource "aws_security_group_rule" "nfs" {
@@ -206,7 +186,17 @@ module "jump" {
   ssh_public_key = var.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.rendered
+}
 
+resource "aws_security_group_rule" "jump" {
+  count             = var.create_jump_vm && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
+  type              = "ingress"
+  description       = "Allow SSH from source"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = local.vm_public_access_cidrs
+  security_group_id = aws_security_group.sg.id
 }
 
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
@@ -254,7 +244,7 @@ module "eks" {
   cluster_endpoint_private_access       = true
   cluster_endpoint_private_access_cidrs = [var.vpc_cidr]
   cluster_endpoint_public_access        = true
-  cluster_endpoint_public_access_cidrs  = var.cluster_endpoint_public_access_cidrs
+  cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
   config_output_path                    = "./${var.prefix}-eks-kubeconfig.conf"
   kubeconfig_name                       = "${var.prefix}-eks"
   subnets                               = concat([module.vpc.private_subnets.0, module.vpc.private_subnets.1])
@@ -364,8 +354,9 @@ module "db" {
 
   # enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
-  # DB subnet group
-  subnet_ids = module.vpc.database_subnets
+  # DB subnet group - use public subnet if public access is requested
+  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
+  subnet_ids = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${var.postgres_server_version}"
@@ -391,6 +382,30 @@ module "db" {
   create_db_option_group    = var.create_postgres
 
 }
+
+resource "aws_security_group_rule" "postgres_internal" {
+  count             = var.create_postgres ? 1 : 0
+  type              = "ingress"
+  description       = "Allow Postgres within network"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  self              = true
+  security_group_id = aws_security_group.sg.id
+}
+
+resource "aws_security_group_rule" "postgres_external" {
+  count             = var.create_postgres && length(local.postgres_public_access_cidrs) > 0 ? 1 : 0
+  type              = "ingress"
+  description       = "Allow Postgres from source"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = local.postgres_public_access_cidrs
+  security_group_id = aws_security_group.sg.id
+}
+
+
 
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
 resource "aws_resourcegroups_group" "aws_rg" {
