@@ -21,7 +21,7 @@ Supported configuration variables are listed in the table below.  All variables 
 Terraform input variables can be set in the following ways:
 - Individually, with the [-var command line option](https://www.terraform.io/docs/configuration/variables.html#variables-on-the-command-line).
 - In [variable definitions (.tfvars) files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files). We recommend this way for most variables.
-- As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [Azure authentication](#required-variables-for-azure-authentication).
+- As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [AWS authentication](#aws-authentication).
 
 ## Required Variables
 
@@ -34,7 +34,7 @@ Terraform input variables can be set in the following ways:
 
 The Terraform process manages AWS resources on your behalf. In order to do so, it needs to know the credentials for an AWS identity with the required permissons.
 
-You can use either static credentials, or the name of an AWS Profile. If both a specified, IAM_ACCESS_KEY|IAM_SECRET_KEY will take precedence. )
+You can use either static credentials, or the name of an AWS Profile. If both are specified, the static credentials will take precedence. 
 
 ### Using Static Credentials
 | Terraform Variable | Alternative AWS Environment Variable | Description | 
