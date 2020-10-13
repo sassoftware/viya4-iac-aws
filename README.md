@@ -21,6 +21,7 @@ This project can be run either with Terraform installed on your local machine or
 
 - [Terraform v0.13.3](https://www.terraform.io/downloads.html) or [Docker](https://docs.docker.com/get-docker/)
 - Access to **AWS account**
+- Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
 
 ### Optional
 
