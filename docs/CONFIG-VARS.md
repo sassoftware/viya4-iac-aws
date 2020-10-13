@@ -4,6 +4,9 @@ Supported configuration variables are listed in the table below.  All variables 
 ## Table of Contents
 
 * [Required Variables](#required-variables)
+* [AWS Authentication](#aws-authentication)
+  + [Static Credentials](#static-credentials)
+  + [AWS Profile](#aws-profile)
 * [Admin Access](#admin-access)
 * [General](#general)
 * [Nodepools](#nodepools)
@@ -26,6 +29,29 @@ Terraform input variables can be set in the following ways:
 | :--- | ---: | ---: | ---: | ---: | 
 | prefix | A prefix used in the name of all the AWS resources created by this script. | string | | The prefix string must start with a lowercase letter and contain only alphanumeric characters and dashes (-), but cannot end with a dash. |
 | location | The AWS Region to provision all resources in this script | string | "us-east-1" | |
+
+## AWS Authentication
+
+The Terraform process manages AWS resources on your behalf. In order to do so, it needs to know the credentials for an AWS identity with the required permissons.
+
+You can use either static credentials, or the name of an AWS Profile. If both a specified, IAM_ACCESS_KEY|IAM_SECRET_KEY will take precedence. )
+
+### Using Static Credentials
+| Terraform Variable | Alternative AWS Environment Variable | Description | 
+| :--- | :--- | :--- |
+| `iam_access_key` | `AWS_ACCESS_KEY_ID` | static credential key |
+| `iam_secret_key` | `AWS_SECRET_ACCESS_KEY` | static credential secret |
+| `iam_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
+
+### Using AWS Profile
+| Terraform Variable | Alternative AWS Environment Variable | Description | 
+| :--- | :--- | :--- |
+| `iam_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
+| `iam_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
+
+Find more on authenticating Terraform under [Authenticating Terraform to access AWS](./user/TerraformAWSAuthentication).
+
+
 
 ## Admin Access
 
