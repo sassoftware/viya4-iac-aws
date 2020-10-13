@@ -16,11 +16,11 @@ terraform {
 
 provider "aws" {
   region                  = var.location
-  profile                 = var.iam_profile
-  shared_credentials_file = var.iam_shared_credentials_file
-  access_key              = var.iam_access_key
-  secret_key              = var.iam_secret_key
-  token                   = var.iam_session_token
+  profile                 = var.aws_profile
+  shared_credentials_file = var.aws_shared_credentials_file
+  access_key              = var.aws_access_key_id
+  secret_key              = var.aws_access_secret_key
+  token                   = var.aws_session_token
 }
 
 provider "random" {
