@@ -13,15 +13,15 @@ You can pass the credentials into the Terraform AWS provider either by Terraform
 
 | Terraform Variable | AWS Environment Variable | Description | 
 | :--- | :--- | :--- |
-| `iam_access_key` | `AWS_ACCESS_KEY_ID` | aws key |
-| `iam_secret_key` | `AWS_SECRET_ACCESS_KEY` | aws key secret |
-| `iam_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
+| `aws_access_key_id` | `AWS_ACCESS_KEY_ID` | aws key |
+| `aws_secret_access_key` | `AWS_SECRET_ACCESS_KEY` | aws key secret |
+| `aws_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
 
 #### Using AWS Profile
 | Terraform Variable | AWS Environment Variable | Description | 
 | :--- | :--- | :--- |
-| `iam_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
-| `iam_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
+| `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
+| `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
 
 
 Find more information in the [Terraform AWS Provider documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
