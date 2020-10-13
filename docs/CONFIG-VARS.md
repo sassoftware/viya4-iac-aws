@@ -5,8 +5,8 @@ Supported configuration variables are listed in the table below.  All variables 
 
 * [Required Variables](#required-variables)
 * [AWS Authentication](#aws-authentication)
-  + [Static Credentials](#static-credentials)
-  + [AWS Profile](#aws-profile)
+  + [Static Credentials](#using-static-credentials)
+  + [AWS Profile](#using-aws-profile)
 * [Admin Access](#admin-access)
 * [General](#general)
 * [Nodepools](#nodepools)
@@ -39,15 +39,15 @@ You can use either static credentials, or the name of an AWS Profile. If both a 
 ### Using Static Credentials
 | Terraform Variable | Alternative AWS Environment Variable | Description | 
 | :--- | :--- | :--- |
-| `iam_access_key` | `AWS_ACCESS_KEY_ID` | static credential key |
-| `iam_secret_key` | `AWS_SECRET_ACCESS_KEY` | static credential secret |
-| `iam_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
+| `aws_access_key_id` | `AWS_ACCESS_KEY_ID` | static credential key |
+| `aws_secret_access_key` | `AWS_SECRET_ACCESS_KEY` | static credential secret |
+| `aws_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
 
 ### Using AWS Profile
 | Terraform Variable | Alternative AWS Environment Variable | Description | 
 | :--- | :--- | :--- |
-| `iam_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
-| `iam_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
+| `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
+| `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
 
 Find more on authenticating Terraform under [Authenticating Terraform to access AWS](./user/TerraformAWSAuthentication).
 
