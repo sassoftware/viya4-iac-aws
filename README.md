@@ -43,12 +43,6 @@ cd viya4-iac-aws
 
 See  [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details.
 
-### IAM Policy
-
-Along with the authentication items listed above you'll need to create an IAM policy with the [devops-iac-eks-policy.json](files/devops-iac-eks-policy.json) provided. Once that policy has been creted you'll need to asociate that policy with the user who's `Access key ID` is being used above.
-
-This policy allows terraform to perform the tasks needed to create/remove/update/destroy items within the AWS eco system.
-
 ### Customize Input Values
 
 Create a file named `terraform.tfvars` to customize any input variable value. For starters, you can copy one of the provided sample variable definition files in [examples](./examples) folder. For more details on the variables declared in [variables.tf](variables.tf) refer to [CONFIG-VARS.md](docs/CONFIG-VARS.md).
