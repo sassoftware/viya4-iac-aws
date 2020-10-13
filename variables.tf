@@ -16,31 +16,31 @@ variable "location" {
   default     = "us-east-1"
 }
 
-variable "iam_profile" {
+variable "aws_profile" {
   description = "Name of Profile in the credentials file"
   type        = string
   default     = ""
 }
 
-variable "iam_shared_credentials_file" {
+variable "aws_shared_credentials_file" {
   description = "Name of credentials file, if using non-default location"
   type        = string
   default     = ""
 }
 
-variable "iam_session_token" {
+variable "aws_session_token" {
   description = "Session token for temporary credentials"
   type        = string
   default     = ""
 }
 
-variable "iam_access_key" {
+variable "aws_access_key_id" {
   description = "Static credential key"
   type        = string
   default     = ""
 }
 
-variable "iam_secret_key" {
+variable "aws_secret_access_key" {
   description = "Static credential secret"
   type        = string
   default     = ""
