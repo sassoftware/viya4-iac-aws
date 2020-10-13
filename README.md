@@ -8,6 +8,7 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
   >- Managed Amazon Elastic Kubernetes Service(EKS)
   >- Managed Node Groups with required Labels and Taints
   >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
+  >- Amazon Elastic Block Storage (EBS)
   >- Amazon Elastic File System(EFS)
   >- Amazon Relational Database Service(RDS)
 
@@ -20,6 +21,7 @@ This project can be run either with Terraform installed on your local machine or
 
 - [Terraform v0.13.3](https://www.terraform.io/downloads.html) or [Docker](https://docs.docker.com/get-docker/)
 - Access to **AWS account**
+- Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
 
 ### Optional
 
@@ -37,21 +39,27 @@ git clone https://github.com/sassoftware/viya4-iac-aws
 cd viya4-iac-aws
 ```
 
-### !!!!! TODO: Fix this subsection !!!!! Authenticating Terraform to access AWS
+### Authenticating Terraform to access AWS
 
 Export these environment variables values, see [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details or simply refer to [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
 
 ```bash
 # export needed IDs and Secrets
-export TF_VAR_subscription_id="SUBSCRIPTION_ID"
-export TF_VAR_tenant_id="TENANT_ID"
-export TF_VAR_client_id="SP_APPID"
-export TF_VAR_client_secret="SP_PASSWD"
+export AWS_ACCESS_KEY_ID=[Access key ID]
+export AWS_SECRET_ACCESS_KEY=[Secret access key]
 ```
+
+### IAM Policy
+
+Along with the authentication items listed above you'll need to create an IAM policy with the [devops-iac-eks-policy.json](files/devops-iac-eks-policy.json) provided. Once that policy has been creted you'll need to asociate that policy with the user who's `Access key ID` is being used above.
+
+This policy allows terraform to perform the tasks needed to create/remove/update/destroy items within the AWS eco system.
 
 ### Customize Input Values
 
 Create a file named `terraform.tfvars` to customize any input variable value. For starters, you can copy one of the provided sample variable definition files in [examples](./examples) folder. For more details on the variables declared in [variables.tf](variables.tf) refer to [CONFIG-VARS.md](docs/CONFIG-VARS.md).
+
+**NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules, access to the cluster will only be allowed via the AWS Console.
 
 When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
 
