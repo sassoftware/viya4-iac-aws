@@ -24,7 +24,7 @@ variable "ssh_public_key" {
 ## Kubernetes
 variable "kubernetes_version" {
     description = "The EKS cluster K8s version"
-    default = "1.17"
+    default = "1.18"
 }
 
 variable "cluster_endpoint_public_access_cidrs" {
