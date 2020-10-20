@@ -1,34 +1,31 @@
 ### Authenticating Terraform to access AWS
 
-Terraform supports multiple ways of authenticating to AAWS. This project chooses to use Environment Variables, see [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#environment-variables). In order to create and destroy AWS resources on your behalf, Terraform also needs information about AWS Profile. 
+Terraform creates and destroys resources in AWS on your behalf. In order to do so, it needs to authenticate itself to AWS with the appropriate permissions.
 
-You can [set these variables in your `main.tf` file](../../main.tf) by adding the entries to the `provider` block which when updated would look like:
+You will need an identity that has at a mininum the permissions listed in [this policy](../../files/devops-iac-eks-policy.json).
 
-```
-provider "aws" {
-  region = "us-east-1"
-  access_key = "my-access-key"
-  secret_key = "my-secret-key"
-}
-```
+You can use either static credentials (including temporary credentials with session token), or an AWS Profile.
 
-But since they contain sensitive information, we recommend to use environment variables instead.
+You can pass the credentials into the Terraform AWS provider either by Terraform variables, or as AWS environment variables
 
-Run these commands to initialize the environment for the project. These commands will need to be run and pulled  into your environment each time you start a new session to use this repo and terraform.
 
-```
-# export needed ids and secrets
-export AWS_ACCESS_KEY_ID=[Access key ID]
-export AWS_SECRET_ACCESS_KEY=[Secret access key]
-```
+#### Using Static Credentials
 
-**TIP:** These commands can be stored in a file outside of this repo in a secure file. \
-Use your favorite editor, take the content above and save it to a file called: `$HOME/.aws_creds.sh` . (Protect that file so only you have read access to it.) \
-Now each time you need these values you can do the following:
+| Terraform Variable | AWS Environment Variable | Description | 
+| :--- | :--- | :--- |
+| `aws_access_key_id` | `AWS_ACCESS_KEY_ID` | aws key |
+| `aws_secret_access_key` | `AWS_SECRET_ACCESS_KEY` | aws key secret |
+| `aws_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials |
 
-```
-source $HOME/.aws_creds.sh
-```
+#### Using AWS Profile
+| Terraform Variable | AWS Environment Variable | Description | 
+| :--- | :--- | :--- |
+| `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
+| `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
 
-This will pull in those values into your current terminal session. Any terraform commands submitted in that session will use those values.
+
+Find more information in the [Terraform AWS Provider documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
+
+
+If you are using environemtn
 

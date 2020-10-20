@@ -13,12 +13,43 @@ variable "prefix" {
 ## Provider
 variable "location" {
   description = "AWS Region to provision all resources in this script"
-  default = "us-east-1"
+  default     = "us-east-1"
 }
+
+variable "aws_profile" {
+  description = "Name of Profile in the credentials file"
+  type        = string
+  default     = ""
+}
+
+variable "aws_shared_credentials_file" {
+  description = "Name of credentials file, if using non-default location"
+  type        = string
+  default     = ""
+}
+
+variable "aws_session_token" {
+  description = "Session token for temporary credentials"
+  type        = string
+  default     = ""
+}
+
+variable "aws_access_key_id" {
+  description = "Static credential key"
+  type        = string
+  default     = ""
+}
+
+variable "aws_secret_access_key" {
+  description = "Static credential secret"
+  type        = string
+  default     = ""
+}
+
 
 ## Provider Specific 
 variable "ssh_public_key" {
-    default = ""
+  default = ""
 }
 
 ## Kubernetes
@@ -29,14 +60,14 @@ variable "kubernetes_version" {
 
 variable "cluster_endpoint_public_access_cidrs" {
   description = "List of CIDRs allowed to access the cluster"
-  type = list
-  default = []
+  type        = list
+  default     = []
 }
 
 variable "tags" {
   description = "Map of common tags to be placed on the Resources"
   type        = map
-  default     = { project_name = "viya"}
+  default     = { project_name = "viya" }
 }
 
 ## Default Nodepool config
@@ -71,12 +102,12 @@ variable "default_nodepool_min_nodes" {
 }
 
 variable "default_nodepool_taints" {
-  type = list
+  type    = list
   default = []
 }
 
 variable "default_nodepool_labels" {
-  type = list
+  type    = list
   default = []
 }
 
@@ -112,12 +143,12 @@ variable "cas_nodepool_min_nodes" {
 }
 
 variable "cas_nodepool_taints" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=cas:NoSchedule"]
 }
 
 variable "cas_nodepool_labels" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=cas"]
 }
 
@@ -153,12 +184,12 @@ variable "compute_nodepool_min_nodes" {
 }
 
 variable "compute_nodepool_taints" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=compute:NoSchedule"]
 }
 
 variable "compute_nodepool_labels" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=compute"]
 }
 
@@ -194,12 +225,12 @@ variable "stateless_nodepool_min_nodes" {
 }
 
 variable "stateless_nodepool_taints" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=stateless:NoSchedule"]
 }
 
 variable "stateless_nodepool_labels" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=stateless"]
 }
 
@@ -235,123 +266,123 @@ variable "stateful_nodepool_min_nodes" {
 }
 
 variable "stateful_nodepool_taints" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=stateful:NoSchedule"]
 }
 
 variable "stateful_nodepool_labels" {
-  type = list
+  type    = list
   default = ["workload.sas.com/class=stateful"]
 }
 
 variable "vpc_cidr" {
   description = "VPC CIDR - NOTE: Subnets below must fall into this range"
-  default = "192.168.0.0/16"
+  default     = "192.168.0.0/16"
 }
 
 # Subnet - gw
 variable "public_subnets" {
   description = "List of public subnets for use in the AWS EKS cluster"
-  default = ["192.168.129.0/25", "192.168.129.128/25"]
+  default     = ["192.168.129.0/25", "192.168.129.128/25"]
 }
 
 # Subnets - eks/misc
 variable "private_subnets" {
   description = "List of private subnets for use in the AWS EKS cluster"
-  default = ["192.168.0.0/18", "192.168.64.0/18"]
+  default     = ["192.168.0.0/18", "192.168.64.0/18"]
 }
 
 # Subnets - database
 variable "database_subnets" {
   description = "List of private subnets for use in the AWS EKS cluster"
-  default = ["192.168.128.0/25", "192.168.128.128/25"]
+  default     = ["192.168.128.0/25", "192.168.128.128/25"]
 }
 
 # Network Security Rules
 variable "sg_ingress_rules" {
   type = list(object({
-    name                       = string
-    description                = string
-    from_port                  = number
-    to_port                    = number
-    protocol                   = string
-    cidr_blocks                = list(string)
+    name        = string
+    description = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
   }))
 
   default = [
     {
-      name                   = "INGRESS-HTTP"
-      description            = "Allow HTTP from source"
-      from_port              = 80
-      to_port                = 80
-      protocol               = "tcp"
+      name        = "INGRESS-HTTP"
+      description = "Allow HTTP from source"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     },
     {
-      name                   = "INGRESS-HTTPS"
-      description            = "Allow HTTPS from source"
-      from_port              = 443
-      to_port                = 443
-      protocol               = "tcp"
+      name        = "INGRESS-HTTPS"
+      description = "Allow HTTPS from source"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     },
     {
-      name                   = "INGRESS-SSH"
-      description            = "Allow SSH from source"
-      from_port              = 22
-      to_port                = 22
-      protocol               = "tcp"
+      name        = "INGRESS-SSH"
+      description = "Allow SSH from source"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     },
     {
-      name                   = "INGRESS-kubectl"
-      description            = "Allow kubectl from source"
-      from_port              = 8443
-      to_port                = 8443
-      protocol               = "tcp"
+      name        = "INGRESS-kubectl"
+      description = "Allow kubectl from source"
+      from_port   = 8443
+      to_port     = 8443
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     },
     {
-      name                   = "INGRESS-CAS"
-      description            = "Allow CAS from source"
-      from_port              = 5570
-      to_port                = 5570
-      protocol               = "tcp"
+      name        = "INGRESS-CAS"
+      description = "Allow CAS from source"
+      from_port   = 5570
+      to_port     = 5570
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     },
     {
-      name                   = "INGRESS-POSTGRES"
-      description            = "Allow Postgres from source"
-      from_port              = 5432
-      to_port                = 5432
-      protocol               = "tcp"
+      name        = "INGRESS-POSTGRES"
+      description = "Allow Postgres from source"
+      from_port   = 5432
+      to_port     = 5432
+      protocol    = "tcp"
       # TODO: remove before publishing externally
-      cidr_blocks            = []
+      cidr_blocks = []
     }
   ]
 }
 
 variable "sg_egress_rules" {
   type = list(object({
-    description                = string
-    from_port                  = number
-    to_port                    = number
-    protocol                   = string
-    cidr_blocks                = list(string)
+    description = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
   }))
 
   default = [
     {
-      description            = "Allow all outbound traffic."
-      from_port              = 0
-      to_port                = 0
-      protocol               = "-1"
-      cidr_blocks            = ["0.0.0.0/0"]
+      description = "Allow all outbound traffic."
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 }
@@ -410,7 +441,7 @@ variable "create_postgres" {
 
 variable "postgres_server_name" {
   description = "Specifies the name of the PostgreSQL Server. Changing this forces a new resource to be created."
-  default = ""
+  default     = ""
 }
 
 variable "postgres_server_version" {

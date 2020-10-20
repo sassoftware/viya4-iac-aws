@@ -41,19 +41,7 @@ cd viya4-iac-aws
 
 ### Authenticating Terraform to access AWS
 
-Export these environment variables values, see [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details or simply refer to [Terraform documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
-
-```bash
-# export needed IDs and Secrets
-export AWS_ACCESS_KEY_ID=[Access key ID]
-export AWS_SECRET_ACCESS_KEY=[Secret access key]
-```
-
-### IAM Policy
-
-Along with the authentication items listed above you'll need to create an IAM policy with the [devops-iac-eks-policy.json](files/devops-iac-eks-policy.json) provided. Once that policy has been creted you'll need to asociate that policy with the user who's `Access key ID` is being used above.
-
-This policy allows terraform to perform the tasks needed to create/remove/update/destroy items within the AWS eco system.
+See  [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details.
 
 ### Customize Input Values
 
