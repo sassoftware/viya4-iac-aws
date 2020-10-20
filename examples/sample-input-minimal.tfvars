@@ -13,7 +13,7 @@ cluster_endpoint_public_access_cidrs    = []  # e.g., ["123.45.6.89/32"]
 # ****************  REQUIRED VARIABLES  ****************
 
 ## Cluster config
-kubernetes_version                    = "1.17"
+kubernetes_version                    = "1.18"
 cluster_endpoint_public_access_cidrs  = []
 tags                                  = { project_name = "viya", environment = "test-min" }
 
