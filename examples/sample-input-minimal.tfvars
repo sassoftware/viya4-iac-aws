@@ -9,7 +9,7 @@ location                                = "<aws-location-value>" # e.g., "us-eas
 tags                                    = { } # e.g., { project_name = "sasviya4", environment = "dev", key1 = "value1", key2 ="value2"}
 
 # These values are required to access Kubernetes cluster and run kubectl commands
-cluster_endpoint_public_access_cidrs    = []  # e.g., ["123.45.6.89/32"]
+default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 # ****************  REQUIRED VARIABLES  ****************
 
 ## Cluster config
