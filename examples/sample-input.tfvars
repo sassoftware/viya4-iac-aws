@@ -9,7 +9,7 @@ location                                = "<aws-location-value>" # e.g., "us-eas
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
 
 # These values are required to access Kubernetes cluster and run kubectl commands
-cluster_endpoint_public_access_cidrs    = []  # e.g., ["123.45.6.89/32"]
+default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 # ****************  REQUIRED VARIABLES  ****************
 
 # When a ssh key value is provided it will be used for all VMs or else a ssh key will be auto generated and available in outputs
