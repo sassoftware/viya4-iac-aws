@@ -25,7 +25,7 @@ commandTests:
       - -c
       - |
         aws --version
-    expectedOutput: ["aws-cli/1.18.157"]
+    expectedOutput: ["aws-cli/1.18.163"]
 
 metadataTest:
   workdir: "/viya4-iac-aws"
