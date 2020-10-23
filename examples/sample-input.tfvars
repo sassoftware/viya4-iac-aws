@@ -19,51 +19,67 @@ ssh_public_key                  = "~/.ssh/id_rsa.pub"
 kubernetes_version                    = "1.18"
 
 ## Cluster Node Pools config
-
-# default
-create_default_nodepool               = true
-default_nodepool_initial_node_count   = 1
-default_nodepool_min_nodes            = 1
-default_nodepool_max_nodes            = 5
-default_nodepool_vm_type              = "m5.2xlarge"
-default_nodepool_taints               = []
-default_nodepool_labels               = []
-
-# cas
-create_cas_nodepool                   = true
-cas_nodepool_initial_node_count       = 1
-cas_nodepool_min_nodes                = 1
-cas_nodepool_max_nodes                = 5
-cas_nodepool_vm_type                  = "m5.8xlarge"
-cas_nodepool_taints                   = ["workload.sas.com/class=cas:NoSchedule"]
-cas_nodepool_labels                   = ["workload.sas.com/class=cas"]
-
-# compute
-create_compute_nodepool               = true
-compute_nodepool_initial_node_count   = 1
-compute_nodepool_min_nodes            = 1
-compute_nodepool_max_nodes            = 5
-compute_nodepool_vm_type              = "m5.8xlarge"
-compute_nodepool_taints               = ["workload.sas.com/class=cas:NoSchedule"]
-compute_nodepool_labels               = ["workload.sas.com/class=compute"]
-
-# stateless
-create_stateless_nodepool             = true
-stateless_nodepool_initial_node_count = 1
-stateless_nodepool_min_nodes          = 1
-stateless_nodepool_max_nodes          = 5
-stateless_nodepool_vm_type            = "m5.4xlarge"
-stateless_nodepool_taints             = ["workload.sas.com/class=stateless:NoSchedule"]
-stateless_nodepool_labels             = ["workload.sas.com/class=stateless"]
-
-# stateful
-create_stateful_nodepool              = true
-stateful_nodepool_initial_node_count  = 1
-stateful_nodepool_min_nodes           = 1
-stateful_nodepool_max_nodes           = 3
-stateful_nodepool_vm_type             = "m5.2xlarge"
-stateful_nodepool_taints              = ["workload.sas.com/class=stateful:NoSchedule"]
-stateful_nodepool_labels              = ["workload.sas.com/class=stateful"]
+node_pools = {
+  default = {
+    "machine_type" = "m5.2xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 5
+    "node_taints" = []
+    "node_labels" = {}
+  },  cas = {
+    "machine_type" = "m5.2xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 5
+    "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
+    }
+  },
+  compute = {
+    "machine_type" = "m5.8xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 5
+    "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class"        = "compute"
+      "launcher.sas.com/prepullImage" = "sas-programming-environment"
+    }
+  },
+  connect = {
+    "machine_type" = "m5.8xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 5
+    "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class"        = "connect"
+      "launcher.sas.com/prepullImage" = "sas-programming-environment"
+    }
+  },
+  stateless = {
+    "machine_type" = "m5.4xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 5
+    "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "stateless"
+    }
+  },
+  stateful = {
+    "machine_type" = "m5.4xlarge"
+    "os_disk_size" = 200
+    "min_node_count" = 1
+    "max_node_count" = 3
+    "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "stateful"
+    }
+  }
+}
 
 # Jump Server
 create_jump_vm                        = true
