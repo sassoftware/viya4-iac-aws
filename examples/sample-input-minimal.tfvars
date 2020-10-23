@@ -14,7 +14,6 @@ default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 
 ## Cluster config
 kubernetes_version                    = "1.18"
-tags                                  = { project_name = "viya", environment = "test-min" }
 
 # Jump Server
 create_jump_vm                        = true
