@@ -27,7 +27,8 @@ node_pools = {
     "max_node_count" = 5
     "node_taints" = []
     "node_labels" = {}
-  },  cas = {
+  },
+  cas = {
     "machine_type" = "m5.2xlarge"
     "os_disk_size" = 200
     "min_node_count" = 1
