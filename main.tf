@@ -238,18 +238,34 @@ EOF
 
 # Mapping node_pools to worker_groups
 locals {
-  worker_groups = [
+
+  default_node_pool = [
+    {
+      name                 = "default"
+      instance_type        = var.default_nodepool_vm_type
+      root_volume_size     = var.default_nodepool_os_disk_size
+      asg_desired_capacity = var.default_nodepool_node_count
+      asg_min_size         = var.default_nodepool_min_nodes
+      asg_max_size         = var.default_nodepool_max_nodes
+      kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
+    }
+  ]
+
+  user_node_pool = [
     for np_key, np_value in var.node_pools:
       {
         name                 = np_key
-        instance_type        = np_value.machine_type
+        instance_type        = np_value.vm_type
         root_volume_size     = np_value.os_disk_size
-        asg_desired_capacity = np_value.min_node_count
-        asg_min_size         = np_value.min_node_count
-        asg_max_size         = np_value.max_node_count
+        asg_desired_capacity = np_value.min_nodes
+        asg_min_size         = np_value.min_nodes
+        asg_max_size         = np_value.max_nodes
         kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
       }
   ]
+
+  # Merging the default_node_pool into the work_groups node pools
+  worker_groups = concat( local.default_node_pool, local.user_node_pool )
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks

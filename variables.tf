@@ -88,41 +88,75 @@ variable "tags" {
   default     = { project_name = "viya" }
 }
 
+## Default Nodepool config
+variable "create_default_nodepool" {
+  description = "Create Default Node Pool"
+  type        = bool
+  default     = true
+}
+
+variable "default_nodepool_vm_type" {
+  default = "m5.2xlarge"
+}
+
+variable "default_nodepool_os_disk_type" {
+  default = "gp2"
+}
+
+variable "default_nodepool_os_disk_size" {
+  default = 200
+}
+
+variable "default_nodepool_node_count" {
+  default = 1
+}
+
+variable "default_nodepool_max_nodes" {
+  default = 5
+}
+
+variable "default_nodepool_min_nodes" {
+  default = 1
+}
+
+variable "default_nodepool_taints" {
+  type    = list
+  default = []
+}
+
+variable "default_nodepool_labels" {
+  type    = map
+  default = {}
+}
+
+## Dynamnic Nodepool config
 variable node_pools {
   description = "Node pool definitions"
     type = map(object({
-    machine_type            = string
-    os_disk_size            = number
-    min_node_count          = string
-    max_node_count          = string
-    node_taints             = list(string)
-    node_labels             = map(string)
+    vm_type        = string
+    os_disk_size   = number
+    min_nodes      = string
+    max_nodes      = string
+    node_taints    = list(string)
+    node_labels    = map(string)
   }))
 
   default = {
-    default = {
-      "machine_type" = "m5.2xlarge"
-      "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 5
-      "node_taints" = []
-      "node_labels" = {}
-    },
     cas = {
-      "machine_type" = "m5.2xlarge"
+      "vm_type" = "m5.2xlarge"
       "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 5
+      "min_nodes" = 1
+      "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
     },
     compute = {
-      "machine_type" = "m5.8xlarge"
+      "vm_type" = "m5.8xlarge"
       "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 5
+      "min_nodes" = 1
+      "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class"        = "compute"
@@ -130,10 +164,10 @@ variable node_pools {
       }
     },
     connect = {
-      "machine_type" = "m5.8xlarge"
+      "vm_type" = "m5.8xlarge"
       "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 5
+      "min_nodes" = 1
+      "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class"        = "connect"
@@ -141,20 +175,20 @@ variable node_pools {
       }
     },
     stateless = {
-      "machine_type" = "m5.4xlarge"
+      "vm_type" = "m5.4xlarge"
       "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 5
+      "min_nodes" = 1
+      "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
     },
     stateful = {
-      "machine_type" = "m5.4xlarge"
+      "vm_type" = "m5.4xlarge"
       "os_disk_size" = 200
-      "min_node_count" = 1
-      "max_node_count" = 3
+      "min_nodes" = 1
+      "max_nodes" = 3
       "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
