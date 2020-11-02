@@ -10,6 +10,7 @@ location                                = "<aws-location-value>" # e.g., "us-eas
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
+
 # **************  RECOMENDED  VARIABLES  ***************
 default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 # **************  RECOMENDED  VARIABLES  ***************
