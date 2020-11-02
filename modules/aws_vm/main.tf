@@ -52,7 +52,7 @@ resource "aws_key_pair" "admin" {
 resource "aws_instance" "vm" {
   count         = var.create_vm ? 1 : 0
   ami           = data.aws_ami.centos.id
-  instance_type = var.machine_type
+  instance_type = var.vm_type
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
   key_name      = aws_key_pair.admin.key_name
 

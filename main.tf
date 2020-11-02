@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.9.0"
+      version = "3.12.0"
     }
   }
 
@@ -236,6 +236,38 @@ module "iam_policy" {
 EOF
 }
 
+# Mapping node_pools to worker_groups
+locals {
+
+  default_node_pool = [
+    {
+      name                 = "default"
+      instance_type        = var.default_nodepool_vm_type
+      root_volume_size     = var.default_nodepool_os_disk_size
+      asg_desired_capacity = var.default_nodepool_node_count
+      asg_min_size         = var.default_nodepool_min_nodes
+      asg_max_size         = var.default_nodepool_max_nodes
+      kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
+    }
+  ]
+
+  user_node_pool = [
+    for np_key, np_value in var.node_pools:
+      {
+        name                 = np_key
+        instance_type        = np_value.vm_type
+        root_volume_size     = np_value.os_disk_size
+        asg_desired_capacity = np_value.min_nodes
+        asg_min_size         = np_value.min_nodes
+        asg_max_size         = np_value.max_nodes
+        kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
+      }
+  ]
+
+  # Merging the default_node_pool into the work_groups node pools
+  worker_groups = concat( local.default_node_pool, local.user_node_pool )
+}
+
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
@@ -259,64 +291,7 @@ module "eks" {
   # Added to support EBS CSI driver
   workers_additional_policies = [module.iam_policy.arn]
 
-  worker_groups = [
-    # Default
-    {
-      name                 = "default"
-      instance_type        = var.default_nodepool_vm_type
-      asg_desired_capacity = var.default_nodepool_initial_node_count
-      asg_max_size         = var.default_nodepool_max_nodes
-      asg_min_size         = var.default_nodepool_min_nodes
-      root_volume_size     = var.default_nodepool_os_disk_size
-      root_volume_type     = var.default_nodepool_os_disk_type
-      kubelet_extra_args   = "--node-labels=${join(",", var.default_nodepool_labels)} --register-with-taints=${join(",", var.default_nodepool_taints)}"
-
-    },
-    # CAS
-    {
-      name                 = "cas"
-      instance_type        = var.cas_nodepool_vm_type
-      asg_desired_capacity = (var.create_cas_nodepool ? var.cas_nodepool_initial_node_count : 0)
-      asg_max_size         = (var.create_cas_nodepool ? var.cas_nodepool_max_nodes : 0)
-      asg_min_size         = (var.create_cas_nodepool ? var.cas_nodepool_min_nodes : 0)
-      root_volume_size     = var.cas_nodepool_os_disk_size
-      root_volume_type     = var.cas_nodepool_os_disk_type
-      kubelet_extra_args   = "--node-labels=${join(",", var.cas_nodepool_labels)} --register-with-taints=${join(",", var.cas_nodepool_taints)}"
-    },
-    # Compute
-    {
-      name                 = "compute"
-      instance_type        = var.compute_nodepool_vm_type
-      asg_desired_capacity = (var.create_compute_nodepool ? var.compute_nodepool_initial_node_count : 0)
-      asg_max_size         = (var.create_compute_nodepool ? var.compute_nodepool_max_nodes : 0)
-      asg_min_size         = (var.create_compute_nodepool ? var.compute_nodepool_min_nodes : 0)
-      root_volume_size     = var.compute_nodepool_os_disk_size
-      root_volume_type     = var.compute_nodepool_os_disk_type
-      kubelet_extra_args   = "--node-labels=${join(",", var.compute_nodepool_labels)} --register-with-taints=${join(",", var.compute_nodepool_taints)}"
-    },
-    # stateless
-    {
-      name                 = "stateless"
-      instance_type        = var.stateless_nodepool_vm_type
-      asg_desired_capacity = (var.create_stateless_nodepool ? var.stateless_nodepool_initial_node_count : 0)
-      asg_max_size         = (var.create_stateless_nodepool ? var.stateless_nodepool_max_nodes : 0)
-      asg_min_size         = (var.create_stateless_nodepool ? var.stateless_nodepool_min_nodes : 0)
-      root_volume_size     = var.stateless_nodepool_os_disk_size
-      root_volume_type     = var.stateless_nodepool_os_disk_type
-      kubelet_extra_args   = "--node-labels=${join(",", var.stateless_nodepool_labels)} --register-with-taints=${join(",", var.stateless_nodepool_taints)}"
-    },
-    # stateful
-    {
-      name                 = "stateful"
-      instance_type        = var.stateful_nodepool_vm_type
-      asg_desired_capacity = (var.create_stateful_nodepool ? var.stateful_nodepool_initial_node_count : 0)
-      asg_max_size         = (var.create_stateful_nodepool ? var.stateful_nodepool_max_nodes : 0)
-      asg_min_size         = (var.create_stateful_nodepool ? var.stateful_nodepool_min_nodes : 0)
-      root_volume_size     = var.stateful_nodepool_os_disk_size
-      root_volume_type     = var.stateful_nodepool_os_disk_type
-      kubelet_extra_args   = "--node-labels=${join(",", var.stateful_nodepool_labels)} --register-with-taints=${join(",", var.stateful_nodepool_taints)}"
-    }
-  ]
+  worker_groups = local.worker_groups
 }
 
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
@@ -405,8 +380,6 @@ resource "aws_security_group_rule" "postgres_external" {
   security_group_id = aws_security_group.sg.id
 }
 
-
-
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
 resource "aws_resourcegroups_group" "aws_rg" {
   name = "${var.prefix}-rg"
@@ -425,5 +398,5 @@ resource "aws_resourcegroups_group" "aws_rg" {
 ])}
 }
 JSON
-}
+  }
 }

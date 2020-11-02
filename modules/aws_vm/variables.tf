@@ -8,7 +8,7 @@ variable "tags" {
   default     = { project_name = "viya401", cost_center = "rnd", environment = "dev" }
 }
 
-variable "machine_type" {
+variable "vm_type" {
   default = "m5.4xlarge"
 }
 

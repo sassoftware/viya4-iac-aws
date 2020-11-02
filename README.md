@@ -53,7 +53,7 @@ When using a variable definition file other than `terraform.tfvars`, see [Advanc
 
 ### Running Terraform Commands
 
-Initialize the Terraform environment for this project by running 
+Initialize the Terraform environment for this project by running
 
 ```bash
 terraform init
@@ -106,7 +106,7 @@ See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequen
 
 ## Contributing
 
-> We welcome your contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to submit contributions to this project. 
+> We welcome your contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to submit contributions to this project.
 
 ## License
 
@@ -119,8 +119,7 @@ See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequen
 - Installing AWS CLI v2 - https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
 - AWS EKS intro - https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
 
-
-### Terraform 
+### Terraform
 
 - AWS Provider - https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 - AWS EKS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster
