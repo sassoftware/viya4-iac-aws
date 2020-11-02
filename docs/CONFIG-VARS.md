@@ -12,7 +12,7 @@ Supported configuration variables are listed in the table below.  All variables 
 * [General](#general)
 * [Nodepools](#nodepools)
   * [Default Nodepool](#default-nodepool)
-  * [Additional Nodepools](#additional-nodepool)
+  * [Additional Nodepools](#additional-nodepools)
 
 * [Postgres](#postgres)
 
