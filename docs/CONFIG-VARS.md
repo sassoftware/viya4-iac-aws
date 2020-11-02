@@ -18,15 +18,15 @@ Supported configuration variables are listed in the table below.  All variables 
 
 Terraform input variables can be set in the following ways:
 
-- Individually, with the [-var command line option](https://www.terraform.io/docs/configuration/variables.html#variables-on-the-command-line).
+* Individually, with the [-var command line option](https://www.terraform.io/docs/configuration/variables.html#variables-on-the-command-line).
 
-- In [variable definitions (.tfvars) files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files). We recommend this way for most variables.
-- As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [AWS authentication](#aws-authentication).
+* In [variable definitions (.tfvars) files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files). We recommend this way for most variables.
+* As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [AWS authentication](#aws-authentication).
 
 ## Required Variables
 
 | Name | Description | Type | Default | Notes |
-| :--- | ---: | ---: | ---: | ---: | 
+| :--- | ---: | ---: | ---: | ---: |
 | prefix | A prefix used in the name of all the AWS resources created by this script. | string | | The prefix string must start with a lowercase letter and contain only alphanumeric characters and dashes (-), but cannot end with a dash. |
 | location | The AWS Region to provision all resources in this script | string | "us-east-1" | |
 
@@ -38,7 +38,7 @@ You can use either static credentials, or the name of an AWS Profile. If both ar
 
 ### Using Static Credentials
 
-| Terraform Variable | Alternative AWS Environment Variable | Description | 
+| Terraform Variable | Alternative AWS Environment Variable | Description |
 | :--- | :--- | :--- |
 | `aws_access_key_id` | `AWS_ACCESS_KEY_ID` | static credential key |
 | `aws_secret_access_key` | `AWS_SECRET_ACCESS_KEY` | static credential secret |
@@ -46,7 +46,7 @@ You can use either static credentials, or the name of an AWS Profile. If both ar
 
 ### Using AWS Profile
 
-| Terraform Variable | Alternative AWS Environment Variable | Description | 
+| Terraform Variable | Alternative AWS Environment Variable | Description |
 | :--- | :--- | :--- |
 | `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file |
 | `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows |
@@ -55,7 +55,7 @@ Find more on authenticating Terraform under [Authenticating Terraform to access 
 
 ## Admin Access
 
-By default, the API of the AWS resources that are being created are only accessible through authenticated AWS clients (e.g. the AWS Portal, the `aws` CLI, etc.) 
+By default, the API of the AWS resources that are being created are only accessible through authenticated AWS clients (e.g. the AWS Portal, the `aws` CLI, etc.)
 To allow access for other administrative client applications (for example `kubectl`, `psql`, etc.), you want to open up the Azure firewall to allow access from your source IPs.
 To do this, specify ranges of IP in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 Contact your Network System Administrator to find the public CIDR range of your network.
@@ -63,7 +63,7 @@ Contact your Network System Administrator to find the public CIDR range of your 
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use and empty list `[]` to disallow access explicitly.
 
 | Name | Description | Type | Default | Notes |
-| :--- | ---: | ---: | ---: | ---: | 
+| :--- | ---: | ---: | ---: | ---: |
 | default_public_access_cidrs | IP Ranges allowed to access all created cloud resources | list of strings | | Use to to set a default for all Resources |
 | cluster_endpoint_public_access_cidrs | IP Ranges allowed to access the AKS cluster api | list of strings | | for client admin access to the cluster, e.g. with `kubectl` |
 | vm_public_access_cidrs | IP Ranges allowed to access the VMs | list of strings | | opens port 22 for SSH access to the jump and/or nfs VM |
@@ -72,12 +72,12 @@ You can use `default_public_access_cidrs` to set a default range for all created
 ## General
 
 | Name | Description | Type | Default | Notes |
-| :--- | ---: | ---: | ---: | ---: | 
+| :--- | ---: | ---: | ---: | ---: |
 | kubernetes_version | The EKS cluster K8S version | string | "1.17" | |
 | ssh_public_key | Public ssh key for VMs | string | | |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
-| jump_vm_admin | OS Admin User for the Jump VM | string | "jumpuser" | | 
+| jump_vm_admin | OS Admin User for the Jump VM | string | "jumpuser" | |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 
 ## Nodepools
@@ -91,7 +91,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | default_nodepool_os_disk_size | Disk size for default nodepool VMs in GB | number | 200 ||
 | default_nodepool_node_count | Number of initial nodes in the default nodepool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`|
 | default_nodepool_max_nodes | Maximum number of nodes for the default nodepool | number | 5 | |
-| default_nodepool_min_nodes | Minimum number of nodes for the default nodepool | number | 1 | |
+| default_nodepool_min_nodes | Minimum and initial number of nodes for the nodepool | number | 1 | |
 | default_nodepool_taints | Taints for the default nodepool VMs | list of strings | | |
 | default_nodepool_labels | Labels to add to the dfeault nodepool VMs | map | | |
 
