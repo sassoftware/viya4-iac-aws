@@ -49,6 +49,16 @@ data "aws_eks_cluster_auth" "cluster" {
 
 data "aws_availability_zones" "available" {}
 
+resource "tls_private_key" "private_key" {
+  count     = var.ssh_public_key == "" ? 1 : 0
+  algorithm = "RSA"
+}
+
+data "tls_public_key" "public_key" {
+  count           = var.ssh_public_key == "" ? 1 : 0
+  private_key_pem = element(coalescelist(tls_private_key.private_key.*.private_key_pem), 0)
+}
+
 locals {
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
@@ -56,6 +66,7 @@ locals {
   cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+  ssh_public_key                       = var.ssh_public_key != "" ? file(var.ssh_public_key) : element(coalescelist(data.tls_public_key.public_key.*.public_key_openssh, [""]), 0)
 }
 
 # EKS Provider
@@ -183,7 +194,7 @@ module "jump" {
 
   create_vm      = var.create_jump_vm
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
@@ -252,20 +263,20 @@ locals {
   ]
 
   user_node_pool = [
-    for np_key, np_value in var.node_pools:
-      {
-        name                 = np_key
-        instance_type        = np_value.vm_type
-        root_volume_size     = np_value.os_disk_size
-        asg_desired_capacity = np_value.min_nodes
-        asg_min_size         = np_value.min_nodes
-        asg_max_size         = np_value.max_nodes
-        kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
-      }
+    for np_key, np_value in var.node_pools :
+    {
+      name                 = np_key
+      instance_type        = np_value.vm_type
+      root_volume_size     = np_value.os_disk_size
+      asg_desired_capacity = np_value.min_nodes
+      asg_min_size         = np_value.min_nodes
+      asg_max_size         = np_value.max_nodes
+      kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
+    }
   ]
 
   # Merging the default_node_pool into the work_groups node pools
-  worker_groups = concat( local.default_node_pool, local.user_node_pool )
+  worker_groups = concat(local.default_node_pool, local.user_node_pool)
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
@@ -331,7 +342,7 @@ module "db" {
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${var.postgres_server_version}"
@@ -398,5 +409,5 @@ resource "aws_resourcegroups_group" "aws_rg" {
 ])}
 }
 JSON
-  }
+}
 }

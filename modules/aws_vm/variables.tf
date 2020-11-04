@@ -18,7 +18,7 @@ variable "cloud_init" {
 
 variable "postgres_administrator_login" {
   description = "The Administrator Login for the PostgreSQL Server. Changing this forces a new resource to be created."
-  default = "pgadmin"
+  default     = "pgadmin"
 }
 
 variable "vm_admin" {
@@ -28,7 +28,7 @@ variable "vm_admin" {
 
 variable "ssh_public_key" {
   description = "Path to ssh public key"
-  default = ""
+  default     = ""
 }
 
 variable "security_group_ids" {

@@ -53,16 +53,11 @@ output "jump_public_dns" {
   value = var.create_jump_vm ? module.jump.public_dns : ""
 }
 
-output jump_private_key_pem {
-  value = var.create_jump_vm ? module.jump.private_key_pem : null
+output "ssh_private_key" {
+  value = var.ssh_public_key == "" ? element(coalescelist(data.tls_public_key.public_key.*.private_key_pem, [""]), 0) : null
 }
-
-output jump_public_key_pem {
-  value = var.create_jump_vm ? module.jump.public_key_pem : null
-}
-
-output jump_public_key_openssh {
-  value = var.create_jump_vm ? module.jump.public_key_openssh : null
+output "ssh_public_key" {
+  value = var.ssh_public_key == "" ? element(coalescelist(data.tls_public_key.public_key.*.public_key_pem, [""]), 0) : null
 }
 
 output "postgres_fqdn" {
