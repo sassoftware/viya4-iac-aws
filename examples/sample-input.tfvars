@@ -26,6 +26,9 @@ kubernetes_version                      = "1.18"
 default_nodepool_node_count             = 2
 default_nodepool_vm_type                = "m5.2xlarge"
 
+## General 
+efs_performance_mode                    = "maxIO"
+
 ## Cluster Node Pools config
 node_pools = {
   cas = {
