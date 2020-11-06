@@ -76,6 +76,10 @@ variable "ssh_public_key" {
   default = ""
 }
 
+variable efs_performance_mode {
+  default = "generalPurpose"
+}
+
 ## Kubernetes
 variable "kubernetes_version" {
     description = "The EKS cluster K8s version"

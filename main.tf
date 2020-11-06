@@ -144,8 +144,9 @@ resource "aws_security_group_rule" "nfs" {
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  creation_token = "${var.prefix}-efs"
-  tags           = merge(var.tags, map("Name", "${var.prefix}-efs"))
+  creation_token   = "${var.prefix}-efs"
+  performance_mode = var.efs_performance_mode
+  tags             = merge(var.tags, map("Name", "${var.prefix}-efs"))
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
