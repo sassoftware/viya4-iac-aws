@@ -75,7 +75,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | :--- | ---: | ---: | ---: | ---: |
 | kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
 | ssh_public_key | Name of file with public ssh key for VMs | string |"" | If no key is given, a keypair will be generated and output into the `ssh_public_key` and `ssh_private_key` output variables |
-| efs_performance_mode | Can adjust EFS performance for generanl purpose activity to maxIO for data analytics. | string | "generalPurpose" | Has the follwing values: `generalPurpose` or `maxIO` |
+| efs_performance_mode | EFS performance mode | string | "generalPurpose" | Supported values are `generalPurpose` or `maxIO` |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
 | jump_vm_admin | OS Admin User for the Jump VM | string | "jumpuser" | |
