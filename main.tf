@@ -256,6 +256,8 @@ locals {
       name                 = "default"
       instance_type        = var.default_nodepool_vm_type
       root_volume_size     = var.default_nodepool_os_disk_size
+      root_volume_type     = var.default_nodepool_os_disk_type
+      root_iops            = var.default_nodepool_os_disk_iops
       asg_desired_capacity = var.default_nodepool_node_count
       asg_min_size         = var.default_nodepool_min_nodes
       asg_max_size         = var.default_nodepool_max_nodes
@@ -269,6 +271,8 @@ locals {
       name                 = np_key
       instance_type        = np_value.vm_type
       root_volume_size     = np_value.os_disk_size
+      root_volume_type     = np_value.os_disk_type
+      root_iops            = np_value.os_disk_iops
       asg_desired_capacity = np_value.min_nodes
       asg_min_size         = np_value.min_nodes
       asg_max_size         = np_value.max_nodes

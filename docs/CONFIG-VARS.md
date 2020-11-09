@@ -88,8 +88,9 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | default_nodepool_vm_type | Type of the default nodepool VMs | string | "m5.2xlarge" | |
-| default_nodepool_os_disk_type | Disk type for default nodepool | string | gp2 ||
+| default_nodepool_os_disk_type | Disk type for default nodepool VMs | string | gp2 | |
 | default_nodepool_os_disk_size | Disk size for default nodepool VMs in GB | number | 200 ||
+| default_nodepool_os_disk_iops | Disk iops for default nodepool VMs | number | | For `io1` you MUST set to your desired IOPS value. Reference [Amazone EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
 | default_nodepool_node_count | Number of initial nodes in the default nodepool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`|
 | default_nodepool_max_nodes | Maximum number of nodes for the default nodepool | number | 5 | |
 | default_nodepool_min_nodes | Minimum and initial number of nodes for the nodepool | number | 1 | |
@@ -103,7 +104,9 @@ Additional node pools can be created separate from the default nodepool. This is
 | Name | Description | Type | Notes |
 | :--- | ---: | ---: | ---: |
 | vm_type | Type of the nodepool VMs | string | |
+| os_disk_type | Disk type for nodepool VMs | string | `gp2` or `io1` |
 | os_disk_size | Disk size for nodepool VMs in GB | number | |
+| os_disk_iops | Disk size for nodepool VMs in GB | number | For `io1` you MUST set to your desired IOPS value. Reference [Amazone EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
 | min_nodes | Minimum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | max_nodes | Maximum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | |
