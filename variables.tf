@@ -104,11 +104,21 @@ variable "default_nodepool_vm_type" {
 }
 
 variable "default_nodepool_os_disk_type" {
+  type    = string
   default = "gp2"
+
+  validation {
+    condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
+    error_message = "ERROR: Support value for `default_nodepool_os_disk_type` are - gp2, io1."
+  }
 }
 
 variable "default_nodepool_os_disk_size" {
   default = 200
+}
+
+variable "default_nodepool_os_disk_iops" {
+  default = 0
 }
 
 variable "default_nodepool_node_count" {
@@ -138,7 +148,9 @@ variable node_pools {
   description = "Node pool definitions"
     type = map(object({
     vm_type        = string
+    os_disk_type   = string
     os_disk_size   = number
+    os_disk_iops   = number
     min_nodes      = string
     max_nodes      = string
     node_taints    = list(string)
@@ -148,7 +160,9 @@ variable node_pools {
   default = {
     cas = {
       "vm_type" = "m5.2xlarge"
+      "os_disk_type" = "gp2"
       "os_disk_size" = 200
+      "os_disk_iops" = 0
       "min_nodes" = 1
       "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
@@ -158,7 +172,9 @@ variable node_pools {
     },
     compute = {
       "vm_type" = "m5.8xlarge"
+      "os_disk_type" = "gp2"
       "os_disk_size" = 200
+      "os_disk_iops" = 0
       "min_nodes" = 1
       "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
@@ -169,7 +185,9 @@ variable node_pools {
     },
     connect = {
       "vm_type" = "m5.8xlarge"
+      "os_disk_type" = "gp2"
       "os_disk_size" = 200
+      "os_disk_iops" = 0
       "min_nodes" = 1
       "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
@@ -180,7 +198,9 @@ variable node_pools {
     },
     stateless = {
       "vm_type" = "m5.4xlarge"
+      "os_disk_type" = "gp2"
       "os_disk_size" = 200
+      "os_disk_iops" = 0
       "min_nodes" = 1
       "max_nodes" = 5
       "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
@@ -190,7 +210,9 @@ variable node_pools {
     },
     stateful = {
       "vm_type" = "m5.4xlarge"
+      "os_disk_type" = "gp2"
       "os_disk_size" = 200
+      "os_disk_iops" = 0
       "min_nodes" = 1
       "max_nodes" = 3
       "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
