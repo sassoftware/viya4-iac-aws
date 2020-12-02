@@ -132,18 +132,35 @@ resource "aws_security_group" "sg" {
   tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
 }
 
-resource "aws_security_group_rule" "nfs" {
-  description              = "Allow NFS (TCP)"
-  type                     = "ingress"
-  from_port                = 2049
-  to_port                  = 2049
-  protocol                 = "TCP"
-  security_group_id        = module.vpc.default_security_group_id
-  source_security_group_id = aws_security_group.sg.id
+resource "aws_security_group" "nfs-sg" {
+  # nfs requires at least one ephemeral port in addtion to 111 and 2049 (for mountd), hence the full range here
+
+  name   = "${var.prefix}-nfs-sg"
+  vpc_id = module.vpc.vpc_id
+
+  egress {
+    description = "Allow all outbound traffic."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description     = "Allow NFS (TCP)"
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "TCP"
+    security_groups = [aws_security_group.sg.id]
+
+  }
+  tags = merge(var.tags, map("Name", "${var.prefix}-nfs-sg"))
 }
+
+
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
+  count            = var.storage_type == "ha" ? 1 : 0
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
   tags             = merge(var.tags, map("Name", "${var.prefix}-efs"))
@@ -152,21 +169,22 @@ resource "aws_efs_file_system" "efs-fs" {
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
-  count          = length(module.vpc.private_subnets)
-  file_system_id = aws_efs_file_system.efs-fs.id
-  subnet_id      = element(module.vpc.private_subnets, count.index)
+  count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
+  file_system_id  = aws_efs_file_system.efs-fs.0.id
+  subnet_id       = element(module.vpc.private_subnets, count.index)
+  security_groups = [aws_security_group.nfs-sg.id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
 data "template_file" "jump-cloudconfig" {
   template = file("${path.module}/cloud-init/jump/cloud-config")
   vars = {
-    rwx_filestore_endpoint = aws_efs_file_system.efs-fs.dns_name
-    rwx_filestore_path     = "/"
+    rwx_filestore_endpoint = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
+    rwx_filestore_path     = var.storage_type == "ha" ? "/" : "/export"
     vm_admin               = var.jump_vm_admin
   }
 
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt]
+  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
 }
 
 # Defining the cloud-config to use
@@ -187,6 +205,7 @@ module "jump" {
   tags               = var.tags
   subnet_id          = module.vpc.public_subnets[0] // gw subnet
   security_group_ids = [aws_security_group.sg.id]
+  create_public_ip   = true
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -200,8 +219,8 @@ module "jump" {
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
 
-resource "aws_security_group_rule" "jump" {
-  count             = var.create_jump_vm && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
+resource "aws_security_group_rule" "vms" {
+  count             = ((var.storage_type == "standard" && var.create_nfs_public_ip) || var.create_jump_vm) && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
   type              = "ingress"
   description       = "Allow SSH from source"
   from_port         = 22
@@ -209,6 +228,57 @@ resource "aws_security_group_rule" "jump" {
   protocol          = "tcp"
   cidr_blocks       = local.vm_public_access_cidrs
   security_group_id = aws_security_group.sg.id
+}
+
+data "template_file" "nfs-cloudconfig" {
+  template = file("${path.module}/cloud-init/nfs/cloud-config")
+  count    = var.storage_type == "standard" ? 1 : 0
+
+  vars = {
+    vm_admin        = var.nfs_vm_admin
+    base_cidr_block = var.vpc_cidr
+  }
+
+}
+
+# Defining the cloud-config to use
+data "template_cloudinit_config" "nfs" {
+  count = var.storage_type == "standard" ? 1 : 0
+
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = data.template_file.nfs-cloudconfig.0.rendered
+  }
+}
+
+# NFS Server VM
+module "nfs" {
+  source             = "./modules/aws_vm"
+  name               = "${var.prefix}-nfs-server"
+  tags               = var.tags
+  subnet_id          = module.vpc.public_subnets[0] // gw subnet
+  security_group_ids = [aws_security_group.sg.id, aws_security_group.nfs-sg.id]
+  create_public_ip   = var.create_nfs_public_ip
+
+  os_disk_type                  = var.os_disk_type
+  os_disk_size                  = var.os_disk_size
+  os_disk_delete_on_termination = var.os_disk_delete_on_termination
+  os_disk_iops                  = var.os_disk_iops
+
+  data_disk_count             = 4
+  data_disk_type              = var.nfs_raid_disk_type
+  data_disk_size              = var.nfs_raid_disk_size
+  data_disk_iops              = var.nfs_raid_disk_iops
+  data_disk_availability_zone = data.aws_availability_zones.available.names[0]
+
+  create_vm      = var.storage_type == "standard" ? true : false
+  vm_admin       = var.nfs_vm_admin
+  ssh_public_key = local.ssh_public_key
+
+  cloud_init = var.storage_type == "standard" ? data.template_cloudinit_config.nfs.0.rendered : null
 }
 
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam

@@ -2,7 +2,33 @@
 
 # Hack for assigning disk in a vm based on an index value. 
 locals {
-  device_name = ["b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+  device_name = [
+    "/dev/sdb",
+    "/dev/sdc",
+    "/dev/sdd",
+    "/dev/sde",
+    "/dev/sdf",
+    "/dev/sdg",
+    "/dev/sdh",
+    "/dev/sdi",
+    "/dev/sdj",
+    "/dev/sdk",
+    "/dev/sdl",
+    "/dev/sdm",
+    "/dev/sdn",
+    "/dev/sdo",
+    "/dev/sdp",
+    "/dev/sdq",
+    "/dev/sdr",
+    "/dev/sds",
+    "/dev/sdt",
+    "/dev/sdu",
+    "/dev/sdv",
+    "/dev/sdw",
+    "/dev/sdx",
+    "/dev/sdy",
+    "/dev/sdz"
+  ]
 }
 
 data "aws_ami" "centos" {
@@ -25,14 +51,6 @@ data "aws_ami" "centos" {
   }
 }
 
-data "null_data_source" "ebs_disk" {
-  count = var.data_disk_count
-}
-
-locals {
-  vm_admin = var.vm_admin
-}
-
 resource "aws_key_pair" "admin" {
   key_name   = "${var.name}-admin"
   public_key = var.ssh_public_key
@@ -45,8 +63,9 @@ resource "aws_instance" "vm" {
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
   key_name      = aws_key_pair.admin.key_name
 
-  vpc_security_group_ids = var.security_group_ids
-  subnet_id              = var.subnet_id
+  vpc_security_group_ids      = var.security_group_ids
+  subnet_id                   = var.subnet_id
+  associate_public_ip_address = var.create_public_ip
 
   root_block_device {
     volume_type           = var.os_disk_type
@@ -57,4 +76,20 @@ resource "aws_instance" "vm" {
 
   tags = merge(var.tags, map("Name", "${var.name}-vm"))
 
+}
+
+resource "aws_volume_attachment" "data-volume-attachment" {
+  count       = var.create_vm ? var.data_disk_count : 0
+  device_name = element(local.device_name, count.index)
+  instance_id = aws_instance.vm.0.id
+  volume_id   = element(aws_ebs_volume.raid_disk.*.id, count.index)
+}
+
+resource "aws_ebs_volume" "raid_disk" {
+  count             = var.create_vm ? var.data_disk_count : 0
+  availability_zone = var.data_disk_availability_zone
+  size              = var.data_disk_size
+  type              = var.data_disk_type
+  iops              = var.data_disk_iops
+  tags              = merge(var.tags, map("Name", "${var.name}-vm"))
 }
