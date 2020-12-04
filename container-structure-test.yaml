@@ -25,7 +25,7 @@ commandTests:
       - -c
       - |
         aws --version
-    expectedOutput: ["aws-cli/2.1.7 Python/3.7.3 Linux/5.4.39-linuxkit docker/x86_64.amzn.2 prompt/off"]
+    expectedOutput: ["aws-cli/2.1.7"]
 
 metadataTest:
   workdir: "/viya4-iac-aws"
