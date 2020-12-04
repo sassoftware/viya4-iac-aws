@@ -1,12 +1,21 @@
-FROM hashicorp/terraform:0.13.3
+ARG TERRAFORM_VERSION=0.13.4
+ARG AWS_CLI_VERSION=2.1.7
 
-RUN apk --update --no-cache add python3 py3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install "awscli==1.18.169" \
-    && rm -rf /var/cache/apk/*
+FROM hashicorp/terraform:$TERRAFORM_VERSION as terraform
+FROM amazon/aws-cli:$AWS_CLI_VERSION
+ARG KUBECTL_VERSION=1.18.8
 
-WORKDIR /viya4-iac-aws
+RUN curl -sLO https://storage.googleapis.com/kubernetes-release/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl \
+  && chmod 755 ./kubectl \
+  && mv ./kubectl /usr/local/bin/kubectl
+COPY --from=terraform /bin/terraform /bin/terraform
 
+WORKDIR /viya-iac-aws
+ 
 COPY . .
 
-RUN terraform init /viya4-iac-aws
+RUN yum -y install git openssh \
+  && terraform init /viya-iac-aws
+
+ENV TF_VAR_iac_tooling=docker
+ENTRYPOINT ["/bin/terraform"]
