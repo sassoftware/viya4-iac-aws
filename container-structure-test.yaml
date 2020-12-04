@@ -8,7 +8,7 @@ fileExistenceTests:
   - name: 'aws-cli'
     path: '/usr/local/bin/aws'
     shouldExist: true
-    permissions: '-rwxr-xr-x'
+    permissions: 'Lrwxrwxrwx'
 
 commandTests:
   - name: "terraform version"
