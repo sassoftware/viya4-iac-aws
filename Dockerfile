@@ -10,12 +10,12 @@ RUN curl -sLO https://storage.googleapis.com/kubernetes-release/release/v$KUBECT
   && mv ./kubectl /usr/local/bin/kubectl
 COPY --from=terraform /bin/terraform /bin/terraform
 
-WORKDIR /viya-iac-aws
+WORKDIR /viya4-iac-aws
  
 COPY . .
 
 RUN yum -y install git openssh \
-  && terraform init /viya-iac-aws
+  && terraform init /viya4-iac-aws
 
 ENV TF_VAR_iac_tooling=docker
 ENTRYPOINT ["/bin/terraform"]
