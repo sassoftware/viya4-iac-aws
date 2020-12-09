@@ -44,7 +44,7 @@ runcmd:
   - systemctl start nfs-lock
   - systemctl start nfs-idmap
   #
-  # Create Raid5 Array
+  # Create Raid0 Array
   #
   # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/raid-config.html
   - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep -v 'nvme0' | xargs)
