@@ -256,7 +256,7 @@ variable "jump_vm_admin" {
 }
 
 variable "nfs_raid_disk_size" {
-  description = "Size in Gb for each disk of the RAID5 cluster, when storage_type=standard"
+  description = "Size in Gb for each disk of the RAID0 cluster, when storage_type=standard"
   default     = 128
 }
 
