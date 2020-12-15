@@ -284,6 +284,56 @@ locals {
   worker_groups = concat(local.default_node_pool, local.user_node_pool)
 }
 
+
+resource "kubernetes_service_account" "cluster-admin" {
+  metadata {
+    name = "cluster-admin"
+    namespace = "kube-system"
+  }
+}
+
+data "kubernetes_secret" "sa-token" {
+  metadata {
+    name = kubernetes_service_account.cluster-admin.default_secret_name
+    namespace = "kube-system"
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "kcrb" {
+  metadata {
+    name = "cluster admin role binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "cluster-admin"
+    namespace = "kube-system"
+  }
+}
+
+data "template_file" "kubeconfig" {
+  template = file("${path.module}/files/kubeconfig-template.yaml")
+
+  vars = {
+    cluster_name  = module.eks.cluster_id
+    endpoint      = module.eks.cluster_endpoint
+    user_name     = "cluster-admin"
+    user_token    = data.kubernetes_secret.sa-token.data.token
+    cluster_ca    = module.eks.cluster_certificate_authority_data
+  }
+}
+
+resource "local_file" "kubeconfig" {
+  content              = data.template_file.kubeconfig.rendered
+  filename             = "./${var.prefix}-eks-kubeconfig.conf"
+  file_permission      = "0644"
+  directory_permission = "0755"
+}
+
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
@@ -293,8 +343,7 @@ module "eks" {
   cluster_endpoint_private_access_cidrs = [var.vpc_cidr]
   cluster_endpoint_public_access        = true
   cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
-  config_output_path                    = "./${var.prefix}-eks-kubeconfig.conf"
-  kubeconfig_name                       = "${var.prefix}-eks"
+  write_kubeconfig                      = false
   subnets                               = concat([module.vpc.private_subnets.0, module.vpc.private_subnets.1])
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags

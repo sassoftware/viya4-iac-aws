@@ -82,8 +82,8 @@ variable efs_performance_mode {
 
 ## Kubernetes
 variable "kubernetes_version" {
-    description = "The EKS cluster K8s version"
-    default = "1.18"
+  description = "The EKS cluster K8s version"
+  default     = "1.18"
 }
 
 variable "tags" {
@@ -146,76 +146,76 @@ variable "default_nodepool_labels" {
 ## Dynamnic Nodepool config
 variable node_pools {
   description = "Node pool definitions"
-    type = map(object({
-    vm_type        = string
-    os_disk_type   = string
-    os_disk_size   = number
-    os_disk_iops   = number
-    min_nodes      = string
-    max_nodes      = string
-    node_taints    = list(string)
-    node_labels    = map(string)
+  type = map(object({
+    vm_type      = string
+    os_disk_type = string
+    os_disk_size = number
+    os_disk_iops = number
+    min_nodes    = string
+    max_nodes    = string
+    node_taints  = list(string)
+    node_labels  = map(string)
   }))
 
   default = {
     cas = {
-      "vm_type" = "m5.2xlarge"
+      "vm_type"      = "m5.2xlarge"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "min_nodes" = 1
-      "max_nodes" = 5
-      "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
+      "min_nodes"    = 1
+      "max_nodes"    = 5
+      "node_taints"  = ["workload.sas.com/class=cas:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
     },
     compute = {
-      "vm_type" = "m5.8xlarge"
+      "vm_type"      = "m5.8xlarge"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "min_nodes" = 1
-      "max_nodes" = 5
-      "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
+      "min_nodes"    = 1
+      "max_nodes"    = 5
+      "node_taints"  = ["workload.sas.com/class=compute:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class"        = "compute"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
     },
     connect = {
-      "vm_type" = "m5.8xlarge"
+      "vm_type"      = "m5.8xlarge"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "min_nodes" = 1
-      "max_nodes" = 5
-      "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
+      "min_nodes"    = 1
+      "max_nodes"    = 5
+      "node_taints"  = ["workload.sas.com/class=connect:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class"        = "connect"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
     },
     stateless = {
-      "vm_type" = "m5.4xlarge"
+      "vm_type"      = "m5.4xlarge"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "min_nodes" = 1
-      "max_nodes" = 5
-      "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
+      "min_nodes"    = 1
+      "max_nodes"    = 5
+      "node_taints"  = ["workload.sas.com/class=stateless:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
     },
     stateful = {
-      "vm_type" = "m5.4xlarge"
+      "vm_type"      = "m5.4xlarge"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "min_nodes" = 1
-      "max_nodes" = 3
-      "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
+      "min_nodes"    = 1
+      "max_nodes"    = 3
+      "node_taints"  = ["workload.sas.com/class=stateful:NoSchedule"]
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
       }
