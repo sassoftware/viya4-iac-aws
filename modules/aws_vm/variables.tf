@@ -35,6 +35,10 @@ variable "security_group_ids" {
   default = []
 }
 
+variable "create_public_ip" {
+  default = false
+}
+
 variable "data_disk_count" {
   default = 0
 }
@@ -47,8 +51,8 @@ variable "data_disk_type" {
   default = "gp2"
 }
 
-variable "data_disk_delete_on_termination" {
-  default = true
+variable "data_disk_availability_zone" {
+  default = ""
 }
 
 variable "data_disk_iops" {

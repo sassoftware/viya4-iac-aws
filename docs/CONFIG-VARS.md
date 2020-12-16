@@ -13,7 +13,7 @@ Supported configuration variables are listed in the table below.  All variables 
 * [Nodepools](#nodepools)
   * [Default Nodepool](#default-nodepool)
   * [Additional Nodepools](#additional-nodepools)
-
+* [Storage](#storage)
 * [Postgres](#postgres)
 
 Terraform input variables can be set in the following ways:
@@ -111,6 +111,24 @@ Additional node pools can be created separate from the default nodepool. This is
 | max_nodes | Maximum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | |
 | node_labels | Labels to add to the nodepool VMs | map | |
+
+## Storage
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | "standard" creates NFS server VM, "ha" creates an AWS EFS mountpoint |
+
+### storage_type=standard - nfs server VM
+
+NOTE: The NFS server VM is only created when `storage_type="standard"`
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| create_nfs_public_ip | Add public ip to the NFS server VM | bool | false |  |
+| nfs_vm_admin | OS Admin User for the NFS server VM | string | "nfsuser" | |
+| nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | | 
+| nfs_raid_disk_type | Disk type for the NFS server EBS volume | string | "gp2" | Valid values: "standard", "gp2", "io1", "io2", "sc1" or "st1" |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io2" or "io2" |
 
 ## Postgres
 

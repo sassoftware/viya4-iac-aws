@@ -246,8 +246,7 @@ variable "database_subnets" {
   default     = ["192.168.128.0/25", "192.168.128.128/25"]
 }
 
-
-variable create_jump_vm {
+variable "create_jump_vm" {
   default = true
 }
 
@@ -256,25 +255,28 @@ variable "jump_vm_admin" {
   default     = "jumpuser"
 }
 
-variable "data_disk_count" {
-  default = 0
+variable "nfs_raid_disk_size" {
+  description = "Size in Gb for each disk of the RAID0 cluster, when storage_type=standard"
+  default     = 128
 }
 
-variable "data_disk_size" {
-  default = 128
-}
-
-variable "data_disk_type" {
+variable "nfs_raid_disk_type" {
   default = "gp2"
 }
 
-variable "data_disk_delete_on_termination" {
-  default = true
-}
-
-variable "data_disk_iops" {
+variable "nfs_raid_disk_iops" {
   default = 0
 }
+
+variable "create_nfs_public_ip" {
+  default = false
+}
+
+variable "nfs_vm_admin" {
+  description = "OS Admin User for NFS VM, when storage_type=standard"
+  default     = "nfsuser"
+}
+
 
 variable "os_disk_size" {
   default = 64
@@ -365,4 +367,12 @@ variable "postgres_options" {
   }))
   default = []
 }
+variable "storage_type" {
+  type    = string
+  default = "standard"
 
+  validation {
+    condition     = contains(["standard", "ha"], lower(var.storage_type))
+    error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
+  }
+}
