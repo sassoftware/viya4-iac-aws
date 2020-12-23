@@ -49,6 +49,16 @@ data "aws_eks_cluster_auth" "cluster" {
 
 data "aws_availability_zones" "available" {}
 
+resource "tls_private_key" "private_key" {
+  count     = var.ssh_public_key == "" ? 1 : 0
+  algorithm = "RSA"
+}
+
+data "tls_public_key" "public_key" {
+  count           = var.ssh_public_key == "" ? 1 : 0
+  private_key_pem = element(coalescelist(tls_private_key.private_key.*.private_key_pem), 0)
+}
+
 locals {
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
@@ -56,6 +66,7 @@ locals {
   cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+  ssh_public_key                       = var.ssh_public_key != "" ? file(var.ssh_public_key) : element(coalescelist(data.tls_public_key.public_key.*.public_key_openssh, [""]), 0)
 }
 
 # EKS Provider
@@ -121,40 +132,59 @@ resource "aws_security_group" "sg" {
   tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
 }
 
-resource "aws_security_group_rule" "nfs" {
-  description              = "Allow NFS (TCP)"
-  type                     = "ingress"
-  from_port                = 2049
-  to_port                  = 2049
-  protocol                 = "TCP"
-  security_group_id        = module.vpc.default_security_group_id
-  source_security_group_id = aws_security_group.sg.id
+resource "aws_security_group" "nfs-sg" {
+  # nfs requires at least one ephemeral port in addtion to 111 and 2049 (for mountd), hence the full range here
+
+  name   = "${var.prefix}-nfs-sg"
+  vpc_id = module.vpc.vpc_id
+
+  egress {
+    description = "Allow all outbound traffic."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description     = "Allow NFS (TCP)"
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "TCP"
+    security_groups = [aws_security_group.sg.id]
+
+  }
+  tags = merge(var.tags, map("Name", "${var.prefix}-nfs-sg"))
 }
+
+
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  creation_token = "${var.prefix}-efs"
-  tags           = merge(var.tags, map("Name", "${var.prefix}-efs"))
+  count            = var.storage_type == "ha" ? 1 : 0
+  creation_token   = "${var.prefix}-efs"
+  performance_mode = var.efs_performance_mode
+  tags             = merge(var.tags, map("Name", "${var.prefix}-efs"))
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
-  count          = length(module.vpc.private_subnets)
-  file_system_id = aws_efs_file_system.efs-fs.id
-  subnet_id      = element(module.vpc.private_subnets, count.index)
+  count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
+  file_system_id  = aws_efs_file_system.efs-fs.0.id
+  subnet_id       = element(module.vpc.private_subnets, count.index)
+  security_groups = [aws_security_group.nfs-sg.id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
 data "template_file" "jump-cloudconfig" {
   template = file("${path.module}/cloud-init/jump/cloud-config")
   vars = {
-    rwx_filestore_endpoint = aws_efs_file_system.efs-fs.dns_name
-    rwx_filestore_path     = "/"
+    rwx_filestore_endpoint = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
+    rwx_filestore_path     = var.storage_type == "ha" ? "/" : "/export"
     vm_admin               = var.jump_vm_admin
   }
 
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt]
+  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
 }
 
 # Defining the cloud-config to use
@@ -175,6 +205,7 @@ module "jump" {
   tags               = var.tags
   subnet_id          = module.vpc.public_subnets[0] // gw subnet
   security_group_ids = [aws_security_group.sg.id]
+  create_public_ip   = true
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -183,13 +214,13 @@ module "jump" {
 
   create_vm      = var.create_jump_vm
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
 
-resource "aws_security_group_rule" "jump" {
-  count             = var.create_jump_vm && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
+resource "aws_security_group_rule" "vms" {
+  count             = ((var.storage_type == "standard" && var.create_nfs_public_ip) || var.create_jump_vm) && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
   type              = "ingress"
   description       = "Allow SSH from source"
   from_port         = 22
@@ -197,6 +228,57 @@ resource "aws_security_group_rule" "jump" {
   protocol          = "tcp"
   cidr_blocks       = local.vm_public_access_cidrs
   security_group_id = aws_security_group.sg.id
+}
+
+data "template_file" "nfs-cloudconfig" {
+  template = file("${path.module}/cloud-init/nfs/cloud-config")
+  count    = var.storage_type == "standard" ? 1 : 0
+
+  vars = {
+    vm_admin        = var.nfs_vm_admin
+    base_cidr_block = var.vpc_cidr
+  }
+
+}
+
+# Defining the cloud-config to use
+data "template_cloudinit_config" "nfs" {
+  count = var.storage_type == "standard" ? 1 : 0
+
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = data.template_file.nfs-cloudconfig.0.rendered
+  }
+}
+
+# NFS Server VM
+module "nfs" {
+  source             = "./modules/aws_vm"
+  name               = "${var.prefix}-nfs-server"
+  tags               = var.tags
+  subnet_id          = module.vpc.public_subnets[0] // gw subnet
+  security_group_ids = [aws_security_group.sg.id, aws_security_group.nfs-sg.id]
+  create_public_ip   = var.create_nfs_public_ip
+
+  os_disk_type                  = var.os_disk_type
+  os_disk_size                  = var.os_disk_size
+  os_disk_delete_on_termination = var.os_disk_delete_on_termination
+  os_disk_iops                  = var.os_disk_iops
+
+  data_disk_count             = 4
+  data_disk_type              = var.nfs_raid_disk_type
+  data_disk_size              = var.nfs_raid_disk_size
+  data_disk_iops              = var.nfs_raid_disk_iops
+  data_disk_availability_zone = data.aws_availability_zones.available.names[0]
+
+  create_vm      = var.storage_type == "standard" ? true : false
+  vm_admin       = var.nfs_vm_admin
+  ssh_public_key = local.ssh_public_key
+
+  cloud_init = var.storage_type == "standard" ? data.template_cloudinit_config.nfs.0.rendered : null
 }
 
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
@@ -244,6 +326,8 @@ locals {
       name                 = "default"
       instance_type        = var.default_nodepool_vm_type
       root_volume_size     = var.default_nodepool_os_disk_size
+      root_volume_type     = var.default_nodepool_os_disk_type
+      root_iops            = var.default_nodepool_os_disk_iops
       asg_desired_capacity = var.default_nodepool_node_count
       asg_min_size         = var.default_nodepool_min_nodes
       asg_max_size         = var.default_nodepool_max_nodes
@@ -252,11 +336,13 @@ locals {
   ]
 
   user_node_pool = [
-    for np_key, np_value in var.node_pools:
+    for np_key, np_value in var.node_pools :
       {
         name                 = np_key
         instance_type        = np_value.vm_type
         root_volume_size     = np_value.os_disk_size
+        root_volume_type     = np_value.os_disk_type
+        root_iops            = np_value.os_disk_iops
         asg_desired_capacity = np_value.min_nodes
         asg_min_size         = np_value.min_nodes
         asg_max_size         = np_value.max_nodes
@@ -265,7 +351,56 @@ locals {
   ]
 
   # Merging the default_node_pool into the work_groups node pools
-  worker_groups = concat( local.default_node_pool, local.user_node_pool )
+  worker_groups = concat(local.default_node_pool, local.user_node_pool)
+}
+
+resource "kubernetes_service_account" "cluster-admin" {
+  metadata {
+    name = "cluster-admin"
+    namespace = "kube-system"
+  }
+}
+
+data "kubernetes_secret" "sa-token" {
+  metadata {
+    name = kubernetes_service_account.cluster-admin.default_secret_name
+    namespace = "kube-system"
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "kcrb" {
+  metadata {
+    name = "cluster admin role binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "cluster-admin"
+    namespace = "kube-system"
+  }
+}
+
+data "template_file" "kubeconfig" {
+  template = file("${path.module}/files/kubeconfig-template.yaml")
+
+  vars = {
+    cluster_name  = module.eks.cluster_id
+    endpoint      = module.eks.cluster_endpoint
+    user_name     = "cluster-admin"
+    user_token    = data.kubernetes_secret.sa-token.data.token
+    cluster_ca    = module.eks.cluster_certificate_authority_data
+  }
+}
+
+resource "local_file" "kubeconfig" {
+  content              = data.template_file.kubeconfig.rendered
+  filename             = "./${var.prefix}-eks-kubeconfig.conf"
+  file_permission      = "0644"
+  directory_permission = "0755"
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
@@ -277,8 +412,7 @@ module "eks" {
   cluster_endpoint_private_access_cidrs = [var.vpc_cidr]
   cluster_endpoint_public_access        = true
   cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
-  config_output_path                    = "./${var.prefix}-eks-kubeconfig.conf"
-  kubeconfig_name                       = "${var.prefix}-eks"
+  write_kubeconfig                      = false
   subnets                               = concat([module.vpc.private_subnets.0, module.vpc.private_subnets.1])
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
@@ -331,7 +465,7 @@ module "db" {
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${var.postgres_server_version}"

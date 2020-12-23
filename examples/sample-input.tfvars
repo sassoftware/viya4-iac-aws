@@ -7,6 +7,7 @@
 prefix                                  = "<prefix-value>"
 location                                = "<aws-location-value>" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
+<<<<<<< HEAD
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
@@ -26,6 +27,30 @@ kubernetes_version                      = "1.18"
 default_nodepool_node_count             = 2
 default_nodepool_vm_type                = "m5.2xlarge"
 
+=======
+
+# !NOTE! - Without specifying your CIDR block access rules, ingress traffic
+#          to your cluster will be blocked by default.
+
+# **************  RECOMENDED  VARIABLES  ***************
+default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
+# **************  RECOMENDED  VARIABLES  ***************
+
+# Tags for all tagable items in your cluster.
+tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
+
+# When a ssh key value is provided it will be used for all VMs or else a ssh key will be auto generated and available in outputs
+ssh_public_key                          = "~/.ssh/id_rsa.pub"
+
+## Cluster config
+kubernetes_version                      = "1.18"
+default_nodepool_node_count             = 2
+default_nodepool_vm_type                = "m5.2xlarge"
+
+## General 
+efs_performance_mode                    = "maxIO"
+
+>>>>>>> main
 ## Cluster Node Pools config
 node_pools = {
   cas = {

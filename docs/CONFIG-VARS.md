@@ -13,7 +13,11 @@ Supported configuration variables are listed in the table below.  All variables 
 * [Nodepools](#nodepools)
   * [Default Nodepool](#default-nodepool)
   * [Additional Nodepools](#additional-nodepools)
+<<<<<<< HEAD
 
+=======
+* [Storage](#storage)
+>>>>>>> main
 * [Postgres](#postgres)
 
 Terraform input variables can be set in the following ways:
@@ -73,8 +77,14 @@ You can use `default_public_access_cidrs` to set a default range for all created
 
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
+<<<<<<< HEAD
 | kubernetes_version | The EKS cluster K8S version | string | "1.17" | |
 | ssh_public_key | Public ssh key for VMs | string | | |
+=======
+| kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
+| ssh_public_key | Name of file with public ssh key for VMs | string |"" | If no key is given, a keypair will be generated and output into the `ssh_public_key` and `ssh_private_key` output variables |
+| efs_performance_mode | EFS performance mode | string | "generalPurpose" | Supported values are `generalPurpose` or `maxIO` |
+>>>>>>> main
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
 | jump_vm_admin | OS Admin User for the Jump VM | string | "jumpuser" | |
@@ -87,8 +97,12 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | default_nodepool_vm_type | Type of the default nodepool VMs | string | "m5.2xlarge" | |
-| default_nodepool_os_disk_type | Disk type for default nodepool | string | gp2 ||
+| default_nodepool_os_disk_type | Disk type for default nodepool VMs | string | gp2 | |
 | default_nodepool_os_disk_size | Disk size for default nodepool VMs in GB | number | 200 ||
+<<<<<<< HEAD
+=======
+| default_nodepool_os_disk_iops | Disk iops for default nodepool VMs | number | | For `io1` you MUST set to your desired IOPS value. Reference [Amazone EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
+>>>>>>> main
 | default_nodepool_node_count | Number of initial nodes in the default nodepool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`|
 | default_nodepool_max_nodes | Maximum number of nodes for the default nodepool | number | 5 | |
 | default_nodepool_min_nodes | Minimum and initial number of nodes for the nodepool | number | 1 | |
@@ -102,11 +116,38 @@ Additional node pools can be created separate from the default nodepool. This is
 | Name | Description | Type | Notes |
 | :--- | ---: | ---: | ---: |
 | vm_type | Type of the nodepool VMs | string | |
+<<<<<<< HEAD
 | os_disk_size | Disk size for nodepool VMs in GB | number | |
+=======
+| os_disk_type | Disk type for nodepool VMs | string | `gp2` or `io1` |
+| os_disk_size | Disk size for nodepool VMs in GB | number | |
+| os_disk_iops | Disk size for nodepool VMs in GB | number | For `io1` you MUST set to your desired IOPS value. Reference [Amazone EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
+>>>>>>> main
 | min_nodes | Minimum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | max_nodes | Maximum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | |
 | node_labels | Labels to add to the nodepool VMs | map | |
+<<<<<<< HEAD
+=======
+
+## Storage
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | "standard" creates NFS server VM, "ha" creates an AWS EFS mountpoint |
+
+### storage_type=standard - nfs server VM
+
+NOTE: The NFS server VM is only created when `storage_type="standard"`
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| create_nfs_public_ip | Add public ip to the NFS server VM | bool | false |  |
+| nfs_vm_admin | OS Admin User for the NFS server VM | string | "nfsuser" | |
+| nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | | 
+| nfs_raid_disk_type | Disk type for the NFS server EBS volume | string | "gp2" | Valid values: "standard", "gp2", "io1", "io2", "sc1" or "st1" |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io2" or "io2" |
+>>>>>>> main
 
 ## Postgres
 
