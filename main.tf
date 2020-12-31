@@ -332,22 +332,24 @@ locals {
       asg_min_size         = var.default_nodepool_min_nodes
       asg_max_size         = var.default_nodepool_max_nodes
       kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
+      additional_userdata  = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
     }
   ]
 
   user_node_pool = [
     for np_key, np_value in var.node_pools :
-    {
-      name                 = np_key
-      instance_type        = np_value.vm_type
-      root_volume_size     = np_value.os_disk_size
-      root_volume_type     = np_value.os_disk_type
-      root_iops            = np_value.os_disk_iops
-      asg_desired_capacity = np_value.min_nodes
-      asg_min_size         = np_value.min_nodes
-      asg_max_size         = np_value.max_nodes
-      kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
-    }
+      {
+        name                 = np_key
+        instance_type        = np_value.vm_type
+        root_volume_size     = np_value.os_disk_size
+        root_volume_type     = np_value.os_disk_type
+        root_iops            = np_value.os_disk_iops
+        asg_desired_capacity = np_value.min_nodes
+        asg_min_size         = np_value.min_nodes
+        asg_max_size         = np_value.max_nodes
+        kubelet_extra_args   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
+        additional_userdata  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+      }
   ]
 
   # Merging the default_node_pool into the work_groups node pools

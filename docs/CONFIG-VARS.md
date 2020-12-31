@@ -96,6 +96,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | default_nodepool_min_nodes | Minimum and initial number of nodes for the nodepool | number | 1 | |
 | default_nodepool_taints | Taints for the default nodepool VMs | list of strings | | |
 | default_nodepool_labels | Labels to add to the dfeault nodepool VMs | map | | |
+| default_nodepool_custom_data | Additional userdata that will be appended to the default userdata. | string | "" | The value must be an empty string "" or the path to a file containing a `bash` script snippet that will be executed on the node pool. |
 
 ### Additional Nodepools
 
@@ -111,6 +112,7 @@ Additional node pools can be created separate from the default nodepool. This is
 | max_nodes | Maximum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | |
 | node_labels | Labels to add to the nodepool VMs | map | |
+| custom_data | Additional userdata that will be appended to the default userdata. | string | The value must be an empty string "" or the path to a file containing a `bash` script snippet that will be executed on the node pool. |
 
 ## Storage
 
@@ -126,7 +128,7 @@ NOTE: The NFS server VM is only created when `storage_type="standard"`
 | :--- | ---: | ---: | ---: | ---: |
 | create_nfs_public_ip | Add public ip to the NFS server VM | bool | false |  |
 | nfs_vm_admin | OS Admin User for the NFS server VM | string | "nfsuser" | |
-| nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | | 
+| nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | |
 | nfs_raid_disk_type | Disk type for the NFS server EBS volume | string | "gp2" | Valid values: "standard", "gp2", "io1", "io2", "sc1" or "st1" |
 | nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io2" or "io2" |
 

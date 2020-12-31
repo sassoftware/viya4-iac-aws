@@ -33,20 +33,20 @@ storage_type                            = "standard"
 
 ## Cluster Node Pools config
 node_pools = {
-  cas = {
-    "vm_type" = "m5.2xlarge"
+  cas = { 
+    "vm_type" = "i3.8xlarge"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class" = "cas"
+    "node_labels" = { 
+      "workload.sas.com/class" = "cas" 
     }
-    "custom_data" = ""
+    "custom_data" = "./files/additional_userdata.sh"
   },
-  compute = {
+  compute = { 
     "vm_type" = "m5.8xlarge"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -60,7 +60,7 @@ node_pools = {
     }
     "custom_data" = ""
   },
-  connect = {
+  connect = { 
     "vm_type" = "m5.8xlarge"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -74,7 +74,7 @@ node_pools = {
     }
     "custom_data" = ""
   },
-  stateless = {
+  stateless = { 
     "vm_type" = "m5.4xlarge"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -82,12 +82,12 @@ node_pools = {
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class" = "stateless"
+    "node_labels" = { 
+      "workload.sas.com/class" = "stateless" 
     }
     "custom_data" = ""
-  },
-  stateful = {
+  },   
+  stateful = { 
     "vm_type" = "m5.4xlarge"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -95,8 +95,8 @@ node_pools = {
     "min_nodes" = 1
     "max_nodes" = 3
     "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class" = "stateful"
+    "node_labels" = { 
+      "workload.sas.com/class" = "stateful" 
     }
     "custom_data" = ""
   }
