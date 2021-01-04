@@ -143,6 +143,10 @@ variable "default_nodepool_labels" {
   default = {}
 }
 
+variable "default_nodepool_custom_data" {
+  default = ""
+}
+
 ## Dynamnic Nodepool config
 variable node_pools {
   description = "Node pool definitions"
@@ -155,6 +159,7 @@ variable node_pools {
     max_nodes    = string
     node_taints  = list(string)
     node_labels  = map(string)
+    custom_data  = string
   }))
 
   default = {
@@ -169,6 +174,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
+      "custom_data" = ""
     },
     compute = {
       "vm_type"      = "m5.8xlarge"
@@ -182,6 +188,7 @@ variable node_pools {
         "workload.sas.com/class"        = "compute"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
+      "custom_data" = ""
     },
     connect = {
       "vm_type"      = "m5.8xlarge"
@@ -195,6 +202,7 @@ variable node_pools {
         "workload.sas.com/class"        = "connect"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
+      "custom_data" = ""
     },
     stateless = {
       "vm_type"      = "m5.4xlarge"
@@ -207,6 +215,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
+      "custom_data" = ""
     },
     stateful = {
       "vm_type"      = "m5.4xlarge"
@@ -219,6 +228,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
       }
+      "custom_data" = ""
     }
   }
 }
