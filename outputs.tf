@@ -13,7 +13,7 @@ output "worker_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
-  value = element(coalescelist(aws_efs_file_system.efs-fs.*.id, [""]), 0)
+  value = var.storage_type == "ha" ? element(coalescelist(aws_efs_file_system.efs-fs.*.id, [""]), 0) : null
 }
 
 output "rwx_filestore_endpoint" {
@@ -25,7 +25,7 @@ output "rwx_filestore_path" {
 }
 
 output "efs_arn" {
-  value = element(coalescelist(aws_efs_file_system.efs-fs.*.arn, [""]), 0)
+  value = var.storage_type == "ha" ? element(coalescelist(aws_efs_file_system.efs-fs.*.arn, [""]), 0) : null
 }
 
 output "jump_private_ip" {
