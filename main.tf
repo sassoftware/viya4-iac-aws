@@ -156,8 +156,6 @@ resource "aws_security_group" "nfs-sg" {
   tags = merge(var.tags, map("Name", "${var.prefix}-nfs-sg"))
 }
 
-
-
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
   count            = var.storage_type == "ha" ? 1 : 0
