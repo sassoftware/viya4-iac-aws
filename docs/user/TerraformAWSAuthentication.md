@@ -22,6 +22,7 @@ You can pass the credentials into the Terraform AWS provider either by Terraform
 | `aws_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials | string |
 
 #### Using AWS Profiles
+
 | Terraform Variable | AWS Environment Variable | Description | Type |
 | :--- | :--- | :--- | ---: |
 | `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file | string |
@@ -48,7 +49,7 @@ export TF_VAR_aws_secret_access_key="xxxxxxxxxx"
 export TF_VAR_aws_session_token="xxxxxxxxxx"
 ```
 
-or 
+or
 
 ```bash
 # export needed ids and secrets
