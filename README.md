@@ -1,4 +1,4 @@
-# SAS Viya 4 IaC for AWS
+# SAS Viya 4 Infrastructure as Code (IaC) for Amazon Web Services (AWS)
 
 ## Overview
 
