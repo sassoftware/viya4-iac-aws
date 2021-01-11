@@ -73,7 +73,8 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific 
 variable "ssh_public_key" {
-  default = ""
+  description = "ssh public key used to access VM's"
+  default = "~/.ssh/id_rsa.pub"
 }
 
 variable efs_performance_mode {

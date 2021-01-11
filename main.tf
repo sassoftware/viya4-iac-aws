@@ -49,16 +49,6 @@ data "aws_eks_cluster_auth" "cluster" {
 
 data "aws_availability_zones" "available" {}
 
-resource "tls_private_key" "private_key" {
-  count     = var.ssh_public_key == "" ? 1 : 0
-  algorithm = "RSA"
-}
-
-data "tls_public_key" "public_key" {
-  count           = var.ssh_public_key == "" ? 1 : 0
-  private_key_pem = element(coalescelist(tls_private_key.private_key.*.private_key_pem), 0)
-}
-
 locals {
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
@@ -66,7 +56,6 @@ locals {
   cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
-  ssh_public_key                       = var.ssh_public_key != "" ? file(var.ssh_public_key) : element(coalescelist(data.tls_public_key.public_key.*.public_key_openssh, [""]), 0)
 }
 
 # EKS Provider
@@ -212,7 +201,7 @@ module "jump" {
 
   create_vm      = var.create_jump_vm
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = local.ssh_public_key
+  ssh_public_key = var.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
@@ -274,7 +263,7 @@ module "nfs" {
 
   create_vm      = var.storage_type == "standard" ? true : false
   vm_admin       = var.nfs_vm_admin
-  ssh_public_key = local.ssh_public_key
+  ssh_public_key = var.ssh_public_key
 
   cloud_init = var.storage_type == "standard" ? data.template_cloudinit_config.nfs.0.rendered : null
 }
