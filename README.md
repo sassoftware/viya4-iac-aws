@@ -1,4 +1,4 @@
-# SAS Viya 4 Infrastructure a Code(IAC) for Amazon Web Services(AWS)
+# SAS Viya 4 Infrastructure as Code (IaC) for Amazon Web Services (AWS)
 
 ## Overview
 
@@ -12,15 +12,30 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
   >- Amazon Elastic File System(EFS)
   >- Amazon Relational Database Service(RDS)
 
+[<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 ## Prerequisites
 
-Operational knowledge of [Terraform](https://www.terraform.io/intro/index.html), [AWS](https://aws.amazon.com), and [Kubernetes](https://kubernetes.io/docs/concepts/).
-This project can be run either with Terraform installed on your local machine or with a Docker image that can be built using the included [Dockerfile](Dockerfile).
+Operational knowledge of:
 
-### Required
+- [Terraform](https://www.terraform.io/intro/index.html)
+- [Docker](https://www.docker.com/)
+- [AWS](https://aws.amazon.com)
+- [Kubernetes](https://kubernetes.io/docs/concepts/)
 
-- [Terraform v0.13.3](https://www.terraform.io/downloads.html) or [Docker](https://docs.docker.com/get-docker/)
-- Access to **AWS account**
+This tool supports running both from terraform installed on your local machine or via a docker container. The Dockerfile for the container can be found [here](Dockerfile)
+
+#### Terraform
+
+- [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl) - v1.18.8
+- [jq](https://stedolan.github.io/jq/) - v1.6
+- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
+- Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
+
+#### Docker
+- [Docker](https://docs.docker.com/get-docker/)
+
+- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
 - Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
 
 ### Optional
