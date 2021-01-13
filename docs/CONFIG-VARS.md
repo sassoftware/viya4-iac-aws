@@ -4,24 +4,27 @@ Supported configuration variables are listed in the table below.  All variables 
 
 ## Table of Contents
 
-* [Required Variables](#required-variables)
-* [AWS Authentication](#aws-authentication)
-  * [Static Credentials](#using-static-credentials)
-  * [AWS Profile](#using-aws-profile)
-* [Admin Access](#admin-access)
-* [General](#general)
-* [Nodepools](#nodepools)
-  * [Default Nodepool](#default-nodepool)
-  * [Additional Nodepools](#additional-nodepools)
-* [Storage](#storage)
-* [Postgres](#postgres)
+- [List of valid configuration variables](#list-of-valid-configuration-variables)
+  - [Table of Contents](#table-of-contents)
+  - [Required Variables](#required-variables)
+  - [AWS Authentication](#aws-authentication)
+    - [Using Static Credentials](#using-static-credentials)
+    - [Using AWS Profile](#using-aws-profile)
+  - [Admin Access](#admin-access)
+  - [General](#general)
+  - [Nodepools](#nodepools)
+    - [Default Nodepool](#default-nodepool)
+    - [Additional Nodepools](#additional-nodepools)
+  - [Storage](#storage)
+    - [storage_type=standard - nfs server VM](#storage_typestandard---nfs-server-vm)
+  - [Postgres](#postgres)
 
 Terraform input variables can be set in the following ways:
 
-* Individually, with the [-var command line option](https://www.terraform.io/docs/configuration/variables.html#variables-on-the-command-line).
+- Individually, with the [-var command line option](https://www.terraform.io/docs/configuration/variables.html#variables-on-the-command-line).
 
-* In [variable definitions (.tfvars) files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files). We recommend this way for most variables.
-* As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [AWS authentication](#aws-authentication).
+- In [variable definitions (.tfvars) files](https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files). We recommend this way for most variables.
+- As [environment variables](https://www.terraform.io/docs/configuration/variables.html#environment-variables). We recommend this way for the variables that set the [AWS authentication](#aws-authentication).
 
 ## Required Variables
 
@@ -74,7 +77,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
-| ssh_public_key | Name of file with public ssh key for VMs | string |"" | If no key is given, a keypair will be generated and output into the `ssh_public_key` and `ssh_private_key` output variables |
+| ssh_public_key | Name of file with public ssh key for VMs | string | "~/.ssh/id_rsa.pub" | Value is required in order to access your VMs |
 | efs_performance_mode | EFS performance mode | string | "generalPurpose" | Supported values are `generalPurpose` or `maxIO` |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
