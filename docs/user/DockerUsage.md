@@ -2,7 +2,7 @@
 
 When using the terraform CLI, make sure you have docker [installed on your workstation](../../README.md#docker).
 
-Also prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md)
+Also prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md)
 
 ## Build the docker image
 
