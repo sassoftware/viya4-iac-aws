@@ -14,7 +14,7 @@ Then source your credentials into your shell enviornment
 
 ## Pepare User Variables
 
-Prepare your `terraform.tfvars` file, as described in Also. prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](../../README.md#customize_input_values).
+Prepare your `terraform.tfvars` file, as described in Also. prepare a file with authentication info, as described in [Customize Input Values](../../README.md#customize-input-values).
 
 
 ## Initialize Terraform 
@@ -71,7 +71,7 @@ After provisioning the infrastructure, if further changes were to be made then a
 
 Terraform script writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. Now that you have your Kubernetes cluster up and running, use `kubectl` to interact with our cluster.
 
-**Note** this requires `cluster_endpoint_public_access_cidrs` value to be set to your local ip or CIDR range.
+**Note** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
 
 ### `kubectl` Example
 

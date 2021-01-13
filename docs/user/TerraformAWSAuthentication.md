@@ -87,3 +87,5 @@ docker <...> \
   --env-file $HOME/.aws_docker_creds.env \
   <...>
 ```
+
+NOTE: When using `AWS_PROFILE`, the `AWS_SHARED_CREDENTIALS_FILE` must be accessible from inside the container. One way to achieve this would be to copy or link the shared credentials file into your project directory and give the `AWS_SHARED_CREDENTIALS_FILE` variable a value of `/workspace/<relative filename in the current project directory>`, since your current project directory will be mounted as `/workspace` within the container.
