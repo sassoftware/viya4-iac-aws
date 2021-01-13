@@ -70,14 +70,6 @@ output "nfs_public_dns" {
   value = var.storage_type == "standard" ? module.nfs.public_dns : null
 }
 
-
-output "ssh_private_key" {
-  value = var.ssh_public_key == "" ? element(coalescelist(data.tls_public_key.public_key.*.private_key_pem, [""]), 0) : null
-}
-output "ssh_public_key" {
-  value = var.ssh_public_key == "" ? element(coalescelist(data.tls_public_key.public_key.*.public_key_pem, [""]), 0) : null
-}
-
 output "postgres_fqdn" {
   value = var.create_postgres ? module.db.this_db_instance_address : ""
 }

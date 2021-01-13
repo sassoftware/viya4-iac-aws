@@ -201,7 +201,7 @@ module "jump" {
 
   create_vm      = var.create_jump_vm
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = file(var.ssh_public_key)
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
@@ -263,7 +263,7 @@ module "nfs" {
 
   create_vm      = var.storage_type == "standard" ? true : false
   vm_admin       = var.nfs_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = file(var.ssh_public_key)
 
   cloud_init = var.storage_type == "standard" ? data.template_cloudinit_config.nfs.0.rendered : null
 }
