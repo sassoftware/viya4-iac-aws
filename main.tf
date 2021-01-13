@@ -201,7 +201,7 @@ module "jump" {
 
   create_vm      = var.create_jump_vm
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = file(var.ssh_public_key)
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 }
@@ -263,7 +263,7 @@ module "nfs" {
 
   create_vm      = var.storage_type == "standard" ? true : false
   vm_admin       = var.nfs_vm_admin
-  ssh_public_key = var.ssh_public_key
+  ssh_public_key = file(var.ssh_public_key)
 
   cloud_init = var.storage_type == "standard" ? data.template_cloudinit_config.nfs.0.rendered : null
 }
@@ -386,11 +386,27 @@ data "template_file" "kubeconfig" {
   }
 }
 
-resource "local_file" "kubeconfig" {
-  content              = data.template_file.kubeconfig.rendered
-  filename             = "./${var.prefix}-eks-kubeconfig.conf"
-  file_permission      = "0644"
-  directory_permission = "0755"
+# resource "local_file" "kubeconfig" {
+#   content              = data.template_file.kubeconfig.rendered
+#   filename             = "./${var.prefix}-eks-kubeconfig.conf"
+#   file_permission      = "0644"
+#   directory_permission = "0755"
+# }
+
+
+resource "null_resource" "write_kubeconfig" {
+  triggers = {
+    kubeconfig = data.template_file.kubeconfig.rendered
+#    always_run = timestamp()
+  }
+  provisioner "local-exec" {
+    # copy the kubeconfig file into different location for local or docker execution
+    command = "[[ ! -z \"$TF_VAR_iac_tooling\" && -d '/workspace' ]] && echo \"${data.template_file.kubeconfig.rendered}\" > /workspace/$FILENAME || echo \"${data.template_file.kubeconfig.rendered}\" > $FILENAME"
+    environment = {
+      FILENAME = "${var.prefix}-eks-kubeconfig.conf"
+    }
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
