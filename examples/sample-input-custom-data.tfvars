@@ -18,7 +18,7 @@ default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 # Tags for all tagable items in your cluster.
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
 
-# SSH public key for VM's
+# SSH public key for VMs
 ssh_public_key                          = "~/.ssh/id_rsa.pub"
 
 ## Cluster config

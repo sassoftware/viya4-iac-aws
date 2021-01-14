@@ -73,7 +73,7 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific 
 variable "ssh_public_key" {
-  description = "ssh public key used to access VM's"
+  description = "ssh public key used to access VMs"
   default = "~/.ssh/id_rsa.pub"
 }
 
