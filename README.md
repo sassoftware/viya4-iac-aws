@@ -32,7 +32,7 @@ Operational knowledge of:
 - [AWS CLI v2.0](https://aws.amazon.com/cli) - useful as an alternative to the AWS Web Console
 
 
-This tool supports running both from terraform installed on your local machine or via a docker container. The Dockerfile for the container can be found [here](Dockerfile)
+This tool supports running both from Terraform installed on your local machine or via a Docker container. The Dockerfile for the container can be found [here](Dockerfile)
 
 #### Terraform
 
@@ -72,8 +72,8 @@ When using a variable definition file other than `terraform.tfvars`, see [Advanc
 
 To create and manage the Azure cloud resources you can either 
 
-- use [terraform directly on your workstation](docs/user/TerraformUsage.md), or
-- use a [docker container](docs/user/DockerUsage.md). 
+- use [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
+- use a [Docker container](docs/user/DockerUsage.md). 
 
 ### Troubleshooting
 
