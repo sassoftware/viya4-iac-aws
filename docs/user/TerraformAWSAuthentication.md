@@ -80,7 +80,7 @@ AWS_PROFILE="xxxxxxxxxx"
 AWS_SHARED_CREDENTIALS_FILE="xxxxxxxxxx"
 ```
 
-Store these commands outside of this repo in a secure file, for example `$HOME/.aws_docker_creds.env` . (Protect that file so only you have read access to it.) Now each time you invoke the container, specify the file in the --env-file docker option, e.g.
+Store these commands outside of this repo in a secure file, for example `$HOME/.aws_docker_creds.env` . (Protect that file so only you have read access to it.) Now each time you invoke the container, specify the file in the `--env-file` dDcker option, e.g.
 
 ```bash
 docker <...> \
@@ -88,4 +88,12 @@ docker <...> \
   <...>
 ```
 
-NOTE: When using `AWS_PROFILE`, the `AWS_SHARED_CREDENTIALS_FILE` must be accessible from inside the container. One way to achieve this would be to copy or link the shared credentials file into your project directory and give the `AWS_SHARED_CREDENTIALS_FILE` variable a value of `/workspace/<relative filename in the current project directory>`, since your current project directory will be mounted as `/workspace` within the container.
+NOTE: When using `AWS_PROFILE`, the `AWS_SHARED_CREDENTIALS_FILE` location must be accessible from inside the container. Make sure to mount its location when invoking the Docker container, e.g.
+
+```bash
+docker <...> \
+  -v $HOME/.aws/credentials:/.aws/credentials \
+  <...>
+```
+
+(Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.)

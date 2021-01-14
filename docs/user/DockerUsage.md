@@ -14,24 +14,23 @@ docker build -t viya4-iac-aws .
 
 ## Preparation
 
-When using the Docker container you need to make sure that all file references in your `terraform.tfvars` file are accessible inside the container. The easiest way to achieve this is to make sure that the files specified in the following variables are stored within your project directory:
+When using the Docker container you need to make sure that all file references in your `terraform.tfvars` file are accessible inside the container. Add mounts to those files (or the directories that contain them) to the Container. Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
 
 | Name | Description | 
 | :--- | :--- |   
 | ssh_public_key | Filename of the public ssh key to use for all VMs |
-
-Then copy `terraform.tfvars` file to `terraform.docker.tfvars` and modify the paths to those variables to use `/workspace/<relative filename in the current project directory>`, since your current project directory will be mounted as `/workspace` within the container.
 
 ## Preview the Cloud Resources
 
 To preview the resources that the Terraform script will create, optionally run
 
 ```bash
-docker run --rm -u "$UID:$GID" \
-  --env-file $HOME/.aws_docker_creds.env \
+docker run --rm -u "$(id -u)" \
+  --env-file $HOME/.aws_creds.env \
+  -v $HOME/.ssh:/.ssh \
   -v $(pwd):/workspace \
   viya4-iac-aws \
-  plan -var-file=/workspace/terraform.docker.tfvars \
+  plan -var-file=/workspace/terraform.tfvars \
        -state /workspace/terraform.tfstate  
 ```
 
@@ -40,12 +39,13 @@ docker run --rm -u "$UID:$GID" \
 When satisfied with the plan and ready to create the cloud resources, run
 
 ```bash
-docker run --rm -u "$UID:$GID" \
+docker run --rm -u "$(id -u)" \
   --env-file $HOME/.aws_docker_creds.env \
+  -v $HOME/.ssh:/.ssh \
   -v $(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
-        -var-file=/workspace/terraform.docker.tfvars \
+        -var-file=/workspace/terraform.tfvars \
         -state /workspace/terraform.tfstate 
 ```
 `terraform apply` can take a few minutes to complete. Once complete, output values are written to the console.
@@ -55,7 +55,7 @@ docker run --rm -u "$UID:$GID" \
 The output values can be displayed anytime by again running
 
 ```bash
-docker run --rm -u "$UID:$GID" \
+docker run --rm -u "$(id -u)" \
   viya4-iac-aws \
   output -state /workspace/terraform.tfstate 
  
@@ -66,27 +66,29 @@ docker run --rm -u "$UID:$GID" \
 To destroy the kubernetes cluster and all related resources, run
 
 ```bash
-docker run --rm -u "$UID:$GID" \
+docker run --rm -u "$(id -u)" \
   --env-file $HOME/.aws_docker_creds.env \
-  -v $(pwd):/workspace \
+  -v $HOME/.ssh:/.ssh \
+   -v $(pwd):/workspace \
   viya4-iac-aws \
   destroy -auto-approve \
-          -var-file=/workspace/terraform.docker.tfvars \
+          -var-file=/workspace/terraform.tfvars \
           -state /workspace/terraform.tfstate
 ```
 NOTE: The "destroy" action is destructive and irreversible.
 
 ## Modify Cloud Resources
 
-After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.docker.tfvars` and run `terrafom apply` again:
+After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run `terrafom apply` again:
 
 ```bash
-docker run --rm -u "$UID:$GID" \
+docker run --rm -u "$(id -u)" \
   --env-file $HOME/.aws_docker_creds.env \
-  -v $(pwd):/workspace \
+  -v $HOME/.ssh:/.ssh \
+   -v $(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
-        -var-file=/workspace/terraform.docker.tfvars \
+        -var-file=/workspace/terraform.tfvars \
         -state /workspace/terraform.tfstate 
 ```
 
