@@ -1,6 +1,6 @@
 ## AWS-EKS
 #
-# Terraform Registry : https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/12.1.0
+# Terraform Registry : https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
@@ -8,10 +8,9 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.12.0"
+      version = "3.23.0"
     }
   }
-
 }
 
 provider "aws" {
@@ -70,7 +69,7 @@ provider "kubernetes" {
 # VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.55.0"
+  version = "2.66.0"
 
   name = "${var.prefix}-vpc"
   cidr = var.vpc_cidr
@@ -271,7 +270,7 @@ module "nfs" {
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "~> 2.0"
+  version = "3.7.0"
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -396,6 +395,7 @@ resource "local_file" "kubeconfig" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
+  version                               = "13.2.1"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
@@ -421,7 +421,7 @@ module "eks" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "~> 2.18.0"
+  version = "2.20.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 
