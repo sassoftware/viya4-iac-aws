@@ -26,22 +26,14 @@ Operational knowledge of:
 
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
 - Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
-
-This tool an be run either using the Terraform CLI or via a Docker Container. 
-#### Terraform
-
-When using the Terraform CLI directly, the following tools need to be installed on your workstation:
-
-- [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl) - v1.18.8
-- [jq](https://stedolan.github.io/jq/) - v1.6
-- [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console)
-
-#### Docker
-
-When using the Docker container, you need the Docker runtime on your workstation:
-
-- [Docker](https://docs.docker.com/get-docker/)
+- Terraform or Docker
+  - #### Terraform
+    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
+    - [kubectl](https://kubernetes.io/docs/s/tools/install-kubectl) - v1.18.8
+    - [jq](https://stedolan.github.io/jq/) - v1.6
+    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console)
+  - #### Docker
+    - [Docker](https://docs.docker.com/get-docker/)
 
 
 ## Getting Started
