@@ -98,7 +98,7 @@ docker run --rm -u "$(id -u)" \
           -var-file=/workspace/terraform.tfvars \
           -state=/workspace/terraform.tfstate
 ```
-NOTE: The "destroy" action is destructive and irreversible.
+NOTE: The "destroy" action is irreversible.
 
 ## Interacting with Kubernetes cluster
 
