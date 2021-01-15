@@ -1,111 +1,118 @@
 # Docker
 
-When using the terraform CLI, make sure you have docker [installed on your workstation](../../README.md#docker).
+## Prereqs
 
-Also prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md)
+- Make sure you have Docker [installed on your workstation](../../README.md#docker).
+
+- Prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md)
 
 ## Build the docker image
 
-Run the following command to create your `viya4-iac-aws` local docker image
+Run the following command to create your `viya4-iac-aws` docker image
 
 ```bash
 docker build -t viya4-iac-aws .
 ```
 
+NOTE: The Dockerfile for the container can be found [here](Dockerfile).
+
 ## Preparation
 
-When using the Docker container you need to make sure that all file references in your `terraform.tfvars` file are accessible inside the container. Add mounts to those files (or the directories that contain them) to the Container. Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
+Add volume mounts to the `docker run` command for all files and directories that must be accessible from inside the container.
 
-| Name | Description | 
-| :--- | :--- |   
-| ssh_public_key | Filename of the public ssh key to use for all VMs |
+The most common file references are the value of the [`ssh_public_key`](./CONFIG-VARS.md#reuired-variables) variable in the `terraform.tfvars` file and the value of `AWS_SHARED_CREDENTIALS_FILE` (if using authentication basedon `AWS_PROFILE`, see [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) for details).
 
-## Preview the Cloud Resources
+Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
 
-To preview the resources that the Terraform script will create, optionally run
+## Preview Cloud Resources (optional)
+
+To preview which resources will be created, optionally run
 
 ```bash
 docker run --rm -u "$(id -u)" \
-  --env-file $HOME/.aws_creds.env \
-  -v $HOME/.ssh:/.ssh \
-  -v $(pwd):/workspace \
+  --env-file=$HOME/.aws_docker_creds.env \
+  --volume=$HOME/.ssh:/.ssh \
+  --volume=$(pwd):/workspace \
   viya4-iac-aws \
   plan -var-file=/workspace/terraform.tfvars \
-       -state /workspace/terraform.tfstate  
+       -state=/workspace/terraform.tfstate  
 ```
 
-## Create Resources
+## Create Cloud Resources
 
-When satisfied with the plan and ready to create the cloud resources, run
+To create the cloud resources, run
 
 ```bash
 docker run --rm -u "$(id -u)" \
-  --env-file $HOME/.aws_docker_creds.env \
-  -v $HOME/.ssh:/.ssh \
-  -v $(pwd):/workspace \
+  --env-file=$HOME/.aws_docker_creds.env \
+  --volume=$HOME/.ssh:/.ssh \
+  --volume=$(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
         -var-file=/workspace/terraform.tfvars \
-        -state /workspace/terraform.tfstate 
+        -state=/workspace/terraform.tfstate 
 ```
-`terraform apply` can take a few minutes to complete. Once complete, output values are written to the console.
+This command can take a few minutes to complete. Once complete, output values are written to the console.
+
+The kubeconfig file for the cluster is being written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
 
 ## Display Outputs
 
-The output values can be displayed anytime by again running
+The output values can be displayed anytime again by running
 
 ```bash
 docker run --rm -u "$(id -u)" \
+  --volume=$(pwd):/workspace \
   viya4-iac-aws \
-  output -state /workspace/terraform.tfstate 
+  output -state=/workspace/terraform.tfstate 
  
 ```
 
-## Tear Down Resources 
-
-To destroy the kubernetes cluster and all related resources, run
-
-```bash
-docker run --rm -u "$(id -u)" \
-  --env-file $HOME/.aws_docker_creds.env \
-  -v $HOME/.ssh:/.ssh \
-   -v $(pwd):/workspace \
-  viya4-iac-aws \
-  destroy -auto-approve \
-          -var-file=/workspace/terraform.tfvars \
-          -state /workspace/terraform.tfstate
-```
-NOTE: The "destroy" action is destructive and irreversible.
-
 ## Modify Cloud Resources
 
-After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run `terrafom apply` again:
+After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run again:
 
 ```bash
 docker run --rm -u "$(id -u)" \
-  --env-file $HOME/.aws_docker_creds.env \
-  -v $HOME/.ssh:/.ssh \
-   -v $(pwd):/workspace \
+  --env-file=$HOME/.aws_docker_creds.env \
+  --volume=$HOME/.ssh:/.ssh \
+  --volume=$(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
         -var-file=/workspace/terraform.tfvars \
-        -state /workspace/terraform.tfstate 
+        -state=/workspace/terraform.tfstate 
 ```
+
+
+## Tear Down Resources 
+
+To destroy the cloud resources created with the previous commands, run
+
+```bash
+docker run --rm -u "$(id -u)" \
+  --env-file=$HOME/.aws_docker_creds.env \
+  --volume=$HOME/.ssh:/.ssh \
+  --volume=$(pwd):/workspace \
+  viya4-iac-aws \
+  destroy -auto-approve \
+          -var-file=/workspace/terraform.tfvars \
+          -state=/workspace/terraform.tfstate
+```
+NOTE: The "destroy" action is destructive and irreversible.
 
 ## Interacting with Kubernetes cluster
 
-The Terraform script writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. Now that you have your Kubernetes cluster up and running, use `kubectl` to interact with our cluster.
+[Creating the cloud resources](#create-cloud-resources) writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. When the Kubernetes cluster is ready, use `--entrypoint kubectl` to interact with the cluster.
 
 **Note** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
 
-#### `kubectl` Example
+### Using `kubectl` Example
 
 ```bash
 docker run --rm \
-  -e KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
-  -v $(pwd):/workspace \
+  --env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
+  --volume=$(pwd):/workspace \
   --entrypoint kubectl \
   viya4-iac-gcp get nodes 
 
 ```
-

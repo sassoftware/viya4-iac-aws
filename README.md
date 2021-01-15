@@ -27,27 +27,29 @@ Operational knowledge of:
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
 - Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
 
-### Optional
-
-- [AWS CLI v2.0](https://aws.amazon.com/cli) - useful as an alternative to the AWS Web Console
-
-
-This tool supports running both from Terraform installed on your local machine or via a Docker container. The Dockerfile for the container can be found [here](Dockerfile)
-
+This tool an be run either using the Terraform CLI or via a Docker Container. 
 #### Terraform
+
+When using the Terraform CLI directly, the following tools need to be installed on your workstation:
 
 - [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl) - v1.18.8
 - [jq](https://stedolan.github.io/jq/) - v1.6
+- [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console)
 
 #### Docker
+
+When using the Docker container, you need the Docker runtime on your workstation:
+
 - [Docker](https://docs.docker.com/get-docker/)
+
 
 ## Getting Started
 
-Run these commands in a Terminal session:
-
 ### Clone this project
+
+
+Run these commands in a Terminal session:
 
 ```bash
 # clone this repo
@@ -68,14 +70,14 @@ Create a file named `terraform.tfvars` to customize any input variable value. Fo
 When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
 
 
-# Creating and Managaging the Cloud Resources
+## Creating and Managaging the Cloud Resources
 
-To create and manage the Azure cloud resources you can either 
+Create and manage the Azure cloud resources by either 
 
-- use [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
-- use a [Docker container](docs/user/DockerUsage.md). 
+- using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
+- using a [Docker container](docs/user/DockerUsage.md). 
 
-### Troubleshooting
+## Troubleshooting
 
 See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequently found issues.
 

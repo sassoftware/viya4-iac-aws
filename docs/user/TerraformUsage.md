@@ -1,6 +1,6 @@
 # Using the Terraform CLI
 
-When using the terraform CLI, make sure you have all the necessary tools [installed on your workstation](../../README.md#terraform).
+When using the Terraform CLI, make sure you have all the necessary tools [installed on your workstation](../../README.md#terraform).
 
 ## Set AWS Authentication
 
@@ -14,7 +14,7 @@ Then source your credentials into your shell enviornment
 
 ## Pepare User Variables
 
-Prepare your `terraform.tfvars` file, as described in Also. prepare a file with authentication info, as described in [Customize Input Values](../../README.md#customize-input-values).
+Prepare your `terraform.tfvars` file, as described in [Customize Input Values](../../README.md#customize-input-values).
 
 
 ## Initialize Terraform 
@@ -25,18 +25,18 @@ Initialize the Terraform environment for this project by running
 terraform init
 ```
 
-This creates a `.terraform` directory locally and initializes Terraform plugins/modules used in this project.
+This creates a `.terraform` directory locally and initializes Terraform plugins and modules used in this project.
 
 **Note:** `terraform init` only needs to be run once unless new Terraform plugins/modules were added.
 
-## Preview Resources
+## Preview Cloud Resources (optional)
 
-To preview the resources that the Terraform script will create, optionally run
+To preview the resources that the Terraform script will create, run
 
 ```bash
 terraform plan
 ```
-## Create Resources
+## Create CLoud Resources
 
 When satisfied with the plan and ready to create cloud resources, run
 
@@ -44,7 +44,7 @@ When satisfied with the plan and ready to create cloud resources, run
 terraform apply
 ```
 
-`terraform apply` can take a few minutes to complete. Once complete, output values are written to the console. 
+This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. 
 
 ## View Outputs
 
@@ -54,6 +54,11 @@ The output values can be displayed later at any time again by running
 terraform output
 ```
 
+## Modify Cloud Resources
+
+After provisioning the infrastructure, if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run `terrafom apply` again.
+
+
 ## Tear down Resources
 
 To destroy the kubernetes cluster and all related resources, run
@@ -61,15 +66,11 @@ To destroy the kubernetes cluster and all related resources, run
 ```bash
 terraform destroy
 ```
-NOTE: The "destroy" action is destructive and irreversible.
+NOTE: The "destroy" action is irreversible.
 
-## Modifying Cloud Resources
+## Interacting with the Kubernetes cluster
 
-After provisioning the infrastructure, if further changes were to be made then add the variable and desired value to terraform.tfvars and run `terrafom apply` again.
-
-## Interacting with Kubernetes cluster
-
-Terraform script writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. Now that you have your Kubernetes cluster up and running, use `kubectl` to interact with our cluster.
+Terraform script writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. When theKubernetes cluster is ready, use `kubectl` to interact with the cluster.
 
 **Note** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
 

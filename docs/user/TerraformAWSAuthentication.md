@@ -1,8 +1,8 @@
 ### Authenticating Terraform to access AWS
 
-In order to create and destroy AWS objects on your behalf, Terraform needs to log in to AWS with an identity that has sufficient permissions to perform all the actions defined in the terraform manifest.
+In order to create and destroy AWS objects on your behalf, Terraform needs to log in to AWS with an identity that has sufficient permissions to perform all the actions defined in the Terraform manifest.
 
-You will need an `user` that has at a mininum the permissions listed in [this policy](../../files/devops-iac-eks-policy.json).
+You will need a `user` that has at a mininum the permissions listed in [this policy](../../files/devops-iac-eks-policy.json).
 
 You can use either static credentials (including temporary credentials with session token), or an AWS Profile.
 
@@ -32,13 +32,13 @@ Find more information in the [Terraform AWS Provider documentation](https://regi
 
 ## How to set the Terraform Authentication variables
 
-We recommend to use environment variables to pass the authentication information into your terraform job.
+We recommend to use environment variables to pass the authentication information into your Terraform job.
 
-You can use the `TF_VAR_` prefix to set your terraform variables as environment variables.
+You can use the `TF_VAR_` prefix to set your Terraform variables as environment variables.
 
 ### Set Authentication Variables when running Terraform directly
 
-Run these commands to initialize the environment for the project. These commands will need to be run and pulled  into your environment each time you start a new session to use this repo and terraform.
+Run these commands to initialize the environment for the project. These commands will need to be run and pulled  into your environment each time you start a new session to use this repo and Terraform.
 
 Example for using Static Credentials:
 
@@ -66,11 +66,11 @@ Use your favorite editor, take the content above and save it to a file called:
 source $HOME/.aws_creds.sh
 ```
 
-This will pull in those values into your current terminal session. Any terraform commands submitted in that session will use those values.
+This will pull in those values into your current terminal session. Any Terraform commands submitted in that session will use those values.
 
 ### Set Authentication Variables when running Docker container
 
-When using the docker container to run terraform, create a file with the authentication variable assignments. You then specify that file at container invocation.
+When using the docker container to run Terraform, create a file with the authentication variable assignments. You then specify that file at container invocation.
 
 Example for using AWS Profiles:
 
@@ -80,11 +80,11 @@ AWS_PROFILE="xxxxxxxxxx"
 AWS_SHARED_CREDENTIALS_FILE="xxxxxxxxxx"
 ```
 
-Store these commands outside of this repo in a secure file, for example `$HOME/.aws_docker_creds.env` . (Protect that file so only you have read access to it.) Now each time you invoke the container, specify the file in the `--env-file` dDcker option, e.g.
+Store these commands outside of this repo in a secure file, for example `$HOME/.aws_docker_creds.env` . (Protect that file so only you have read access to it.) Now each time you invoke the container, specify the file in the `--env-file` Dpcker option, e.g.
 
 ```bash
 docker <...> \
-  --env-file $HOME/.aws_docker_creds.env \
+  --env-file=$HOME/.aws_docker_creds.env \
   <...>
 ```
 
