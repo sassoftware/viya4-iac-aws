@@ -108,6 +108,3 @@ create_jump_vm                        = true
 # Cloud Postgres values config
 create_postgres                       = true # set this to "false" when using internal Crunchy Postgres and AWS Postgres is NOT needed
 postgres_administrator_password       = "mySup3rS3cretPassw0rd"
-
-# Cloud Container Registry - NOT IMPLEMENTED
-# create_container_registry             = false

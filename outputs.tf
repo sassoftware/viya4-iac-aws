@@ -80,6 +80,7 @@ output "postgres_admin" {
 
 output "postgres_password" {
   value = var.create_postgres ? module.db.this_db_instance_password : ""
+  sensitive = true
 }
 
 output "postgres_server_name" {
@@ -104,4 +105,8 @@ output "cluster_name" {
 
 output "location" {
   value = var.location
+}
+
+output "cr_endpoint" {
+  value = "${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazoneaws.com"
 }
