@@ -64,7 +64,7 @@ When using a variable definition file other than `terraform.tfvars`, see [Advanc
 
 ## Creating and Managaging the Cloud Resources
 
-Create and manage the Azure cloud resources by either 
+Create and manage the AWS cloud resources by either 
 
 - using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
 - using a [Docker container](docs/user/DockerUsage.md). 
