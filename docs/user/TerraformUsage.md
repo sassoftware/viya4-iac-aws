@@ -6,7 +6,7 @@ When using the Terraform CLI, make sure you have all the necessary tools [instal
 
 Prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md).
 
-Then source your credentials into your shell enviornment
+Then source your credentials into your shell environment:
 
 ```bash
 . $HOME/.aws_creds.sh
