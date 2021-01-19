@@ -56,6 +56,9 @@ locals {
   cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+
+  kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
+  kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
 }
 
 # EKS Provider
@@ -386,28 +389,13 @@ data "template_file" "kubeconfig" {
   }
 }
 
-# resource "local_file" "kubeconfig" {
-#   content              = data.template_file.kubeconfig.rendered
-#   filename             = "./${var.prefix}-eks-kubeconfig.conf"
-#   file_permission      = "0644"
-#   directory_permission = "0755"
-# }
-
-
-resource "null_resource" "write_kubeconfig" {
-  triggers = {
-    kubeconfig = data.template_file.kubeconfig.rendered
-#    always_run = timestamp()
-  }
-  provisioner "local-exec" {
-    # copy the kubeconfig file into different location for local or docker execution
-    command = "[[ ! -z \"$TF_VAR_iac_tooling\" && -d '/workspace' ]] && echo \"${data.template_file.kubeconfig.rendered}\" > /workspace/$FILENAME || echo \"${data.template_file.kubeconfig.rendered}\" > $FILENAME"
-    environment = {
-      FILENAME = "${var.prefix}-eks-kubeconfig.conf"
-    }
-    interpreter = ["/bin/bash", "-c"]
-  }
+resource "local_file" "kubeconfig" {
+  content              = data.template_file.kubeconfig.rendered
+  filename             = local.kubeconfig_path
+  file_permission      = "0644"
+  directory_permission = "0755"
 }
+
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {

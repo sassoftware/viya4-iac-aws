@@ -387,3 +387,11 @@ variable "storage_type" {
     error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
   }
 }
+
+variable "iac_tooling" {
+  description = "Value used to identify the tooling used to generate this providers infrastructure."
+  type        = string
+  default     = "terraform"
+}
+
+
