@@ -9,7 +9,7 @@ Prepare a file with authentication info, as described in [Authenticating Terrafo
 Then source your credentials into your shell enviornment
 
 ```bash
-. $HOME/.azure_creds.sh
+. $HOME/.aws_creds.sh
 ```
 
 ## Pepare User Variables
