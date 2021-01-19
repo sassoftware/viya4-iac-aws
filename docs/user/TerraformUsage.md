@@ -70,7 +70,7 @@ NOTE: The "destroy" action is irreversible.
 
 ## Interacting with the Kubernetes cluster
 
-Terraform script writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. When theKubernetes cluster is ready, use `kubectl` to interact with the cluster.
+[Creating the cloud resources](#create-cloud-resources) writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. When theKubernetes cluster is ready, use `kubectl` to interact with the cluster.
 
 **Note** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
 
