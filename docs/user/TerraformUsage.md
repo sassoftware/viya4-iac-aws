@@ -38,7 +38,7 @@ terraform plan
 ```
 ## Create CLoud Resources
 
-When satisfied with the plan and ready to create cloud resources, run
+To create cloud resources, run
 
 ```bash
 terraform apply
