@@ -46,6 +46,9 @@ terraform apply
 
 This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. 
 
+The kubeconfig file for the cluster is being written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
+
+
 ## View Outputs
 
 The output values can be displayed later at any time again by running
