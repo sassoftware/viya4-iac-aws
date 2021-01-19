@@ -1,4 +1,4 @@
-# Docker
+# Using Docker Container
 
 ## Prereqs
 
@@ -8,19 +8,19 @@
 
 ## Build the docker image
 
-Run the following command to create your `viya4-iac-aws` docker image
+Run the following command to create the `viya4-iac-aws` docker image that will be used in subsequent steps:
 
 ```bash
 docker build -t viya4-iac-aws .
 ```
 
-NOTE: The Dockerfile for the container can be found [here](Dockerfile).
+NOTE: The Dockerfile for the container can be found [here](../../Dockerfile).
 
 ## Preparation
 
 Add volume mounts to the `docker run` command for all files and directories that must be accessible from inside the container.
 
-The most common file references are the value of the [`ssh_public_key`](./CONFIG-VARS.md#reuired-variables) variable in the `terraform.tfvars` file and the value of `AWS_SHARED_CREDENTIALS_FILE` (if using authentication basedon `AWS_PROFILE`, see [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) for details).
+The most common file references are the value of the [`ssh_public_key`](./CONFIG-VARS.md#required-variables) variable in the `terraform.tfvars` file and the value of `AWS_SHARED_CREDENTIALS_FILE` (if using authentication basedon `AWS_PROFILE`, see [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) for details).
 
 Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
 
