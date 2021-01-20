@@ -14,7 +14,7 @@ WORKDIR /viya4-iac-aws
  
 COPY . .
 
-RUN yum -y install git openssh \
+RUN yum -y install git openssh jq which \
   && terraform init /viya4-iac-aws
 
 ENV TF_VAR_iac_tooling=docker
