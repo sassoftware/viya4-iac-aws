@@ -46,6 +46,12 @@ variable "aws_secret_access_key" {
   default     = ""
 }
 
+variable "iac_tooling" {
+  description = "Value used to identify the tooling used to generate this providers infrastructure."
+  type        = string
+  default     = "terraform"
+}
+
 ## Public Access
 variable "default_public_access_cidrs" {
   description = "List of CIDRs to access created resources"

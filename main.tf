@@ -39,6 +39,10 @@ provider "template" {
   version = "~> 2.1"
 }
 
+provider "external" {
+  version = "~> 2.0" 
+}
+
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
 }
@@ -67,6 +71,33 @@ locals {
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
   ssh_public_key                       = var.ssh_public_key != "" ? file(var.ssh_public_key) : element(coalescelist(data.tls_public_key.public_key.*.public_key_openssh, [""]), 0)
+}
+
+data "external" "git_hash" {
+  program = ["git", "log", "-1", "--format=format:{ \"git-hash\": \"%H\" }"]
+}
+
+data "external" "iac_tooling_version" {
+  program = ["files/iac_tooling_version.sh"]
+}
+
+resource "kubernetes_config_map" "sas_iac_buildinfo" {
+  metadata {
+    name      = "sas-iac-buildinfo"
+    namespace = "kube-system"
+  }
+
+  data = {
+    git-hash    = lookup(data.external.git_hash.result, "git-hash")
+    timestamp   = chomp(timestamp())
+    iac-tooling = var.iac_tooling
+    terraform   = <<EOT
+      version: ${lookup(data.external.iac_tooling_version.result, "terraform_version")}
+      revision: ${lookup(data.external.iac_tooling_version.result, "terraform_revision")}
+      provider-selections: ${lookup(data.external.iac_tooling_version.result, "provider_selections")}
+      outdated: ${lookup(data.external.iac_tooling_version.result, "terraform_outdated")}
+EOT
+  }
 }
 
 # EKS Provider
