@@ -1,6 +1,6 @@
 ## AWS-EKS
 #
-# Terraform Registry : https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest
+# Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.24.0"
+      version = "3.24.1"
     }
     random = {
       source = "hashicorp/random"
@@ -25,6 +25,10 @@ terraform {
     template = {
       source = "hashicorp/template"
       version = "2.2.0"
+    }
+    external = {
+      source = "hashicorp/external"
+      version = "2.0.0"
     }
     kubernetes = {
       source = "hashicorp/kubernetes"
@@ -61,6 +65,36 @@ locals {
   cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+
+  kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
+  kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
+}
+
+data "external" "git_hash" {
+  program = ["git", "log", "-1", "--format=format:{ \"git-hash\": \"%H\" }"]
+}
+
+data "external" "iac_tooling_version" {
+  program = ["files/iac_tooling_version.sh"]
+}
+
+resource "kubernetes_config_map" "sas_iac_buildinfo" {
+  metadata {
+    name      = "sas-iac-buildinfo"
+    namespace = "kube-system"
+  }
+
+  data = {
+    git-hash    = lookup(data.external.git_hash.result, "git-hash")
+    timestamp   = chomp(timestamp())
+    iac-tooling = var.iac_tooling
+    terraform   = <<EOT
+      version: ${lookup(data.external.iac_tooling_version.result, "terraform_version")}
+      revision: ${lookup(data.external.iac_tooling_version.result, "terraform_revision")}
+      provider-selections: ${lookup(data.external.iac_tooling_version.result, "provider_selections")}
+      outdated: ${lookup(data.external.iac_tooling_version.result, "terraform_outdated")}
+EOT
+  }
 }
 
 # EKS Provider
@@ -392,10 +426,11 @@ data "template_file" "kubeconfig" {
 
 resource "local_file" "kubeconfig" {
   content              = data.template_file.kubeconfig.rendered
-  filename             = "${var.user_dir}/${var.prefix}-eks-kubeconfig.conf"
+  filename             = local.kubeconfig_path
   file_permission      = "0644"
   directory_permission = "0755"
 }
+
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {

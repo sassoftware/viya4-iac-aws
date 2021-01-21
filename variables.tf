@@ -46,6 +46,12 @@ variable "aws_secret_access_key" {
   default     = ""
 }
 
+variable "iac_tooling" {
+  description = "Value used to identify the tooling used to generate this providers infrastructure."
+  type        = string
+  default     = "terraform"
+}
+
 ## Public Access
 variable "default_public_access_cidrs" {
   description = "List of CIDRs to access created resources"
@@ -386,9 +392,4 @@ variable "storage_type" {
     condition     = contains(["standard", "ha"], lower(var.storage_type))
     error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
   }
-}
-
-variable user_dir {
-  default = "."
-  description = "Directory where output file are written."
 }

@@ -10,7 +10,7 @@ WORKDIR /viya4-iac-aws
 COPY --from=terraform /bin/terraform /bin/terraform
 COPY . .
 
-RUN yum -y install git openssh \
+RUN yum -y install git openssh jq which \
   && curl -sLO https://storage.googleapis.com/kubernetes-release/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl \
   && chmod 755 ./kubectl /viya4-iac-aws/docker-entrypoint.sh \
   && mv ./kubectl /usr/local/bin/kubectl \
