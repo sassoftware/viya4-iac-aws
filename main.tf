@@ -392,7 +392,7 @@ data "template_file" "kubeconfig" {
 
 resource "local_file" "kubeconfig" {
   content              = data.template_file.kubeconfig.rendered
-  filename             = "./${var.prefix}-eks-kubeconfig.conf"
+  filename             = "${var.user_dir}/${var.prefix}-eks-kubeconfig.conf"
   file_permission      = "0644"
   directory_permission = "0755"
 }

@@ -387,3 +387,8 @@ variable "storage_type" {
     error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
   }
 }
+
+variable user_dir {
+  default = "."
+  description = "Directory where output file are written."
+}
