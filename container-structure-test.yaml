@@ -25,4 +25,4 @@ commandTests:
 
 metadataTest:
   workdir: "/viya4-iac-aws"
-  entrypoint: ["/bin/terraform"]
+  entrypoint: ["/viya4-iac-aws/docker-entrypoint.sh"]
