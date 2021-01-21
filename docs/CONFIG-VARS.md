@@ -32,6 +32,7 @@ Terraform input variables can be set in the following ways:
 | :--- | ---: | ---: | ---: | ---: |
 | prefix | A prefix used in the name of all the AWS resources created by this script. | string | | The prefix string must start with a lowercase letter and contain only alphanumeric characters and dashes (-), but cannot end with a dash. |
 | location | The AWS Region to provision all resources in this script | string | "us-east-1" | |
+| ssh_public_key | Name of file with public ssh key for VMs | string | "~/.ssh/id_rsa.pub" | Value is required in order to access your VMs |
 
 ## AWS Authentication
 
@@ -77,7 +78,6 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
-| ssh_public_key | Name of file with public ssh key for VMs | string | "~/.ssh/id_rsa.pub" | Value is required in order to access your VMs |
 | efs_performance_mode | EFS performance mode | string | "generalPurpose" | Supported values are `generalPurpose` or `maxIO` |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
