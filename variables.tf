@@ -79,7 +79,8 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific 
 variable "ssh_public_key" {
-  default = ""
+  description = "ssh public key used to access VM's"
+  default = "~/.ssh/id_rsa.pub"
 }
 
 variable efs_performance_mode {
@@ -392,3 +393,11 @@ variable "storage_type" {
     error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
   }
 }
+
+variable "iac_tooling" {
+  description = "Value used to identify the tooling used to generate this providers infrastructure."
+  type        = string
+  default     = "terraform"
+}
+
+

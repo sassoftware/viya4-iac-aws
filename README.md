@@ -22,31 +22,26 @@ Operational knowledge of:
 - [AWS](https://aws.amazon.com)
 - [Kubernetes](https://kubernetes.io/docs/concepts/)
 
-This tool supports running both from terraform installed on your local machine or via a docker container. The Dockerfile for the container can be found [here](Dockerfile)
-
-#### Terraform
-
-- [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl) - v1.18.8
-- [jq](https://stedolan.github.io/jq/) - v1.6
-- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
-- Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
-
-#### Docker
-- [Docker](https://docs.docker.com/get-docker/)
+### Required
 
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
 - Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
+- Terraform or Docker
+  - #### Terraform
+    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
+    - [kubectl](https://kubernetes.io/docs/s/tools/install-kubectl) - v1.18.8
+    - [jq](https://stedolan.github.io/jq/) - v1.6
+    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console)
+  - #### Docker
+    - [Docker](https://docs.docker.com/get-docker/)
 
-### Optional
-
-- [AWS CLI v2.0](https://aws.amazon.com/cli) comes in handy as an alternative to the AWS Web Console
 
 ## Getting Started
 
-Run these commands in a Terminal session
-
 ### Clone this project
+
+
+Run these commands in a Terminal session:
 
 ```bash
 # clone this repo
@@ -66,56 +61,15 @@ Create a file named `terraform.tfvars` to customize any input variable value. Fo
 
 When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
 
-### Running Terraform Commands
 
-Initialize the Terraform environment for this project by running
+## Creating and Managaging the Cloud Resources
 
-```bash
-terraform init
-```
+Create and manage the AWS cloud resources by either 
 
-This creates a `.terraform` directory locally and initializes Terraform plugins/modules used in this project.
+- using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
+- using a [Docker container](docs/user/DockerUsage.md). 
 
-**Note:** `terraform init` only needs to be run once unless new Terraform plugins/modules were added.
-
-To preview the resources that the Terraform script will create, optionally run
-
-```bash
-terraform plan
-```
-
-When satisfied with the plan and ready to create cloud resources, run
-
-```bash
-terraform apply
-```
-
-`terraform apply` can take a few minutes to complete. Once complete, output values are written to the console. These output values can be displayed late by again running
-
-```bash
-terraform output
-```
-
-### Modifying Cloud Resources
-
-After provisioning the infrastructure if further changes were to be made then add the variable and desired value to terraform.tfvars and run `terrafom apply` again.
-
-### Interacting with Kubernetes cluster
-
-Terraform script writes `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. Now that you have your Kubernetes cluster up and running, here's how to connect to the cluster
-
-```bash
-export KUBECONFIG=./[prefix]-aks-kubeconfig.conf
-kubectl get nodes
-```
-
-**Note** this requires `cluster_endpoint_public_access_cidrs` value to be set.
-
-### Examples
-
-We include several samples - `sample-input*.tfvars` in [examples](./examples) folder to get started. Evaluate the sample files, then review the [CONFIG-VARS.md](docs/CONFIG-VARS.md) to see any other variables can be customized for your needs.
-
-### Troubleshooting
+## Troubleshooting
 
 See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequently found issues.
 

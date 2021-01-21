@@ -71,3 +71,4 @@ fi
 
 mkdir -p /nvme/disk/{cache,saswork}
 chmod 777 -R /nvme
+chown -R nobody:nobody /nvme
