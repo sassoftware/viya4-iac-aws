@@ -18,6 +18,5 @@ RUN yum -y install git openssh jq which \
   && terraform init /viya4-iac-aws
   
 ENV TF_VAR_iac_tooling=docker
-ENV TF_VAR_user_dir=/workspace
 ENTRYPOINT ["/viya4-iac-aws/docker-entrypoint.sh"]
 VOLUME ["/workspace"]
