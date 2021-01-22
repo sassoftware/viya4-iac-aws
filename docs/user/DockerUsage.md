@@ -29,13 +29,13 @@ Note that local references to `$HOME` (or "`~`") need to map to the root directo
 To preview which resources will be created, optionally run
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" \
-  --env-file=$HOME/.aws_docker_creds.env \
-  --volume=$HOME/.ssh:/.ssh \
-  --volume=$(pwd):/workspace \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+  --env-file $HOME/.aws_docker_creds.env \
+  --volume $HOME/.ssh:/.ssh \
+  --volume $(pwd):/workspace \
   viya4-iac-aws \
-  plan -var-file=/workspace/terraform.tfvars \
-       -state=/workspace/terraform.tfstate  
+  plan -var-file /workspace/terraform.tfvars \
+       -state /workspace/terraform.tfstate  
 ```
 
 ## Create Cloud Resources
@@ -43,14 +43,14 @@ docker run --rm -u "$(id -u):$(id -g)" \
 To create the cloud resources, run
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" \
-  --env-file=$HOME/.aws_docker_creds.env \
-  --volume=$HOME/.ssh:/.ssh \
-  --volume=$(pwd):/workspace \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+  --env-file $HOME/.aws_docker_creds.env \
+  --volume $HOME/.ssh:/.ssh \
+  --volume $(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
-        -var-file=/workspace/terraform.tfvars \
-        -state=/workspace/terraform.tfstate 
+        -var-file /workspace/terraform.tfvars \
+        -state /workspace/terraform.tfstate 
 ```
 This command can take a few minutes to complete. Once complete, output values are written to the console.
 
@@ -61,10 +61,10 @@ The kubeconfig file for the cluster is being written to `[prefix]-eks-kubeconfig
 The output values can be displayed anytime again by running
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" \
-  --volume=$(pwd):/workspace \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+  --volume $(pwd):/workspace \
   viya4-iac-aws \
-  output -state=/workspace/terraform.tfstate 
+  output -state /workspace/terraform.tfstate 
  
 ```
 
@@ -73,14 +73,14 @@ docker run --rm -u "$(id -u):$(id -g)" \
 After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run again:
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" \
-  --env-file=$HOME/.aws_docker_creds.env \
-  --volume=$HOME/.ssh:/.ssh \
-  --volume=$(pwd):/workspace \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+  --env-file $HOME/.aws_docker_creds.env \
+  --volume $HOME/.ssh:/.ssh \
+  --volume $(pwd):/workspace \
   viya4-iac-aws \
   apply -auto-approve \
-        -var-file=/workspace/terraform.tfvars \
-        -state=/workspace/terraform.tfstate 
+        -var-file /workspace/terraform.tfvars \
+        -state /workspace/terraform.tfstate 
 ```
 
 
@@ -89,14 +89,14 @@ docker run --rm -u "$(id -u):$(id -g)" \
 To destroy the cloud resources created with the previous commands, run
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" \
-  --env-file=$HOME/.aws_docker_creds.env \
-  --volume=$HOME/.ssh:/.ssh \
-  --volume=$(pwd):/workspace \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+  --env-file $HOME/.aws_docker_creds.env \
+  --volume $HOME/.ssh:/.ssh \
+  --volume $(pwd):/workspace \
   viya4-iac-aws \
   destroy -auto-approve \
-          -var-file=/workspace/terraform.tfvars \
-          -state=/workspace/terraform.tfstate
+          -var-file /workspace/terraform.tfvars \
+          -state /workspace/terraform.tfstate
 ```
 NOTE: The "destroy" action is irreversible.
 
@@ -109,7 +109,7 @@ NOTE: The "destroy" action is irreversible.
 ### Using `kubectl` Example
 
 ```bash
-docker run --rm \
+docker run --rm --user "$(id -u):$(id -g)" --group-add root \
   --env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
   --volume=$(pwd):/workspace \
   --entrypoint kubectl \
