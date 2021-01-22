@@ -110,8 +110,8 @@ NOTE: The "destroy" action is irreversible.
 
 ```bash
 docker run --rm \
-  --env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
-  --volume=$(pwd):/workspace \
+  --env KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
+  --volume $(pwd):/workspace \
   --entrypoint kubectl \
   viya4-iac-gcp get nodes 
 
