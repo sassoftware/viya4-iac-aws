@@ -394,10 +394,3 @@ variable "storage_type" {
   }
 }
 
-variable "iac_tooling" {
-  description = "Value used to identify the tooling used to generate this providers infrastructure."
-  type        = string
-  default     = "terraform"
-}
-
-
