@@ -19,14 +19,14 @@ You can pass the credentials into the Terraform AWS provider either by Terraform
 | :--- | :--- | :--- | ---: |
 | `aws_access_key_id` | `AWS_ACCESS_KEY_ID` | aws key | string |
 | `aws_secret_access_key` | `AWS_SECRET_ACCESS_KEY` | aws key secret | string |
-| `aws_session_token` | `AWS_SESSION_TOKEN` | session token for validating temporary credentials | string |
+| `aws_session_token` | `AWS_SESSION_TOKEN` | session token (only needed when using temporary credentials) | string |
 
 #### Using AWS Profiles
 
 | Terraform Variable | AWS Environment Variable | Description | Type |
 | :--- | :--- | :--- | ---: |
 | `aws_profile` | `AWS_PROFILE` | name of AWS Profile in the credentials file | string |
-| `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `$HOME/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows | string |
+| `aws_shared_credentials_file` | `AWS_SHARED_CREDENTIALS_FILE` | location of credentials file. Default is `~/.aws/credentials` on Linux and macOS, and `"%USERPROFILE%\.aws\credentials"` on Windows | string |
 
 Find more information in the [Terraform AWS Provider documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication).
 
@@ -46,7 +46,6 @@ Example for using Static Credentials:
 # export needed ids and secrets
 export TF_VAR_aws_access_key_id="xxxxxxxxxx"
 export TF_VAR_aws_secret_access_key="xxxxxxxxxx"
-export TF_VAR_aws_session_token="xxxxxxxxxx"
 ```
 
 or
@@ -55,7 +54,6 @@ or
 # export needed ids and secrets
 export AWS_ACCESS_KEY_ID="xxxxxxxxxx"
 export AWS_SECRET_ACCESS_KEY="xxxxxxxxxx"
-export AWS_SESSION_TOKEN="xxxxxxxxxx"
 ```
 
 **TIP:** These commands can be stored in a file outside of this repo in a secure file.
@@ -77,7 +75,6 @@ Example for using AWS Profiles:
 ```bash
 # Needed ids and secrets for docker
 AWS_PROFILE="xxxxxxxxxx"
-AWS_SHARED_CREDENTIALS_FILE="xxxxxxxxxx"
 ```
 
 Store these commands outside of this repo in a secure file, for example `$HOME/.aws_docker_creds.env` . (Protect that file so only you have read access to it.) Now each time you invoke the container, specify the file in the `--env-file` Dpcker option, e.g.
