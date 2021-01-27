@@ -6,7 +6,7 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
 
   >- Amazon VPC and Security Group
   >- Managed Amazon Elastic Kubernetes Service(EKS)
-  >- Managed Node Groups with required Labels and Taints
+  >- Self-Managed Node Groups with required Labels and Taints
   >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
   >- Amazon Elastic Block Storage (EBS)
   >- Amazon Elastic File System(EFS)
