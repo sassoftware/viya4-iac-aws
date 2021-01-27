@@ -44,6 +44,7 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
     "node_labels" = { 
       "workload.sas.com/class" = "cas" 
+      "workload.sas.com/node"  = ""
     }
     "custom_data" = "./files/additional_userdata.sh"
   },
@@ -57,6 +58,7 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
     "node_labels" = {
       "workload.sas.com/class"        = "compute"
+      "workload.sas.com/node"         = ""
       "launcher.sas.com/prepullImage" = "sas-programming-environment"
     }
     "custom_data" = ""
@@ -71,6 +73,7 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
     "node_labels" = {
       "workload.sas.com/class"        = "connect"
+      "workload.sas.com/node"         = ""
       "launcher.sas.com/prepullImage" = "sas-programming-environment"
     }
     "custom_data" = ""
@@ -85,6 +88,7 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
     "node_labels" = { 
       "workload.sas.com/class" = "stateless" 
+      "workload.sas.com/node"  = ""
     }
     "custom_data" = ""
   },   
@@ -98,6 +102,7 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
     "node_labels" = { 
       "workload.sas.com/class" = "stateful" 
+      "workload.sas.com/node"  = ""
     }
     "custom_data" = ""
   }
