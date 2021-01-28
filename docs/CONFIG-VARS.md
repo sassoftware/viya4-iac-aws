@@ -114,7 +114,7 @@ Additional node pools can be created separate from the default nodepool. This is
 | min_nodes | Minimum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | max_nodes | Maximum number of nodes for the nodepool | number | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | |
-| node_labels | Labels to add to the nodepool VMs | map | On nodes you wish to run SAS pods you will need to include this lable: `"workload.sas.com/node"  = ""` |
+| node_labels | Labels to add to the nodepool VMs | map | On nodes you wish to run SAS pods you will need to include this label: `"workload.sas.com/node"  = ""` |
 | custom_data | Additional userdata that will be appended to the default userdata. | string | The value must be an empty string "" or the path to a file containing a `bash` script snippet that will be executed on the node pool. |
 
 ## Storage
