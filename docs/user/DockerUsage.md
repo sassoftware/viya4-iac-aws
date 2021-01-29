@@ -51,7 +51,7 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
   apply -auto-approve \
         -var-file /workspace/terraform.tfvars \
         -state /workspace/terraform.tfstate 
-```
+
 This command can take a few minutes to complete. Once complete, output values are written to the console.
 
 The kubeconfig file for the cluster is being written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
@@ -83,8 +83,7 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
         -state /workspace/terraform.tfstate 
 ```
 
-
-## Tear Down Resources 
+## Tear Down Resources
 
 To destroy the cloud resources created with the previous commands, run
 
@@ -97,7 +96,7 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
   destroy -auto-approve \
           -var-file /workspace/terraform.tfvars \
           -state /workspace/terraform.tfstate
-```
+
 NOTE: The "destroy" action is irreversible.
 
 ## Interacting with Kubernetes cluster
