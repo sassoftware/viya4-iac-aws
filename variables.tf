@@ -147,7 +147,9 @@ variable "default_nodepool_taints" {
 
 variable "default_nodepool_labels" {
   type    = map
-  default = {}
+  default = {
+    "kubernetes.azure.com/mode" = "system"
+  }
 }
 
 variable "default_nodepool_custom_data" {
