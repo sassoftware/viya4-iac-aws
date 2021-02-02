@@ -279,6 +279,11 @@ variable "jump_vm_admin" {
   default     = "jumpuser"
 }
 
+variable "jump_vm_type" {
+  description = "Jump VM type"
+  default    = "m5.4xlarge"
+}
+
 variable "nfs_raid_disk_size" {
   description = "Size in Gb for each disk of the RAID0 cluster, when storage_type=standard"
   default     = 128
@@ -301,6 +306,10 @@ variable "nfs_vm_admin" {
   default     = "nfsuser"
 }
 
+variable "nfs_vm_type" {
+  description = "NFS VM type"
+  default    = "m5.4xlarge"
+}
 
 variable "os_disk_size" {
   default = 64
@@ -391,6 +400,7 @@ variable "postgres_options" {
   }))
   default = []
 }
+
 variable "storage_type" {
   type    = string
   default = "standard"

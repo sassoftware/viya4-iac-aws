@@ -238,6 +238,7 @@ module "jump" {
   os_disk_iops                  = var.os_disk_iops
 
   create_vm      = var.create_jump_vm
+  vm_type        = var.jump_vm_type
   vm_admin       = var.jump_vm_admin
   ssh_public_key = file(var.ssh_public_key)
 
@@ -300,6 +301,7 @@ module "nfs" {
   data_disk_availability_zone = data.aws_availability_zones.available.names[0]
 
   create_vm      = var.storage_type == "standard" ? true : false
+  vm_type        = var.nfs_vm_type
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = file(var.ssh_public_key)
 
