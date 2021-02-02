@@ -359,7 +359,8 @@ variable "postgres_administrator_login" {
 }
 
 variable "postgres_administrator_password" {
-  default = ""
+  default = null
+  #TODO: add validation
 }
 
 variable "postgres_db_name" {

@@ -2,34 +2,51 @@
 
 ## Prereqs
 
-- Make sure you have Docker [installed on your workstation](../../README.md#docker).
+- Docker [installed on your workstation](../../README.md#docker).
 
-- Prepare a file with authentication info, as described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md)
+## Preparation
 
-## Build the docker image
+### Docker Image
 
-Run the following command to create the `viya4-iac-aws` docker image that will be used in subsequent steps:
+Run the following command to create the `viya4-iac-aws` Docker image using the provided [Dockerfile](../../Dockerfile). 
 
 ```bash
 docker build -t viya4-iac-aws .
 ```
 
-NOTE: The Dockerfile for the container can be found [here](../../Dockerfile).
+The Docker image `viya4-iac-aws` will contain Terraform and 'kubectl' executables. Entrypoint entrypoint for the Docker image is `terraform` that will be run with subcommands in the subsequent steps.
 
-## Preparation
+### Docker Environment File For AWS Authentication 
+
+Follow either one of the authentication methods described in [Authenticating Terraform to access Azure](./TerraformAWSAuthentication.md) to use with container invocation. Store these values outside of this repo in a secure file, for example
+`$HOME/.aws_docker_creds.env.` Protect that file so only you have read access to it. 
+
+**NOTE:** Do not use quotes around the values in the file, and make sure to avoid any trailing blanks!
+
+Now each time you invoke the container, specify the file with the [`--env-file` option](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file) to pass on AWS credentials to the container.
+
+
+### Docker Volume Mounts
 
 Add volume mounts to the `docker run` command for all files and directories that must be accessible from inside the container.
+- `--volume=$HOME/.ssh:/.ssh` for [`ssh_public_key`](../CONFIG-VARS.md#required-variables) variable in the `terraform.tfvars` file
+- `--volume=$(pwd):/workspace` for local directory where `terraform.tfvars` file resides and where `terraform.tfstate` file will be written. To grant Docker, permission to write to the local directory use [`--user` option](https://docs.docker.com/engine/reference/run/#user)
 
-The most common file references are the value of the [`ssh_public_key`](./CONFIG-VARS.md#required-variables) variable in the `terraform.tfvars` file and the value of `AWS_SHARED_CREDENTIALS_FILE` (if using authentication basedon `AWS_PROFILE`, see [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) for details).
+**NOTE:** Local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
 
-Note that local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
+### Variable Definitions (.tfvars) File
 
-## Preview Cloud Resources (optional)
+Prepare your `terraform.tfvars` file, as described in [Customize Input Values](../../README.md#customize-input-values).
 
-To preview which resources will be created, optionally run
+## Running Terraform Commands
+
+### Preview Cloud Resources (optional)
+
+To preview the cloud resources before creating, run the Docker image `viya4-iac-aws` with the `plan` command
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
   --env-file $HOME/.aws_docker_creds.env \
   --volume $HOME/.ssh:/.ssh \
   --volume $(pwd):/workspace \
@@ -38,12 +55,13 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
        -state /workspace/terraform.tfstate  
 ```
 
-## Create Cloud Resources
+### Create Cloud Resources
 
-To create the cloud resources, run
+To create the cloud resources, run the Docker image `viya4-iac-aws` with the `apply` command and `-auto-approve` option
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
   --env-file $HOME/.aws_docker_creds.env \
   --volume $HOME/.ssh:/.ssh \
   --volume $(pwd):/workspace \
@@ -51,29 +69,28 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
   apply -auto-approve \
         -var-file /workspace/terraform.tfvars \
         -state /workspace/terraform.tfstate 
+```
+This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. The 'KUBECONFIG' file for the cluster is written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
 
-This command can take a few minutes to complete. Once complete, output values are written to the console.
+### Display Terraform Outputs
 
-The kubeconfig file for the cluster is being written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
-
-## Display Outputs
-
-The output values can be displayed anytime again by running
+Once the cloud resources have been created with `apply` command, to display Terraform output values, run the Docker image `viya4-iac-aws` with `output` command
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
   --volume $(pwd):/workspace \
   viya4-iac-aws \
   output -state /workspace/terraform.tfstate 
- 
 ```
 
-## Modify Cloud Resources
+### Modify Cloud Resources
 
-After provisioning the infrastructure if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run again:
+After provisioning the infrastructure if further changes were to be made then update corresponding variables with desired values in `terraform.tfvars` and run the Docker image `viya4-iac-aws` with the `apply` command and `-auto-approve` option again
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
   --env-file $HOME/.aws_docker_creds.env \
   --volume $HOME/.ssh:/.ssh \
   --volume $(pwd):/workspace \
@@ -83,12 +100,13 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
         -state /workspace/terraform.tfstate 
 ```
 
-## Tear Down Resources
+### Tear Down Resources
 
-To destroy the cloud resources created with the previous commands, run
+To destroy all the cloud resources created with the previous commands, run the Docker image `viya4-iac-aws` with the `destroy` command and `-auto-approve` option
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
   --env-file $HOME/.aws_docker_creds.env \
   --volume $HOME/.ssh:/.ssh \
   --volume $(pwd):/workspace \
@@ -96,21 +114,23 @@ docker run --rm --user "$(id -u):$(id -g)" --group-add root \
   destroy -auto-approve \
           -var-file /workspace/terraform.tfvars \
           -state /workspace/terraform.tfstate
-
-NOTE: The "destroy" action is irreversible.
+```
+**NOTE:** The 'destroy' action is irreversible.
 
 ## Interacting with Kubernetes cluster
 
 [Creating the cloud resources](#create-cloud-resources) writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf`. When the Kubernetes cluster is ready, use `--entrypoint kubectl` to interact with the cluster.
 
-**Note** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
+**NOTE** this requires [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) value to be set to your local ip or CIDR range.
 
-### Using `kubectl` Example
+### Example Using `kubectl`
+
+To run `kubectl get nodes` command with the Docker image `viya4-iac-aws` to list cluster nodes, switch entrypoint to kubectl (`--entrypoint kubectl`), provide 'KUBECONFIG' file (`--env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf`) and pass kubectl subcommands(`get nodes`). For e.g., to run `kubectl get nodes`
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" --group-add root \
-  --volume $(pwd)/<your prefix>-eks-kubeconfig.conf:/.kube/config \
+docker run --rm \
+  --env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
+  --volume=$(pwd):/workspace \
   --entrypoint kubectl \
-  viya4-iac-aws get nodes 
-
+  viya4-iac-aws get nodes
 ```
