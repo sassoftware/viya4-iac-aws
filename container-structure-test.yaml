@@ -14,15 +14,15 @@ commandTests:
   - name: "terraform version"
     command: "terraform"
     args: ["--version"]
-    expectedOutput: ["Terraform v0.13.4"]
+    expectedOutput: ["Terraform v0.13.6"]
   - name: "aws-cli version"
     command: "sh"
     args:
       - -c
       - |
         aws --version
-    expectedOutput: ["aws-cli/2.1.7"]
+    expectedOutput: ["aws-cli/2.1.20"]
 
 metadataTest:
   workdir: "/viya4-iac-aws"
-  entrypoint: ["/bin/terraform"]
+  entrypoint: ["/viya4-iac-aws/docker-entrypoint.sh"]

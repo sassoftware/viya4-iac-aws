@@ -1,4 +1,4 @@
-# #cloud-config
+#cloud-config
 system_info:
   default_user:
     name: ${vm_admin}

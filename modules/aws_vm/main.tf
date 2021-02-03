@@ -78,6 +78,13 @@ resource "aws_instance" "vm" {
 
 }
 
+resource "aws_eip" "eip" {
+  count = (var.create_vm && var.create_public_ip) ? 1 : 0
+  vpc = true
+  instance = aws_instance.vm.0.id
+  tags = merge(var.tags, map("Name", "${var.name}-eip"))
+}
+
 resource "aws_volume_attachment" "data-volume-attachment" {
   count       = var.create_vm ? var.data_disk_count : 0
   device_name = element(local.device_name, count.index)

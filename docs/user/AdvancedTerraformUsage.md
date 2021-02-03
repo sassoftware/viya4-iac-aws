@@ -3,14 +3,15 @@
 
 ## Terraform - Plan
 
-Once Terraform project is initialized, ```terraform plan``` command can be run multiple times to generate a plan to review prior to running ```terraform apply``` that actually creating cloud resources. This is helpful to 
+Once Terraform project is initialized, ```terraform plan``` command can be run multiple times to generate a plan to review prior to running ```terraform apply``` that actually creating cloud resources. This is helpful to
+
 1) verify that the Terraform script runs with no errors
 2) review the cloud resources and dependencies before creating them
 3) when run after infrastructure has been created with '*terraform apply*' it diffs between the local definitions and the actual infrastructure 
 
 Terraform accepts inputs when prompted or you can conveniently pass them into the command line with ```-var``` or ```-var-file``` options. This overrides any default values in ```variables.tf```
 
-```
+```bash
 # to generate a terraform plan
 terraform plan -var-file=sample-input.tfvars -out ./my-viya4-iac.plan
 ```
@@ -44,4 +45,3 @@ To display the outputs captured by terraform you can use the `terraform output` 
     terraform output
     # to get the value of a specific output variable
     terraform output <output-variable>
-

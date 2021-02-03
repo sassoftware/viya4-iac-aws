@@ -79,7 +79,7 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific 
 variable "ssh_public_key" {
-  description = "ssh public key used to access VM's"
+  description = "ssh public key used to access VMs"
   default = "~/.ssh/id_rsa.pub"
 }
 
@@ -147,7 +147,9 @@ variable "default_nodepool_taints" {
 
 variable "default_nodepool_labels" {
   type    = map
-  default = {}
+  default = {
+    "kubernetes.azure.com/mode" = "system"
+  }
 }
 
 variable "default_nodepool_custom_data" {
@@ -272,6 +274,11 @@ variable "jump_vm_admin" {
   default     = "jumpuser"
 }
 
+variable "jump_vm_type" {
+  description = "Jump VM type"
+  default    = "m5.4xlarge"
+}
+
 variable "nfs_raid_disk_size" {
   description = "Size in Gb for each disk of the RAID0 cluster, when storage_type=standard"
   default     = 128
@@ -294,6 +301,10 @@ variable "nfs_vm_admin" {
   default     = "nfsuser"
 }
 
+variable "nfs_vm_type" {
+  description = "NFS VM type"
+  default    = "m5.4xlarge"
+}
 
 variable "os_disk_size" {
   default = 64
@@ -354,7 +365,8 @@ variable "postgres_administrator_login" {
 }
 
 variable "postgres_administrator_password" {
-  default = ""
+  default = null
+  #TODO: add validation
 }
 
 variable "postgres_db_name" {
@@ -384,6 +396,7 @@ variable "postgres_options" {
   }))
   default = []
 }
+
 variable "storage_type" {
   type    = string
   default = "standard"
@@ -393,4 +406,3 @@ variable "storage_type" {
     error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
   }
 }
-

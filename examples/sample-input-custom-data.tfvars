@@ -6,6 +6,7 @@
 # These required variables' values MUST be provided by the User
 prefix                                  = "<prefix-value>"
 location                                = "<aws-location-value>" # e.g., "us-east-1"
+ssh_public_key                          = "~/.ssh/id_rsa.pub"
 # ****************  REQUIRED VARIABLES  ****************
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
@@ -17,9 +18,6 @@ default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 
 # Tags for all tagable items in your cluster.
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
-
-# SSH public key for VM's
-ssh_public_key                          = "~/.ssh/id_rsa.pub"
 
 ## Cluster config
 kubernetes_version                      = "1.18"
@@ -108,6 +106,3 @@ create_jump_vm                        = true
 # Cloud Postgres values config
 create_postgres                       = true # set this to "false" when using internal Crunchy Postgres and AWS Postgres is NOT needed
 postgres_administrator_password       = "mySup3rS3cretPassw0rd"
-
-# Cloud Container Registry - NOT IMPLEMENTED
-# create_container_registry             = false

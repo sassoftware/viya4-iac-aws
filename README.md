@@ -6,13 +6,14 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
 
   >- Amazon VPC and Security Group
   >- Managed Amazon Elastic Kubernetes Service(EKS)
-  >- Managed Node Groups with required Labels and Taints
+  >- Self-Managed Node Groups with required Labels and Taints
   >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
-  >- Amazon Elastic Block Storage (EBS)
+  >- Amazon Elastic Block Storage (EBS) for NFS
   >- Amazon Elastic File System(EFS)
   >- Amazon Relational Database Service(RDS)
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
+
 ## Prerequisites
 
 Operational knowledge of:
@@ -27,19 +28,21 @@ Operational knowledge of:
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
 - Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
 - Terraform or Docker
+  
   - #### Terraform
-    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.4
-    - [kubectl](https://kubernetes.io/docs/s/tools/install-kubectl) - v1.18.8
-    - [jq](https://stedolan.github.io/jq/) - v1.6
-    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console)
-  - #### Docker
-    - [Docker](https://docs.docker.com/get-docker/)
 
+    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.6
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.18.8
+    - [jq](https://stedolan.github.io/jq/) - v1.6
+    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console) - v2.1.20
+  
+  - #### Docker
+  
+    - [Docker](https://docs.docker.com/get-docker/)
 
 ## Getting Started
 
 ### Clone this project
-
 
 Run these commands in a Terminal session:
 
@@ -61,13 +64,12 @@ Create a file named `terraform.tfvars` to customize any input variable value. Fo
 
 When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
 
-
 ## Creating and Managaging the Cloud Resources
 
-Create and manage the AWS cloud resources by either 
+Create and manage the AWS cloud resources by either
 
 - using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
-- using a [Docker container](docs/user/DockerUsage.md). 
+- using a [Docker container](docs/user/DockerUsage.md).
 
 ## Troubleshooting
 

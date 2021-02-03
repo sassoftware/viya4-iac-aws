@@ -1,6 +1,6 @@
 ## AWS-EKS
 #
-# Terraform Registry : https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/12.1.0
+# Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
@@ -8,10 +8,33 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.12.0"
+      version = "3.24.1"
+    }
+    random = {
+      source = "hashicorp/random"
+      version = "3.0.1"
+    }  
+    local = {
+      source = "hashicorp/local"
+      version = "2.0.0"
+    }
+    null = {
+      source = "hashicorp/null"
+      version = "3.0.0"
+    }
+    template = {
+      source = "hashicorp/template"
+      version = "2.2.0"
+    }
+    external = {
+      source = "hashicorp/external"
+      version = "2.0.0"
+    }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = "1.13.3"
     }
   }
-
 }
 
 provider "aws" {
@@ -23,26 +46,6 @@ provider "aws" {
   token                   = var.aws_session_token
 }
 
-provider "random" {
-  version = "~> 2.1"
-}
-
-provider "local" {
-  version = "~> 1.2"
-}
-
-provider "null" {
-  version = "~> 2.1"
-}
-
-provider "template" {
-  version = "~> 2.1"
-}
-
-provider "external" {
-  version = "~> 2.0" 
-}
-
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
 }
@@ -52,6 +55,8 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 
 data "aws_availability_zones" "available" {}
+
+data "aws_caller_identity" "terraform" {}
 
 locals {
   cluster_name                         = "${var.prefix}-eks"
@@ -98,13 +103,12 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
   load_config_file       = false
-  version                = "~> 1.11"
 }
 
 # VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.55.0"
+  version = "2.66.0"
 
   name = "${var.prefix}-vpc"
   cidr = var.vpc_cidr
@@ -234,6 +238,7 @@ module "jump" {
   os_disk_iops                  = var.os_disk_iops
 
   create_vm      = var.create_jump_vm
+  vm_type        = var.jump_vm_type
   vm_admin       = var.jump_vm_admin
   ssh_public_key = file(var.ssh_public_key)
 
@@ -296,6 +301,7 @@ module "nfs" {
   data_disk_availability_zone = data.aws_availability_zones.available.names[0]
 
   create_vm      = var.storage_type == "standard" ? true : false
+  vm_type        = var.nfs_vm_type
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = file(var.ssh_public_key)
 
@@ -305,7 +311,7 @@ module "nfs" {
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "~> 2.0"
+  version = "3.7.0"
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -431,6 +437,7 @@ resource "local_file" "kubeconfig" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
+  version                               = "13.2.1"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
@@ -456,7 +463,7 @@ module "eks" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "~> 2.18.0"
+  version = "2.20.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 
