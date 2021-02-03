@@ -2,7 +2,7 @@
 
 In order to create and destroy AWS resources on your behalf, Terraform needs a AWS account that has sufficient permissions to perform all the actions defined in the Terraform manifest. You will need `AWS account IAM user` that has at a mininum the permissions listed in [this policy](../../files/devops-iac-eks-policy.json).
 
-You can either use static credentials (including temporary credentials with session token) or a [profile with credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.htmll)
+You can either use static credentials (including temporary credentials with session token) or a [profile with credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 
 You can pass AWS credentials to Terraform either using [AWS environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) or [TF_VAR_name](https://www.terraform.io/docs/cli/config/environment-variables.html#tf_var_name) environment variables. Follow these links for more information on how to create and retrieve AWS credentials to configure Terraform access to AWS.
 - [Creating an IAM user in your AWS account](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html)
@@ -22,6 +22,7 @@ TF_VAR_aws_access_key_id=<your_aws_access_key_id>
 TF_VAR_aws_secret_access_key=<your_aws_secret_access_key>
 TF_VAR_aws_session_token=<your_aws_session_token>
 ```
+**NOTE** `AWS_SESSION_TOKEN` is optional and only required when using temporary AWS credentials, see [AWS documention](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) on environment variables.
 
 ## Using AWS Profile With Credentials File
 

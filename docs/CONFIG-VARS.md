@@ -47,7 +47,7 @@ You can use either static credentials, or the name of an AWS Profile. If both ar
 | :--- | :--- | :--- | :--- | :--- |
 | aws_access_key_id | static credential key | string | "" | |
 | aws_secret_access_key | static credential secret | string | "" | |
-| aws_session_token | session token for validating temporary credentials | string | "" | |
+| aws_session_token | session token for validating temporary AWS credentials | string | "" | required only when using temporary AWS credentials|
 
 #### Using AWS Profile
 
