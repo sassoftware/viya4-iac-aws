@@ -14,7 +14,7 @@ Run the following command to create the `viya4-iac-aws` Docker image using the p
 docker build -t viya4-iac-aws .
 ```
 
-The Docker image `viya4-iac-aws` will contain Terraform and 'kubectl' executables. Entrypoint entrypoint for the Docker image is `terraform` that will be run with subcommands in the subsequent steps.
+The Docker image `viya4-iac-aws` will contain Terraform and 'kubectl' executables. Entrypoint for the Docker image is `terraform` that will be run with subcommands in the subsequent steps.
 
 ### Docker Environment File For AWS Authentication 
 

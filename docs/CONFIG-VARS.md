@@ -30,7 +30,7 @@ Terraform input variables can be set in the following ways:
 ## Required Variables
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | prefix | A prefix used in the name of all the AWS resources created by this script. | string | | The prefix string must start with a lowercase letter and contain only alphanumeric characters and dashes (-), but cannot end with a dash. |
 | location | The AWS Region to provision all resources in this script | string | "us-east-1" | |
 | ssh_public_key | Name of file with public ssh key for VMs | string | "~/.ssh/id_rsa.pub" | Value is required in order to access your VMs |
@@ -44,7 +44,7 @@ You can use either static credentials, or the name of an AWS Profile. If both ar
 #### Using Static Credentials
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | aws_access_key_id | static credential key | string | "" | |
 | aws_secret_access_key | static credential secret | string | "" | |
 | aws_session_token | session token for validating temporary credentials | string | "" | |
@@ -52,9 +52,9 @@ You can use either static credentials, or the name of an AWS Profile. If both ar
 #### Using AWS Profile
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | aws_profile | name of AWS Profile in the credentials file | string | "" | |
-| aws_shared_credentials_file | path to credentials file | string | [`~/.aws/credentials` on Linux and macOS](https://docs.aws.amazon.com/credref/latest/refdocs/file-location.html) | |
+| aws_shared_credentials_file | path to credentials file | string | [`~/.aws/credentials` on Linux and macOS](https://docs.aws.amazon.com/credref/latest/refdocs/file-location.html) | can be ignored when using the default value |
 
 ## Admin Access
 
@@ -66,7 +66,7 @@ Contact your Network System Administrator to find the public CIDR range of your 
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use and empty list `[]` to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP Ranges allowed to access all created cloud resources | list of strings | | Use to to set a default for all Resources |
 | cluster_endpoint_public_access_cidrs | IP Ranges allowed to access the AKS cluster api | list of strings | | for client admin access to the cluster, e.g. with `kubectl` |
 | vm_public_access_cidrs | IP Ranges allowed to access the VMs | list of strings | | opens port 22 for SSH access to the jump and/or nfs VM |
@@ -75,7 +75,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 ## General
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
@@ -87,7 +87,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 ### Default Nodepool
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
-| :--- | ---: | ---: | ---: | ---: |
+| :--- | :--- | :--- | :--- | :--- |
 | default_nodepool_vm_type | Type of the default nodepool VMs | string | "m5.2xlarge" | |
 | default_nodepool_os_disk_type | Disk type for default nodepool VMs | string | gp2 | |
 | default_nodepool_os_disk_size | Disk size for default nodepool VMs in GB | number | 200 ||
@@ -123,7 +123,7 @@ Additional node pools can be created separate from the default nodepool. This is
 
 ### NFS Server
 
-When `storage_type=standard`, a NFS Server VM is created, only when these variables are applicable.
+When `storage_type=standard`, a NFS Server VM is created and these variables are applicable.
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -136,7 +136,7 @@ When `storage_type=standard`, a NFS Server VM is created, only when these variab
 
 ### AWS Elastic File System (EFS)
 
-When `storage_type=has`, a NFS Server VM is created, only when these variables are applicable.
+When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) service is created and these variables are applicable.
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
