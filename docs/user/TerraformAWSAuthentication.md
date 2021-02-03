@@ -11,27 +11,34 @@ You can pass AWS credentials to Terraform either using [AWS environment variable
 ## Using AWS Static Credentials
 
 You can pass values to Terraform variables with these **AWS environment variables**
+
 ```bash
 AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key>
 AWS_SESSION_TOKEN=<your_aws_session_token>
 ```
+
 or **TF_VAR_name environment variables**
+
 ```bash
 TF_VAR_aws_access_key_id=<your_aws_access_key_id>
 TF_VAR_aws_secret_access_key=<your_aws_secret_access_key>
 TF_VAR_aws_session_token=<your_aws_session_token>
 ```
+
 **NOTE** `AWS_SESSION_TOKEN` is optional and only required when using temporary AWS credentials, see [AWS documention](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) on environment variables.
 
 ## Using AWS Profile With Credentials File
 
 You can pass values to Terraform variables with these **AWS environment variables**
+
 ```bash
 AWS_PROFILE=<your_aws_profile_name>
 AWS_SHARED_CREDENTIALS_FILE=~/.aws/credentials
 ```
+
 or **TF_VAR_name environment variables**
+
 ```bash
 TF_VAR_aws_profile=<your_aws_profile_name>
 TF_VAR_aws_shared_credentials_file=~/.aws/credentials

@@ -8,7 +8,7 @@
 
 ### Docker Image
 
-Run the following command to create the `viya4-iac-aws` Docker image using the provided [Dockerfile](../../Dockerfile). 
+Run the following command to create the `viya4-iac-aws` Docker image using the provided [Dockerfile](../../Dockerfile).
 
 ```bash
 docker build -t viya4-iac-aws .
@@ -16,19 +16,19 @@ docker build -t viya4-iac-aws .
 
 The Docker image `viya4-iac-aws` will contain Terraform and 'kubectl' executables. Entrypoint for the Docker image is `terraform` that will be run with subcommands in the subsequent steps.
 
-### Docker Environment File For AWS Authentication 
+### Docker Environment File For AWS Authentication
 
 Follow either one of the authentication methods described in [Authenticating Terraform to access Azure](./TerraformAWSAuthentication.md) to use with container invocation. Store these values outside of this repo in a secure file, for example
-`$HOME/.aws_docker_creds.env.` Protect that file so only you have read access to it. 
+`$HOME/.aws_docker_creds.env.` Protect that file so only you have read access to it.
 
 **NOTE:** Do not use quotes around the values in the file, and make sure to avoid any trailing blanks!
 
 Now each time you invoke the container, specify the file with the [`--env-file` option](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file) to pass on AWS credentials to the container.
 
-
 ### Docker Volume Mounts
 
 Add volume mounts to the `docker run` command for all files and directories that must be accessible from inside the container.
+
 - `--volume=$HOME/.ssh:/.ssh` for [`ssh_public_key`](../CONFIG-VARS.md#required-variables) variable in the `terraform.tfvars` file
 - `--volume=$(pwd):/workspace` for local directory where `terraform.tfvars` file resides and where `terraform.tfstate` file will be written. To grant Docker, permission to write to the local directory use [`--user` option](https://docs.docker.com/engine/reference/run/#user)
 
@@ -70,6 +70,7 @@ docker run --rm --group-add root \
         -var-file /workspace/terraform.tfvars \
         -state /workspace/terraform.tfstate 
 ```
+
 This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. The 'KUBECONFIG' file for the cluster is written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
 
 ### Display Terraform Outputs
@@ -115,6 +116,7 @@ docker run --rm --group-add root \
           -var-file /workspace/terraform.tfvars \
           -state /workspace/terraform.tfstate
 ```
+
 **NOTE:** The 'destroy' action is irreversible.
 
 ## Interacting with Kubernetes cluster

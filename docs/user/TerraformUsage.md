@@ -20,7 +20,6 @@ Follow either one of the authentication methods described in [Authenticating Ter
 
 Prepare your `terraform.tfvars` file, as described in [Customize Input Values](../../README.md#customize-input-values).
 
-
 ## Running Terraform Commands
 
 ### Initialize Terraform Environment
@@ -42,6 +41,7 @@ To preview the resources that the Terraform script will create, run
 ```bash
 terraform plan
 ```
+
 ### Create Cloud Resources
 
 To create cloud resources, run
@@ -51,7 +51,6 @@ terraform apply
 ```
 
 This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. The 'KUBECONFIG' file for the cluster is written to `[prefix]-eks-kubeconfig.conf` in the current directory `$(pwd)`.
-
 
 ### Display Terrafrom Output
 
@@ -65,7 +64,6 @@ terraform output
 
 After provisioning the infrastructure, if further changes were to be made then add the variable and desired value to `terraform.tfvars` and run `terrafom apply` again.
 
-
 ### Tear Down Cloud Resources
 
 To destroy all the cloud resources created with the previous comamnds, run
@@ -73,6 +71,7 @@ To destroy all the cloud resources created with the previous comamnds, run
 ```bash
 terraform destroy
 ```
+
 **NOTE:** The '*destroy*' action is irreversible.
 
 ## Interacting with the Kubernetes cluster
