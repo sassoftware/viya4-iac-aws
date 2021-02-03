@@ -8,7 +8,7 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
   >- Managed Amazon Elastic Kubernetes Service(EKS)
   >- Self-Managed Node Groups with required Labels and Taints
   >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
-  >- Amazon Elastic Block Storage (EBS)
+  >- Amazon Elastic Block Storage (EBS) for NFS
   >- Amazon Elastic File System(EFS)
   >- Amazon Relational Database Service(RDS)
 
@@ -32,7 +32,7 @@ Operational knowledge of:
   - #### Terraform
 
     - [Terraform](https://www.terraform.io/downloads.html) - v0.13.6
-    - [kubectl](https://kubernetes.io/docs/s/tools/install-kubectl) - v1.18.8
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.18.8
     - [jq](https://stedolan.github.io/jq/) - v1.6
     - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console) - v2.1.20
   
@@ -66,10 +66,10 @@ When using a variable definition file other than `terraform.tfvars`, see [Advanc
 
 ## Creating and Managaging the Cloud Resources
 
-Create and manage the AWS cloud resources by either 
+Create and manage the AWS cloud resources by either
 
 - using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
-- using a [Docker container](docs/user/DockerUsage.md). 
+- using a [Docker container](docs/user/DockerUsage.md).
 
 ## Troubleshooting
 
