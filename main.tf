@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.24.1"
+      version = "3.27.0"
     }
     random = {
       source = "hashicorp/random"
@@ -32,7 +32,7 @@ terraform {
     }
     kubernetes = {
       source = "hashicorp/kubernetes"
-      version = "1.13.3"
+      version = "2.0.2"
     }
   }
 }
@@ -71,7 +71,7 @@ locals {
 }
 
 data "external" "git_hash" {
-  program = ["git", "log", "-1", "--format=format:{ \"git-hash\": \"%H\" }"]
+  program = ["files/iac_git_info.sh"]
 }
 
 data "external" "iac_tooling_version" {
@@ -89,10 +89,10 @@ resource "kubernetes_config_map" "sas_iac_buildinfo" {
     timestamp   = chomp(timestamp())
     iac-tooling = var.iac_tooling
     terraform   = <<EOT
-      version: ${lookup(data.external.iac_tooling_version.result, "terraform_version")}
-      revision: ${lookup(data.external.iac_tooling_version.result, "terraform_revision")}
-      provider-selections: ${lookup(data.external.iac_tooling_version.result, "provider_selections")}
-      outdated: ${lookup(data.external.iac_tooling_version.result, "terraform_outdated")}
+version: ${lookup(data.external.iac_tooling_version.result, "terraform_version")}
+revision: ${lookup(data.external.iac_tooling_version.result, "terraform_revision")}
+provider-selections: ${lookup(data.external.iac_tooling_version.result, "provider_selections")}
+outdated: ${lookup(data.external.iac_tooling_version.result, "terraform_outdated")}
 EOT
   }
 }
@@ -102,13 +102,12 @@ provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
-  load_config_file       = false
 }
 
 # VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.66.0"
+  version = "2.70.0"
 
   name = "${var.prefix}-vpc"
   cidr = var.vpc_cidr
@@ -311,7 +310,7 @@ module "nfs" {
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "3.7.0"
+  version = "3.8.0"
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -437,7 +436,7 @@ resource "local_file" "kubeconfig" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "13.2.1"
+  version                               = "14.0.0"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
