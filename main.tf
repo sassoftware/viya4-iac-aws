@@ -243,6 +243,9 @@ module "jump" {
   ssh_public_key = file(var.ssh_public_key)
 
   cloud_init = data.template_cloudinit_config.jump.rendered
+
+  depends_on = [module.nfs]
+
 }
 
 resource "aws_security_group_rule" "vms" {

@@ -370,7 +370,7 @@ variable "postgres_administrator_password" {
 }
 
 variable "postgres_db_name" {
-  default = "SharedServices"
+  default = ""
 }
 
 variable "postgres_multi_az" {

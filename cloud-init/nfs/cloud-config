@@ -7,7 +7,7 @@ system_info:
 # Wait for disks to be mounted then continue
 #
 bootcmd:
-  - while [ `lsblk -frn | grep -v 'nvme0' | wc -l` -lt 4 ]; do sleep 5; done
+  - while [ `lsblk -frn | grep 'nvme' | grep -v 'nvme0' | wc -l` -lt 4 ]; do sleep 5; done
 
 #
 # First we'll update the repo and then update the OS.
@@ -19,8 +19,8 @@ package_ugrade: true
 # Install packages
 #
 packages:
-  - nfs-utils
-  - mdadm
+  - tree
+  - nfs-kernel-server
 
 #
 # Create mount directories
@@ -30,26 +30,18 @@ runcmd:
   # Create /export directory with the correct owner/permissions
   #
   - mkdir /export
-  - chown nobody:nobody /export -R
+  - chown nobody:nogroup /export -R
   - chmod -R 0777 /export
   #
   # Update systemctl services
   #
-  - systemctl enable rpcbind
-  - systemctl enable nfs-server
-  - systemctl enable nfs-lock
-  - systemctl enable nfs-idmap
-  - systemctl start rpcbind
-  - systemctl start nfs-server
-  - systemctl start nfs-lock
-  - systemctl start nfs-idmap
+  - systemctl enable nfs-kernel-server
+  - systemctl start nfs-kernel-server
   #
   # Create Raid0 Array
   #
   # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/raid-config.html
-  - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep -v 'nvme0' | xargs)
-
-
+  - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep 'nvme' | grep -v 'nvme0' | xargs)
   - mkfs -t ext4 /dev/md0
   - mdadm --detail --scan | tee -a /etc/mdadm.conf  
   # Update /etc/fstab
@@ -63,4 +55,5 @@ runcmd:
   #
   # Restart nfs-server service
   #
-  - systemctl restart nfs-server
+  - exportfs -a
+  - systemctl restart nfs-kernel-server

@@ -26,7 +26,7 @@ Operational knowledge of:
 ### Required
 
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
-- Subscription to [CentOS 7 (x86_64) - with Updates HVM](https://aws.amazon.com/marketplace/pp/B00O7WM7QW/)
+- Subscription to [Ubuntu 18.04 LTS - Bionic](https://aws.amazon.com/marketplace/pp/B07CQ33QKV/)
 - Terraform or Docker
   
   - #### Terraform

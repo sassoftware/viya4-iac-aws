@@ -13,7 +13,8 @@ package_ugrade: true
 # Install packages
 #
 packages:
-  - nfs-utils
+  - tree
+  - nfs-common
 
 #
 # Add nfs mounts
@@ -34,4 +35,4 @@ runcmd:
   #
   - mkdir -p /mnt/viya-share/pvs
   - chmod 777 /mnt/viya-share -R
-  - chown -R nobody:nobody /mnt/viya-share
+  - chown -R nobody:nogroup /mnt/viya-share

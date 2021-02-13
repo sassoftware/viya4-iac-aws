@@ -3,8 +3,8 @@
 # Hack for assigning disk in a vm based on an index value. 
 locals {
   device_name = [
-    "/dev/sdb",
-    "/dev/sdc",
+    # "/dev/sdb", - NOTE: These are removed as Ubuntu Server 18.04 uses
+    # "/dev/sdc",         them for ephmeral storage.
     "/dev/sdd",
     "/dev/sde",
     "/dev/sdf",
@@ -31,18 +31,23 @@ locals {
   ]
 }
 
-data "aws_ami" "centos" {
-  owners      = ["aws-marketplace"]
+data "aws_ami" "ubuntu" {
+  owners      = ["099720109477"] # Canonical
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["CentOS Linux 7 x86_64 HVM EBS *"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
   }
 
   filter {
     name   = "architecture"
     values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 
   filter {
@@ -58,7 +63,7 @@ resource "aws_key_pair" "admin" {
 
 resource "aws_instance" "vm" {
   count         = var.create_vm ? 1 : 0
-  ami           = data.aws_ami.centos.id
+  ami           = data.aws_ami.ubuntu.id
   instance_type = var.vm_type
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
   key_name      = aws_key_pair.admin.key_name
