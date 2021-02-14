@@ -48,7 +48,9 @@ output "jump_public_dns" {
   value = var.create_jump_vm ? module.jump.public_dns : ""
 }
 
-
+output jump_rwx_filestore_path {
+  value = var.create_jump_vm ? var.jump_rwx_filestore_path : null
+}
 
 output "nfs_private_ip" {
   value = var.storage_type == "standard" ? module.nfs.private_ip_address : null

@@ -204,9 +204,10 @@ resource "aws_efs_mount_target" "efs-mt" {
 data "template_file" "jump-cloudconfig" {
   template = file("${path.module}/cloud-init/jump/cloud-config")
   vars = {
-    rwx_filestore_endpoint = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
-    rwx_filestore_path     = var.storage_type == "ha" ? "/" : "/export"
-    vm_admin               = var.jump_vm_admin
+    rwx_filestore_endpoint  = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
+    rwx_filestore_path      = var.storage_type == "ha" ? "/" : "/export"
+    jump_rwx_filestore_path = var.jump_rwx_filestore_path
+    vm_admin                = var.jump_vm_admin
   }
 
   depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]

@@ -20,11 +20,11 @@ packages:
 # Add nfs mounts
 #
 runcmd:
-  - mkdir /mnt/viya-share
+  - mkdir -p ${jump_rwx_filestore_path}
   #
   # fstab entry
   #
-  - echo "${rwx_filestore_endpoint}:${rwx_filestore_path}    /mnt/viya-share    nfs    rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0 0" >>/etc/fstab
+  - echo "${rwx_filestore_endpoint}:${rwx_filestore_path}    ${jump_rwx_filestore_path}    nfs    rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0 0" >>/etc/fstab
   #
   # mount the nfs
   #
@@ -33,6 +33,6 @@ runcmd:
   #
   # Change permissions and owener
   #
-  - mkdir -p /mnt/viya-share/pvs
-  - chmod 777 /mnt/viya-share -R
-  - chown -R nobody:nogroup /mnt/viya-share
+  - mkdir -p ${jump_rwx_filestore_path}/pvs
+  - chmod 777 ${jump_rwx_filestore_path} -R
+  - chown -R nobody:nogroup ${jump_rwx_filestore_path}

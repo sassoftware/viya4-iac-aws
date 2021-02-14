@@ -276,7 +276,12 @@ variable "jump_vm_admin" {
 
 variable "jump_vm_type" {
   description = "Jump VM type"
-  default    = "m5.4xlarge"
+  default     = "m5.4xlarge"
+}
+
+variable "jump_rwx_filestore_path" {
+  description = "OS path used in cloud-init for NFS integration"
+  default     = "/viya-share"
 }
 
 variable "nfs_raid_disk_size" {
