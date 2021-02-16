@@ -266,6 +266,11 @@ variable "database_subnets" {
 }
 
 variable "create_jump_vm" {
+  description = "Create bastion host VM"
+  default = true
+}
+
+variable "create_jump_public_ip" {
   default = true
 }
 

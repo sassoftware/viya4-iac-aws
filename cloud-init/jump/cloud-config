@@ -16,19 +16,19 @@ packages:
   - nfs-common
 
 #
+# Update /etc/fstab
+#
+mounts:
+  - [ "${rwx_filestore_endpoint}:${rwx_filestore_path}", "${jump_rwx_filestore_path}", nfs, "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport", "0", "0" ]
+
+#
 # Add nfs mounts
 #
 runcmd:
-  - mkdir -p ${jump_rwx_filestore_path}
-  #
-  # fstab entry
-  #
-  - echo "${rwx_filestore_endpoint}:${rwx_filestore_path}    ${jump_rwx_filestore_path}    nfs    rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0 0" >>/etc/fstab
   #
   # mount the nfs
   #
-  - systemctl enable NetworkManager-wait-online.service
-  - mount -a
+  - while [ `df -h | grep "${rwx_filestore_endpoint}:${rwx_filestore_path}" | wc -l` -eq 0 ]; do sleep 5 && mount -a ; done
   #
   # Change permissions and owener
   #

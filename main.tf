@@ -66,6 +66,9 @@ locals {
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
+  jump_vm_subnet                       = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+
   kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
 }
@@ -175,8 +178,8 @@ resource "aws_security_group" "nfs-sg" {
   ingress {
     description     = "Allow NFS (TCP)"
     from_port       = 0
-    to_port         = 65535
-    protocol        = "TCP"
+    to_port         = 0
+    protocol        = "-1"
     security_groups = [aws_security_group.sg.id]
 
   }
@@ -229,9 +232,9 @@ module "jump" {
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-jump"
   tags               = var.tags
-  subnet_id          = module.vpc.public_subnets[0] // gw subnet
+  subnet_id          = local.jump_vm_subnet
   security_group_ids = [aws_security_group.sg.id]
-  create_public_ip   = true
+  create_public_ip   = var.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -245,7 +248,7 @@ module "jump" {
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 
-  depends_on = [module.nfs]
+  depends_on = [module.nfs, aws_security_group_rule.all]
 
 }
 
@@ -258,6 +261,16 @@ resource "aws_security_group_rule" "vms" {
   protocol          = "tcp"
   cidr_blocks       = local.vm_public_access_cidrs
   security_group_id = aws_security_group.sg.id
+}
+
+resource "aws_security_group_rule" "all" {
+  type              = "ingress"
+  description       = "Allow internal security group communication."
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "all"
+  security_group_id = aws_security_group.sg.id
+  self              = true
 }
 
 data "template_file" "nfs-cloudconfig" {
@@ -289,7 +302,7 @@ module "nfs" {
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
-  subnet_id          = module.vpc.public_subnets[0] // gw subnet
+  subnet_id          = local.nfs_vm_subnet
   security_group_ids = [aws_security_group.sg.id, aws_security_group.nfs-sg.id]
   create_public_ip   = var.create_nfs_public_ip
 
@@ -386,7 +399,6 @@ locals {
   # Merging the default_node_pool into the work_groups node pools
   worker_groups = concat(local.default_node_pool, local.user_node_pool)
 }
-
 
 resource "kubernetes_service_account" "cluster-admin" {
   metadata {
