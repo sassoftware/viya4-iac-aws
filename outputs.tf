@@ -105,6 +105,10 @@ output "cluster_name" {
   value = local.cluster_name
 }
 
+output "provider" {
+  value = "aws"
+}
+
 output "location" {
   value = var.location
 }
