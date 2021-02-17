@@ -3,8 +3,8 @@
 # Hack for assigning disk in a vm based on an index value. 
 locals {
   device_name = [
-    # "/dev/sdb", - NOTE: These are removed as Ubuntu Server 18.04 uses
-    # "/dev/sdc",         them for ephmeral storage.
+    # "/dev/sdb", - NOTE: These are skipped, Ubuntu Server 18.04 LTS
+    # "/dev/sdc",         uses these for ephmeral storage.
     "/dev/sdd",
     "/dev/sde",
     "/dev/sdf",
