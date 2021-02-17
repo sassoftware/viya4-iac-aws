@@ -1,0 +1,60 @@
+#cloud-config
+system_info:
+  default_user:
+    name: ${vm_admin}
+
+#
+# Wait for disks to be mounted then continue
+#
+bootcmd:
+  - while [ `lsblk -frn | grep 'nvme' | grep -v 'nvme0' | wc -l` -lt 4 ]; do sleep 5; done
+
+#
+# First we'll update the repo and then update the OS.
+#
+package_update: true
+package_ugrade: true
+
+#
+# Install packages
+#
+packages:
+  - nfs-kernel-server
+
+#
+# Create mount directories
+#
+runcmd:
+  #
+  # Create /export directory with the correct owner/permissions
+  #
+  - mkdir /export
+  - chown nobody:nogroup /export -R
+  - chmod -R 0777 /export
+  #
+  # Update systemctl services
+  #
+  - systemctl enable nfs-kernel-server
+  - systemctl start nfs-kernel-server
+  - systemctl enable rpc-statd
+  - systemctl start rpc-statd
+  #
+  # Create Raid0 Array
+  #
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/raid-config.html
+  - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep 'nvme' | grep -v 'nvme0' | xargs)
+  - mkfs -t ext4 /dev/md0
+  - mdadm --detail --scan | tee -a /etc/mdadm.conf  
+  # Update /etc/fstab
+  #
+  - echo "/dev/md0       /export        ext4        defaults,nofail,x-systemd.requires=cloud-init.service,barrier=0,discard        0  2" >>/etc/fstab
+  - mount -a
+  #
+  # Update /etc/exports - NOTE: The CIDR provided works for the whole VPC
+  #
+  - echo "/export         ${base_cidr_block}(rw,no_root_squash,async,insecure,fsid=0,crossmnt,no_subtree_check)" >> /etc/exports
+  #
+  # Restart nfs-server service
+  #
+  - exportfs -a
+  - systemctl restart nfs-kernel-server

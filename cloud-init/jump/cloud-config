@@ -1,0 +1,37 @@
+#cloud-config
+system_info:
+  default_user:
+    name: ${vm_admin}
+
+#
+# First we'll update the repo and then update the OS.
+#
+package_update: true
+package_ugrade: true
+
+#
+# Install packages
+#
+packages:
+  - nfs-common
+
+#
+# Update /etc/fstab
+#
+mounts:
+  - [ "${rwx_filestore_endpoint}:${rwx_filestore_path}", "${jump_rwx_filestore_path}", nfs, "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport", "0", "0" ]
+
+#
+# Add nfs mounts
+#
+runcmd:
+  #
+  # mount the nfs
+  #
+  - while [ `df -h | grep "${rwx_filestore_endpoint}:${rwx_filestore_path}" | wc -l` -eq 0 ]; do sleep 5 && mount -a ; done
+  #
+  # Change permissions and owener
+  #
+  - mkdir -p ${jump_rwx_filestore_path}/pvs
+  - chmod 777 ${jump_rwx_filestore_path} -R
+  - chown -R nobody:nogroup ${jump_rwx_filestore_path}
