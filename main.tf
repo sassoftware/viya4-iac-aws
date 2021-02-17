@@ -162,29 +162,6 @@ resource "aws_security_group" "sg" {
   tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
 }
 
-resource "aws_security_group" "nfs-sg" {
-  # nfs requires at least one ephemeral port in addtion to 111 and 2049 (for mountd), hence the full range here
-
-  name   = "${var.prefix}-nfs-sg"
-  vpc_id = module.vpc.vpc_id
-
-  egress {
-    description = "Allow all outbound traffic."
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    description     = "Allow NFS (TCP)"
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    security_groups = [aws_security_group.sg.id]
-
-  }
-  tags = merge(var.tags, map("Name", "${var.prefix}-nfs-sg"))
-}
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
@@ -200,7 +177,7 @@ resource "aws_efs_mount_target" "efs-mt" {
   count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs.0.id
   subnet_id       = element(module.vpc.private_subnets, count.index)
-  security_groups = [aws_security_group.nfs-sg.id]
+  security_groups = [aws_security_group.sg.id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
@@ -267,7 +244,7 @@ resource "aws_security_group_rule" "all" {
   type              = "ingress"
   description       = "Allow internal security group communication."
   from_port         = 0
-  to_port           = 65535
+  to_port           = 0
   protocol          = "all"
   security_group_id = aws_security_group.sg.id
   self              = true
@@ -303,7 +280,7 @@ module "nfs" {
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
-  security_group_ids = [aws_security_group.sg.id, aws_security_group.nfs-sg.id]
+  security_group_ids = [aws_security_group.sg.id]
   create_public_ip   = var.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
