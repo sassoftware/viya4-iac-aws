@@ -115,5 +115,5 @@ output "location" {
 
 ## Reference for Amazon ECR private registries: https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html
 output "cr_endpoint" {
-  value = "https://${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazoneaws.com"
+  value = "https://${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazonaws.com"
 }
