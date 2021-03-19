@@ -25,7 +25,7 @@ Operational knowledge of:
 
 ### Required
 
-- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/devops-iac-eks-policy.json)
+- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
 - Subscription to [Ubuntu 18.04 LTS - Bionic](https://aws.amazon.com/marketplace/pp/B07CQ33QKV/)
 - Terraform or Docker
   

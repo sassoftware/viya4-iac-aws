@@ -45,7 +45,7 @@ node_pools = {
     "node_labels" = { 
       "workload.sas.com/class" = "cas" 
     }
-    "custom_data" = "./files/additional_userdata.sh"
+    "custom_data" = "./files/custom-data/additional_userdata.sh"
   },
   compute = { 
     "vm_type" = "m5.8xlarge"

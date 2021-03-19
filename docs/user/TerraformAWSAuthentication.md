@@ -1,6 +1,6 @@
 # Authenticating Terraform to access AWS
 
-In order to create and destroy AWS resources on your behalf, Terraform needs a AWS account that has sufficient permissions to perform all the actions defined in the Terraform manifest. You will need `AWS account IAM user` that has at a mininum the permissions listed in [this policy](../../files/devops-iac-eks-policy.json).
+In order to create and destroy AWS resources on your behalf, Terraform needs a AWS account that has sufficient permissions to perform all the actions defined in the Terraform manifest. You will need `AWS account IAM user` that has at a mininum the permissions listed in [this policy](../../files/policies/devops-iac-eks-policy.json).
 
 You can either use static credentials (including temporary credentials with session token) or a [profile with credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 

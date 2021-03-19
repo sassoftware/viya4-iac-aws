@@ -4,8 +4,7 @@ output "cluster_endpoint" {
 }
 
 output "kube_config" {
-  description = "token-based kubectl config "
-  value       = data.template_file.kubeconfig.rendered
+  value = module.kubeconfig.kube_config
 }
 
 output "worker_iam_role_arn" {

@@ -71,14 +71,15 @@ locals {
 
   kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
+  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority.0.data
 }
 
 data "external" "git_hash" {
-  program = ["files/iac_git_info.sh"]
+  program = ["files/tools/iac_git_info.sh"]
 }
 
 data "external" "iac_tooling_version" {
-  program = ["files/iac_tooling_version.sh"]
+  program = ["files/tools/iac_tooling_version.sh"]
 }
 
 resource "kubernetes_config_map" "sas_iac_buildinfo" {
@@ -103,7 +104,7 @@ EOT
 # EKS Provider
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
@@ -181,7 +182,7 @@ resource "aws_efs_mount_target" "efs-mt" {
 
 # Processing the cloud-init/jump/cloud-config template file
 data "template_file" "jump-cloudconfig" {
-  template = file("${path.module}/cloud-init/jump/cloud-config")
+  template = file("${path.module}/files/cloud-init/jump/cloud-config")
   vars = {
     rwx_filestore_endpoint  = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
     rwx_filestore_path      = var.storage_type == "ha" ? "/" : "/export"
@@ -250,7 +251,7 @@ resource "aws_security_group_rule" "all" {
 }
 
 data "template_file" "nfs-cloudconfig" {
-  template = file("${path.module}/cloud-init/nfs/cloud-config")
+  template = file("${path.module}/files/cloud-init/nfs/cloud-config")
   count    = var.storage_type == "standard" ? 1 : 0
 
   vars = {
@@ -376,56 +377,6 @@ locals {
   worker_groups = concat(local.default_node_pool, local.user_node_pool)
 }
 
-resource "kubernetes_service_account" "cluster-admin" {
-  metadata {
-    name = "cluster-admin"
-    namespace = "kube-system"
-  }
-}
-
-data "kubernetes_secret" "sa-token" {
-  metadata {
-    name = kubernetes_service_account.cluster-admin.default_secret_name
-    namespace = "kube-system"
-  }
-}
-
-resource "kubernetes_cluster_role_binding" "kcrb" {
-  metadata {
-    name = "cluster admin role binding"
-  }
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-  subject {
-    kind      = "ServiceAccount"
-    name      = "cluster-admin"
-    namespace = "kube-system"
-  }
-}
-
-data "template_file" "kubeconfig" {
-  template = file("${path.module}/files/kubeconfig-template.yaml")
-
-  vars = {
-    cluster_name  = module.eks.cluster_id
-    endpoint      = module.eks.cluster_endpoint
-    user_name     = "cluster-admin"
-    user_token    = data.kubernetes_secret.sa-token.data.token
-    cluster_ca    = module.eks.cluster_certificate_authority_data
-  }
-}
-
-resource "local_file" "kubeconfig" {
-  content              = data.template_file.kubeconfig.rendered
-  filename             = local.kubeconfig_path
-  file_permission      = "0644"
-  directory_permission = "0755"
-}
-
-
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
@@ -450,6 +401,20 @@ module "eks" {
   workers_additional_policies = [module.iam_policy.arn]
 
   worker_groups = local.worker_groups
+}
+
+module "kubeconfig" {
+  source                   = "./modules/kubeconfig"
+  prefix                   = var.prefix
+  create_static_kubeconfig = var.create_static_kubeconfig
+  path                     = local.kubeconfig_path
+  namespace                = "kube-system"
+
+  cluster_name             = local.cluster_name
+  endpoint                 = module.eks.cluster_endpoint
+  ca_crt                   = local.kubeconfig_ca_cert
+
+  depends_on = [ module.eks ]
 }
 
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
