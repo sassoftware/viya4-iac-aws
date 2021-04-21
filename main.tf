@@ -108,44 +108,58 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
-# VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "2.70.0"
+  source = "./modules/aws_vpc"
 
-  name = "${var.prefix}-vpc"
+  name = var.prefix
+  vpc_id = var.vpc_id
   cidr = var.vpc_cidr
-  # NOTE - Only have a list of 2 AZs. Then only look for these subnets in the EFS mount below.
-  # azs                  = slice( data.aws_availability_zones.available.names, 0,1 )
-  azs                  = data.aws_availability_zones.available.names
-  private_subnets      = var.private_subnets
-  public_subnets       = var.public_subnets
-  database_subnets     = var.database_subnets
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags                = var.tags
+  azs  = data.aws_availability_zones.available.names
+  existing_subnet_ids = var.subnet_ids
+  subnets = var.subnets
+  tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
 }
 
-# Associate private subnets with the private routing table.
-resource "aws_route_table_association" "private" {
-  count = length(module.vpc.private_subnets)
+# VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
+# module "vpc" {
+#   source  = "terraform-aws-modules/vpc/aws"
+#   version = "2.70.0"
 
-  subnet_id      = module.vpc.private_subnets[count.index]
-  route_table_id = module.vpc.private_route_table_ids[0]
-}
+#   name = "${var.prefix}-vpc"
+#   cidr = var.vpc_cidr
+#   # NOTE - Only have a list of 2 AZs. Then only look for these subnets in the EFS mount below.
+#   # azs                  = slice( data.aws_availability_zones.available.names, 0,1 )
+#   azs                  = data.aws_availability_zones.available.names
+#   private_subnets      = var.private_subnets
+#   public_subnets       = var.public_subnets
+#   database_subnets     = var.database_subnets
+#   enable_nat_gateway   = true
+#   single_nat_gateway   = true
+#   enable_dns_hostnames = true
+#   enable_dns_support   = true
+
+#   tags                = var.tags
+#   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
+#   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
+# }
+
+# Associate private subnets with the private routing table.
+# resource "aws_route_table_association" "private" {
+#   count = length(module.vpc.private_subnets)
+
+#   subnet_id      = module.vpc.private_subnets[count.index]
+#   route_table_id = module.vpc.private_route_table_ids[0]
+# }
 
 # Associate public subnets with the public routing table.
-resource "aws_route_table_association" "public" {
-  count = length(module.vpc.public_subnets)
+# resource "aws_route_table_association" "public" {
+#   count = length(module.vpc.public_subnets)
 
-  subnet_id      = module.vpc.public_subnets[count.index]
-  route_table_id = module.vpc.public_route_table_ids[0]
-}
+#   subnet_id      = module.vpc.public_subnets[count.index]
+#   route_table_id = module.vpc.public_route_table_ids[0]
+# }
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
 resource "aws_security_group" "sg" {
