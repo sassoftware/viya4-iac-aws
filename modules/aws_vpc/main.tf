@@ -6,7 +6,7 @@ locals {
     nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
 
     vpc_id = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
-    public_subnets = var.existing_subnet_ids != null ? data.aws_subnet.byo_public.*.id : aws_subnet.public.*.id
+    public_subnets = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_public.*.id : aws_subnet.public.*.id
 }
 
 data "aws_vpc" "byo" {
@@ -40,10 +40,16 @@ data "aws_subnet" "byo_database" {
   id    = element(var.existing_subnet_ids["database"], count.index)
 }
 
+################
+# Public subnet
+################
 resource "aws_subnet" "public" {
   count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
   vpc_id     = local.vpc_id
   cidr_block = element(var.subnets["public"], count.index)
+  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+
   tags = merge(
     {
       "Name" = format("%s-${var.public_subnet_suffix}", var.name)
@@ -99,20 +105,29 @@ resource "aws_route" "public_internet_gateway" {
 }
 
 resource "aws_route_table_association" "public" {
-  count = var.existing_subnet_ids == null ? length(var.subnets["public"]) : 0
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
 
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = aws_route_table.public[0].id
 }
 
+#################
+# Private subnet
+#################
 resource "aws_subnet" "private" {
   count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
   vpc_id     = local.vpc_id
   cidr_block = element(var.subnets["private"], count.index)
+  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
   
   tags = merge(
     {
-      "Name" = format("%s-${var.private_subnet_suffix}", var.name)
+      "Name" = format(
+        "%s-${var.private_subnet_suffix}-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
     },
     var.tags,
   )
@@ -141,20 +156,45 @@ resource "aws_route_table" "private" {
 
 resource "aws_route_table_association" "private" {
 
-  count = var.existing_subnet_ids == null ? length(var.subnets["private"]) : 0
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
 
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = aws_route_table.private[0].id
 }
 
+##################
+# Database subnet
+##################
 resource "aws_subnet" "database" {
-  count      = var.existing_subnet_ids == null ? length(var.subnets["database"]) : 0
+  count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : 0
   vpc_id     = local.vpc_id
   cidr_block = element(var.subnets["database"], count.index)
+  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
 
   tags = merge(
     {
-      "Name" = format("%s", "${var.name}-database-subnet")
+      "Name" = format(
+        "%s-${var.database_subnet_suffix}-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
+    },
+    var.tags,
+  )
+}
+
+resource "aws_db_subnet_group" "database" {
+  # count = var.create_vpc && length(var.database_subnets) > 0 && var.create_database_subnet_group ? 1 : 0
+  count      = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? 1 : 0
+
+  name        = lower(var.name)
+  description = "XXX Database subnet group for ${var.name} XXXXX"
+  subnet_ids  = aws_subnet.database.*.id
+
+  tags = merge(
+    {
+      "Name" = format("%s", var.name)
     },
     var.tags,
   )
