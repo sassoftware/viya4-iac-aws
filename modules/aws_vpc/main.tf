@@ -52,7 +52,11 @@ resource "aws_subnet" "public" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.public_subnet_suffix}", var.name)
+      "Name" = format(
+        "%s-${var.public_subnet_suffix}-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
     },
     var.tags,
     var.public_subnet_tags,
@@ -86,7 +90,11 @@ resource "aws_route_table" "public" {
 
   tags = merge(
     {
-      "Name" = format("%s-${var.public_subnet_suffix}", var.name)
+      "Name" = format(
+        "%s-${var.public_subnet_suffix}-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
     },
     var.tags,
   )
