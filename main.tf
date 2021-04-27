@@ -117,6 +117,11 @@ module "vpc" {
   azs  = data.aws_availability_zones.available.names
   existing_subnet_ids = var.subnet_ids
   subnets = var.subnets
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
   tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
