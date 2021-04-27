@@ -1,12 +1,14 @@
 locals {
-    max_subnet_length = length(var.existing_subnet_ids) == 0 ? max(
-        length(var.subnets["private"]),
-        length(var.subnets["database"]),
-    ) : max(length(data.aws_subnet.byo_private.*.id), length(data.aws_subnet.byo_database.*.id))
-    nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
+  max_subnet_length = length(var.existing_subnet_ids) == 0 ? max(
+    length(var.subnets["private"]),
+    length(var.subnets["database"]),
+  ) : max(length(data.aws_subnet.byo_private.*.id), length(data.aws_subnet.byo_database.*.id))
+  nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
 
-    vpc_id = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
-    public_subnets = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_public.*.id : aws_subnet.public.*.id
+  vpc_id           = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
+  public_subnets   = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_public.*.id : aws_subnet.public.*.id
+  private_subnets  = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_private.*.id : aws_subnet.private.*.id
+  database_subnets = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_database.*.id : aws_subnet.database.*.id
 }
 
 data "aws_vpc" "byo" {
@@ -14,10 +16,15 @@ data "aws_vpc" "byo" {
   id    = var.vpc_id
 }
 
+######
+# VPC
+######
 resource "aws_vpc" "byo" {
-  count      = var.vpc_id == null ? 1 : 0
-  cidr_block = var.cidr
-    tags = merge(
+  count                = var.vpc_id == null ? 1 : 0
+  cidr_block           = var.cidr
+  enable_dns_hostnames = var.enable_dns_hostnames
+  enable_dns_support   = var.enable_dns_support
+  tags = merge(
     {
       "Name" = format("%s", "${var.name}-vpc")
     },
@@ -44,11 +51,12 @@ data "aws_subnet" "byo_database" {
 # Public subnet
 ################
 resource "aws_subnet" "public" {
-  count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
-  vpc_id     = local.vpc_id
-  cidr_block = element(var.subnets["public"], count.index)
-  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  count                   = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
+  vpc_id                  = local.vpc_id
+  cidr_block              = element(var.subnets["public"], count.index)
+  availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  map_public_ip_on_launch = var.map_public_ip_on_launch
 
   tags = merge(
     {
@@ -83,8 +91,7 @@ resource "aws_internet_gateway" "this" {
 # Publiс routes
 ################
 resource "aws_route_table" "public" {
-#   count = length(local.public_subnets) > 0 ? 1 : 0
-  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : length(data.aws_subnet.byo_public.*.id)
 
   vpc_id = local.vpc_id
 
@@ -97,11 +104,12 @@ resource "aws_route_table" "public" {
       )
     },
     var.tags,
+    var.public_subnet_tags,
   )
 }
 
 resource "aws_route" "public_internet_gateway" {
-  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
+  count = length(var.subnets["public"]) > 0 || length(var.existing_subnet_ids) > 0 ? 1 : 0
 
   route_table_id         = aws_route_table.public[0].id
   destination_cidr_block = "0.0.0.0/0"
@@ -112,31 +120,44 @@ resource "aws_route" "public_internet_gateway" {
   }
 }
 
+##########################
+# Route table association
+##########################
 resource "aws_route_table_association" "private" {
 
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : length(data.aws_subnet.byo_private.*.id)
 
-  subnet_id      = element(aws_subnet.private.*.id, count.index)
-  route_table_id = aws_route_table.private[0].id
+  subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.private.*.id, count.index) : element(data.aws_subnet.byo_private.*.id, count.index)
+  route_table_id = element(aws_route_table.private.*.id, var.single_nat_gateway ? 0 : count.index)
 }
 
 resource "aws_route_table_association" "public" {
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : length(data.aws_subnet.byo_public.*.id)
 
-  subnet_id      = element(aws_subnet.public.*.id, count.index)
+  subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.public.*.id, count.index) : element(data.aws_subnet.byo_public.*.id, count.index)
   route_table_id = aws_route_table.public[0].id
+}
+
+resource "aws_route_table_association" "database" {
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
+
+  subnet_id = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.database.*.id, count.index) : element(data.aws_subnet.byo_database.*.id, count.index)
+  route_table_id = element(
+    coalescelist(aws_route_table.database.*.id, aws_route_table.private.*.id),
+    var.single_nat_gateway ? 0 : count.index,
+  )
 }
 
 #################
 # Private subnet
 #################
 resource "aws_subnet" "private" {
-  count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
-  vpc_id     = local.vpc_id
-  cidr_block = element(var.subnets["private"], count.index)
-  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
-  
+  count                = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
+  vpc_id               = local.vpc_id
+  cidr_block           = element(var.subnets["private"], count.index)
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+
   tags = merge(
     {
       "Name" = format(
@@ -146,6 +167,7 @@ resource "aws_subnet" "private" {
       )
     },
     var.tags,
+    var.private_subnet_tags,
   )
 }
 
@@ -154,7 +176,7 @@ resource "aws_subnet" "private" {
 # There are as many routing tables as the number of NAT gateways
 #################
 resource "aws_route_table" "private" {
-  count = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
+  count = local.max_subnet_length > 0 ? local.nat_gateway_count : 0
 
   vpc_id = local.vpc_id
 
@@ -174,11 +196,11 @@ resource "aws_route_table" "private" {
 # Database subnet
 ##################
 resource "aws_subnet" "database" {
-  count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : 0
-  vpc_id     = local.vpc_id
-  cidr_block = element(var.subnets["database"], count.index)
-  availability_zone               = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  count                = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
+  vpc_id               = local.vpc_id
+  cidr_block           = element(var.subnets["database"], count.index)
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
 
   tags = merge(
     {
@@ -193,8 +215,7 @@ resource "aws_subnet" "database" {
 }
 
 resource "aws_db_subnet_group" "database" {
-  # count = var.create_vpc && length(var.database_subnets) > 0 && var.create_database_subnet_group ? 1 : 0
-  count      = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? 1 : 0
+  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? 1 : 0
 
   name        = lower(var.name)
   description = "XXX Database subnet group for ${var.name} XXXXX"
@@ -212,13 +233,13 @@ resource "aws_db_subnet_group" "database" {
 # Database routes
 #################
 resource "aws_route_table" "database" {
-  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0  ? length(var.subnets["database"]) : 0
+  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? length(var.subnets["database"]) : 0
 
   vpc_id = local.vpc_id
 
   tags = merge(
     {
-      "Name" =  format(
+      "Name" = format(
         "%s-${var.database_subnet_suffix}-%s",
         var.name,
         element(var.azs, count.index),
@@ -228,113 +249,24 @@ resource "aws_route_table" "database" {
   )
 }
 
-########################
-# Public Network ACLs
-########################
-# resource "aws_network_acl" "public" {
-#   # count = var.create_vpc && var.public_dedicated_network_acl && length(var.public_subnets) > 0 ? 1 : 0
-#   count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
-#   vpc_id     = local.vpc_id
-#   subnet_ids = aws_subnet.public.*.id
+resource "aws_eip" "nat" {
+  count = local.nat_gateway_count
 
-#   tags = merge(
-#     {
-#       "Name" = format("%s-${var.public_subnet_suffix}", var.name)
-#     },
-#     var.tags,
-#     var.public_acl_tags,
-#   )
-# }
+  vpc = true
 
-# resource "aws_network_acl_rule" "public_inbound" {
-#   count = var.create_vpc && var.public_dedicated_network_acl && length(var.public_subnets) > 0 ? length(var.public_inbound_acl_rules) : 0
-
-#   network_acl_id = aws_network_acl.public[0].id
-
-#   egress          = false
-#   rule_number     = var.public_inbound_acl_rules[count.index]["rule_number"]
-#   rule_action     = var.public_inbound_acl_rules[count.index]["rule_action"]
-#   from_port       = lookup(var.public_inbound_acl_rules[count.index], "from_port", null)
-#   to_port         = lookup(var.public_inbound_acl_rules[count.index], "to_port", null)
-#   icmp_code       = lookup(var.public_inbound_acl_rules[count.index], "icmp_code", null)
-#   icmp_type       = lookup(var.public_inbound_acl_rules[count.index], "icmp_type", null)
-#   protocol        = var.public_inbound_acl_rules[count.index]["protocol"]
-#   cidr_block      = lookup(var.public_inbound_acl_rules[count.index], "cidr_block", null)
-#   ipv6_cidr_block = lookup(var.public_inbound_acl_rules[count.index], "ipv6_cidr_block", null)
-# }
-
-# resource "aws_network_acl_rule" "public_outbound" {
-#   count = var.create_vpc && var.public_dedicated_network_acl && length(var.public_subnets) > 0 ? length(var.public_outbound_acl_rules) : 0
-
-#   network_acl_id = aws_network_acl.public[0].id
-
-#   egress          = true
-#   rule_number     = var.public_outbound_acl_rules[count.index]["rule_number"]
-#   rule_action     = var.public_outbound_acl_rules[count.index]["rule_action"]
-#   from_port       = lookup(var.public_outbound_acl_rules[count.index], "from_port", null)
-#   to_port         = lookup(var.public_outbound_acl_rules[count.index], "to_port", null)
-#   icmp_code       = lookup(var.public_outbound_acl_rules[count.index], "icmp_code", null)
-#   icmp_type       = lookup(var.public_outbound_acl_rules[count.index], "icmp_type", null)
-#   protocol        = var.public_outbound_acl_rules[count.index]["protocol"]
-#   cidr_block      = lookup(var.public_outbound_acl_rules[count.index], "cidr_block", null)
-#   ipv6_cidr_block = lookup(var.public_outbound_acl_rules[count.index], "ipv6_cidr_block", null)
-# }
-
-# #######################
-# # Private Network ACLs
-# #######################
-# resource "aws_network_acl" "private" {
-#   # count = var.create_vpc && var.private_dedicated_network_acl && length(var.private_subnets) > 0 ? 1 : 0
-#   count      = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
-
-#   vpc_id     = local.vpc_id
-#   subnet_ids = aws_subnet.private.*.id
-
-#   tags = merge(
-#     {
-#       "Name" = format("%s-${var.private_subnet_suffix}", var.name)
-#     },
-#     var.tags,
-#     var.private_acl_tags,
-#   )
-# }
-
-# resource "aws_network_acl_rule" "private_inbound" {
-#   count = var.create_vpc && var.private_dedicated_network_acl && length(var.private_subnets) > 0 ? length(var.private_inbound_acl_rules) : 0
-
-#   network_acl_id = aws_network_acl.private[0].id
-
-#   egress          = false
-#   rule_number     = var.private_inbound_acl_rules[count.index]["rule_number"]
-#   rule_action     = var.private_inbound_acl_rules[count.index]["rule_action"]
-#   from_port       = lookup(var.private_inbound_acl_rules[count.index], "from_port", null)
-#   to_port         = lookup(var.private_inbound_acl_rules[count.index], "to_port", null)
-#   icmp_code       = lookup(var.private_inbound_acl_rules[count.index], "icmp_code", null)
-#   icmp_type       = lookup(var.private_inbound_acl_rules[count.index], "icmp_type", null)
-#   protocol        = var.private_inbound_acl_rules[count.index]["protocol"]
-#   cidr_block      = lookup(var.private_inbound_acl_rules[count.index], "cidr_block", null)
-#   ipv6_cidr_block = lookup(var.private_inbound_acl_rules[count.index], "ipv6_cidr_block", null)
-# }
-
-# resource "aws_network_acl_rule" "private_outbound" {
-#   count = var.create_vpc && var.private_dedicated_network_acl && length(var.private_subnets) > 0 ? length(var.private_outbound_acl_rules) : 0
-
-#   network_acl_id = aws_network_acl.private[0].id
-
-#   egress          = true
-#   rule_number     = var.private_outbound_acl_rules[count.index]["rule_number"]
-#   rule_action     = var.private_outbound_acl_rules[count.index]["rule_action"]
-#   from_port       = lookup(var.private_outbound_acl_rules[count.index], "from_port", null)
-#   to_port         = lookup(var.private_outbound_acl_rules[count.index], "to_port", null)
-#   icmp_code       = lookup(var.private_outbound_acl_rules[count.index], "icmp_code", null)
-#   icmp_type       = lookup(var.private_outbound_acl_rules[count.index], "icmp_type", null)
-#   protocol        = var.private_outbound_acl_rules[count.index]["protocol"]
-#   cidr_block      = lookup(var.private_outbound_acl_rules[count.index], "cidr_block", null)
-#   ipv6_cidr_block = lookup(var.private_outbound_acl_rules[count.index], "ipv6_cidr_block", null)
-# }
+  tags = merge(
+    {
+      "Name" = format(
+        "%s-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
+    },
+    var.tags,
+  )
+}
 
 resource "aws_nat_gateway" "this" {
-  # count = var.create_vpc && var.enable_nat_gateway ? local.nat_gateway_count : 0
   count = var.enable_nat_gateway ? local.nat_gateway_count : 0
 
   allocation_id = element(
@@ -344,7 +276,7 @@ resource "aws_nat_gateway" "this" {
   subnet_id = length(var.existing_subnet_ids) == 0 ? element(
     aws_subnet.public.*.id,
     var.single_nat_gateway ? 0 : count.index,
-  ) : element(var.existing_subnet_ids["public"], var.single_nat_gateway ? 0 : count.index,)
+  ) : element(var.existing_subnet_ids["public"], var.single_nat_gateway ? 0 : count.index, )
 
   tags = merge(
     {
@@ -361,19 +293,14 @@ resource "aws_nat_gateway" "this" {
   depends_on = [aws_internet_gateway.this]
 }
 
-resource "aws_eip" "nat" {
-  count      = local.nat_gateway_count
+resource "aws_route" "private_nat_gateway" {
+  count = var.enable_nat_gateway ? local.nat_gateway_count : 0
 
-  vpc = true
+  route_table_id         = length(var.existing_subnet_ids) == 0 ? element(aws_route_table.private.*.id, count.index) : element(var.existing_subnet_ids["private"], count.index, )
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = element(aws_nat_gateway.this.*.id, count.index)
 
-  tags = merge(
-    {
-      "Name" = format(
-        "%s-%s",
-        var.name,
-        element(var.azs, count.index),
-      )
-    },
-    var.tags,
-  )
+  timeouts {
+    create = "5m"
+  }
 }

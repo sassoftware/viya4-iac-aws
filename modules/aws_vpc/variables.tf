@@ -20,8 +20,8 @@ variable "cidr" {
 }
 
 variable "subnets" {
-    type = map
-    description = "Map of list of subnet cidr_blocks"
+  type        = map
+  description = "Map of list of subnet cidr_blocks"
 }
 
 variable "existing_subnet_ids" {
@@ -97,79 +97,8 @@ variable "database_subnet_suffix" {
   default     = "db"
 }
 
-variable "public_inbound_acl_rules" {
-  description = "Public subnets inbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
+variable "map_public_ip_on_launch" {
+  description = "Should be false if you do not want to auto-assign public IP on launch"
+  type        = bool
+  default     = true
 }
-
-variable "public_outbound_acl_rules" {
-  description = "Public subnets outbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "private_inbound_acl_rules" {
-  description = "Private subnets inbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "private_outbound_acl_rules" {
-  description = "Private subnets outbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "public_acl_tags" {
-  description = "Additional tags for the public subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "private_acl_tags" {
-  description = "Additional tags for the private subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-

@@ -127,45 +127,6 @@ module "vpc" {
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
 }
 
-# VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
-# module "vpc" {
-#   source  = "terraform-aws-modules/vpc/aws"
-#   version = "2.70.0"
-
-#   name = "${var.prefix}-vpc"
-#   cidr = var.vpc_cidr
-#   # NOTE - Only have a list of 2 AZs. Then only look for these subnets in the EFS mount below.
-#   # azs                  = slice( data.aws_availability_zones.available.names, 0,1 )
-#   azs                  = data.aws_availability_zones.available.names
-#   private_subnets      = var.private_subnets
-#   public_subnets       = var.public_subnets
-#   database_subnets     = var.database_subnets
-#   enable_nat_gateway   = true
-#   single_nat_gateway   = true
-#   enable_dns_hostnames = true
-#   enable_dns_support   = true
-
-#   tags                = var.tags
-#   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
-#   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
-# }
-
-# Associate private subnets with the private routing table.
-# resource "aws_route_table_association" "private" {
-#   count = length(module.vpc.private_subnets)
-
-#   subnet_id      = module.vpc.private_subnets[count.index]
-#   route_table_id = module.vpc.private_route_table_ids[0]
-# }
-
-# Associate public subnets with the public routing table.
-# resource "aws_route_table_association" "public" {
-#   count = length(module.vpc.public_subnets)
-
-#   subnet_id      = module.vpc.public_subnets[count.index]
-#   route_table_id = module.vpc.public_route_table_ids[0]
-# }
-
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
 resource "aws_security_group" "sg" {
   name   = "${var.prefix}-sg"
@@ -407,7 +368,7 @@ module "eks" {
   cluster_endpoint_public_access        = true
   cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                      = false
-  subnets                               = concat([module.vpc.private_subnets.0, module.vpc.private_subnets.1])
+  subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
 
