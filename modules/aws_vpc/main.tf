@@ -1,8 +1,8 @@
 locals {
-    max_subnet_length = max(
+    max_subnet_length = length(var.existing_subnet_ids) == 0 ? max(
         length(var.subnets["private"]),
         length(var.subnets["database"]),
-    )
+    ) : max(length(data.aws_subnet.byo_private.*.id), length(data.aws_subnet.byo_database.*.id))
     nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
 
     vpc_id = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
@@ -362,7 +362,7 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_eip" "nat" {
-  count      = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
+  count      = local.nat_gateway_count
 
   vpc = true
 
