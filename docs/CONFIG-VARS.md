@@ -110,7 +110,7 @@ Additional node pools can be created separate from the default nodepool. This is
 | vm_type | Type of the nodepool VMs | string | | |
 | os_disk_type | Disk type for nodepool VMs | string | | `gp2` or `io1` |
 | os_disk_size | Disk size for nodepool VMs in GB | number | | |
-| os_disk_iops | Disk size for nodepool VMs in GB | number | | For `io1` you MUST set to your desired IOPS value. Reference [Amazone EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
+| os_disk_iops | Amount of provisioned [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html) | number | | For `io1` you MUST set to your desired IOPS value. Reference [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
 | min_nodes | Minimum number of nodes for the nodepool | number | | The value must be between `min_nodes` and `max_nodes`|
 | max_nodes | Maximum number of nodes for the nodepool | number | | The value must be between `min_nodes` and `max_nodes`|
 | node_taints | Taints for the nodepool VMs | list of strings | | |
@@ -134,7 +134,7 @@ When `storage_type=standard`, a NFS Server VM is created and these variables are
 | nfs_vm_admin | OS Admin User for the NFS server VM | string | "nfsuser" | |
 | nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | |
 | nfs_raid_disk_type | Disk type for the NFS server EBS volume | string | "gp2" | Valid values: "standard", "gp2", "io1", "io2", "sc1" or "st1" |
-| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io2" or "io2" |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io1" or "io2" |
 
 ### AWS Elastic File System (EFS)
 
@@ -154,7 +154,7 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 | postgres_server_name | Name of PostgreSQL server | string | "" | Changing this value trigger resource recreation |
 | postgres_server_version | The version of the PostgreSQL server | string | "11" | Changing this value trigger resource recreation |
 | postgres_instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
-| postgres_storage_size | Max storage allowed for the PostgreSQL server in MV | number | 50 |  |
+| postgres_storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
 | postgres_backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | postgres_storage_encrypted | Encrypt PostgrSQL data at rest | bool | false| |
 | postgres_administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | Changing this forces a new resource to be created |
