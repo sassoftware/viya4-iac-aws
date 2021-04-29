@@ -143,7 +143,7 @@ resource "aws_route_table_association" "database" {
 
   subnet_id = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.database.*.id, count.index) : element(data.aws_subnet.byo_database.*.id, count.index)
   route_table_id = element(
-    coalescelist(aws_route_table.database.*.id, aws_route_table.private.*.id),
+      coalescelist(aws_route_table.private.*.id),
     var.single_nat_gateway ? 0 : count.index,
   )
 }
@@ -224,26 +224,6 @@ resource "aws_db_subnet_group" "database" {
   tags = merge(
     {
       "Name" = format("%s", var.name)
-    },
-    var.tags,
-  )
-}
-
-#################
-# Database routes
-#################
-resource "aws_route_table" "database" {
-  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
-
-  vpc_id = local.vpc_id
-
-  tags = merge(
-    {
-      "Name" = format(
-        "%s-${var.database_subnet_suffix}-%s",
-        var.name,
-        element(var.azs, count.index),
-      )
     },
     var.tags,
   )
