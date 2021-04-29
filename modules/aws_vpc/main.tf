@@ -196,7 +196,7 @@ resource "aws_route_table" "private" {
 # Database subnet
 ##################
 resource "aws_subnet" "database" {
-  count                = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
+  count                = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : 0
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["database"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
@@ -233,7 +233,7 @@ resource "aws_db_subnet_group" "database" {
 # Database routes
 #################
 resource "aws_route_table" "database" {
-  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? length(var.subnets["database"]) : 0
+  count = length(var.existing_subnet_ids) == 0 && length(var.subnets["database"]) > 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
 
   vpc_id = local.vpc_id
 
@@ -296,7 +296,7 @@ resource "aws_nat_gateway" "this" {
 resource "aws_route" "private_nat_gateway" {
   count = var.enable_nat_gateway ? local.nat_gateway_count : 0
 
-  route_table_id         = length(var.existing_subnet_ids) == 0 ? element(aws_route_table.private.*.id, count.index) : element(var.existing_subnet_ids["private"], count.index, )
+  route_table_id         = element(aws_route_table.private.*.id, count.index)
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = element(aws_nat_gateway.this.*.id, count.index)
 
