@@ -75,7 +75,7 @@ resource "aws_subnet" "public" {
 # Internet Gateway
 ###################
 resource "aws_internet_gateway" "this" {
-  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
+  count = length(var.subnets["public"]) > 0 || length(var.existing_subnet_ids) > 0 ? 1 : 0
 
   vpc_id = local.vpc_id
 
