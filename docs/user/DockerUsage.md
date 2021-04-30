@@ -18,7 +18,7 @@ The Docker image `viya4-iac-aws` will contain Terraform and 'kubectl' executable
 
 ### Docker Environment File For AWS Authentication
 
-Follow either one of the authentication methods described in [Authenticating Terraform to access Azure](./TerraformAWSAuthentication.md) to use with container invocation. Store these values outside of this repo in a secure file, for example
+Follow either one of the authentication methods described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) to use with container invocation. Store these values outside of this repo in a secure file, for example
 `$HOME/.aws_docker_creds.env.` Protect that file so only you have read access to it.
 
 **NOTE:** Do not use quotes around the values in the file, and make sure to avoid any trailing blanks!

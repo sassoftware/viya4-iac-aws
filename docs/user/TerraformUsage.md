@@ -10,7 +10,7 @@ When using the Terraform CLI, make sure you have all the necessary tools [instal
 
 Follow either one of the authentication methods described in [Authenticating Terraform to access AWS](./TerraformAWSAuthentication.md) and set all the environment variables using `export` command.
 
-*TIP:* These commands can be stored in a file outside of this repo in a secure file, for example `$HOME/.azure_creds.sh`. Protect that file so only you have read access to it. Then source your credentials into your shell environment:
+*TIP:* These commands can be stored in a file outside of this repo in a secure file, for example `$HOME/.aws_creds.sh`. Protect that file so only you have read access to it. Then source your credentials into your shell environment:
 
 ```bash
 . $HOME/.aws_creds.sh
