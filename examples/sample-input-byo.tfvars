@@ -16,6 +16,7 @@ subnet_ids = {  # only needed if using pre-existing subnets
   "private" : ["list-of-existing-private-subnet-ids"],
   "database" : ["list-of-existing-database-subnet-ids"]
 }
+security_group_id = "<existing-vpc-id>" # only needed if using pre-existing Security Group
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
