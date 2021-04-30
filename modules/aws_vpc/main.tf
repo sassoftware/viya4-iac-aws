@@ -6,9 +6,7 @@ locals {
   nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
 
   vpc_id           = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
-  public_subnets   = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_public.*.id : aws_subnet.public.*.id
-  private_subnets  = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_private.*.id : aws_subnet.private.*.id
-  database_subnets = length(var.existing_subnet_ids) == 0 ? data.aws_subnet.byo_database.*.id : aws_subnet.database.*.id
+  public_subnets   = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.byo_public.*.id
 }
 
 data "aws_vpc" "byo" {
@@ -91,8 +89,7 @@ resource "aws_internet_gateway" "this" {
 # Publiс routes
 ################
 resource "aws_route_table" "public" {
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : length(data.aws_subnet.byo_public.*.id)
-
+  count = length(local.public_subnets) > 0 ? 1 : 0
   vpc_id = local.vpc_id
 
   tags = merge(
