@@ -276,23 +276,12 @@ variable subnets {
     }
 } 
 
-# # Subnet - gw
-# variable "public_subnets" {
-#   description = "List of public subnets for use in the AWS EKS cluster"
-#   default     = ["192.168.129.0/25", "192.168.129.128/25"]
-# }
-
-# # Subnets - eks/misc
-# variable "private_subnets" {
-#   description = "List of private subnets for use in the AWS EKS cluster"
-#   default     = ["192.168.0.0/18", "192.168.64.0/18"]
-# }
-
-# # Subnets - database
-# variable "database_subnets" {
-#   description = "List of private subnets for use in the AWS EKS cluster"
-#   default     = ["192.168.128.0/25", "192.168.128.128/25"]
-# }
+variable "security_group_id" {
+  type    = string
+  default = null
+  description = "Pre-exising Security Group id. Leave blank to have one created"
+  
+}
 
 variable "create_jump_vm" {
   description = "Create bastion host VM"

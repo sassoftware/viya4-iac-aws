@@ -59,6 +59,8 @@ data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "terraform" {}
 
 locals {
+
+  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.byo_sg[0].id
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
   vm_public_access_cidrs               = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
@@ -127,8 +129,14 @@ module "vpc" {
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
 }
 
+data aws_security_group byo_sg {
+  count = var.security_group_id == null ? 0 : 1
+  id = var.security_group_id
+}
+
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
 resource "aws_security_group" "sg" {
+  count = var.security_group_id == null ? 1 : 0
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
@@ -157,7 +165,7 @@ resource "aws_efs_mount_target" "efs-mt" {
   count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs.0.id
   subnet_id       = element(module.vpc.private_subnets, count.index)
-  security_groups = [aws_security_group.sg.id]
+  security_groups = [local.security_group_id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
@@ -190,7 +198,7 @@ module "jump" {
   name               = "${var.prefix}-jump"
   tags               = var.tags
   subnet_id          = local.jump_vm_subnet
-  security_group_ids = [aws_security_group.sg.id]
+  security_group_ids = [local.security_group_id]
   create_public_ip   = var.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -217,7 +225,7 @@ resource "aws_security_group_rule" "vms" {
   to_port           = 22
   protocol          = "tcp"
   cidr_blocks       = local.vm_public_access_cidrs
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 resource "aws_security_group_rule" "all" {
@@ -226,7 +234,7 @@ resource "aws_security_group_rule" "all" {
   from_port         = 0
   to_port           = 0
   protocol          = "all"
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
   self              = true
 }
 
@@ -260,7 +268,7 @@ module "nfs" {
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
-  security_group_ids = [aws_security_group.sg.id]
+  security_group_ids = [local.security_group_id]
   create_public_ip   = var.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -374,7 +382,7 @@ module "eks" {
 
   workers_group_defaults = {
     # tags = var.tags
-    additional_security_group_ids = [aws_security_group.sg.id]
+    additional_security_group_ids = [local.security_group_id]
   }
 
   # Added to support EBS CSI driver
@@ -420,7 +428,7 @@ module "db" {
   password = var.postgres_administrator_password
   port     = var.postgres_server_port
 
-  vpc_security_group_ids = [aws_security_group.sg.id]
+  vpc_security_group_ids = [local.security_group_id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -469,7 +477,7 @@ resource "aws_security_group_rule" "postgres_internal" {
   to_port           = 5432
   protocol          = "tcp"
   self              = true
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 resource "aws_security_group_rule" "postgres_external" {
@@ -480,7 +488,7 @@ resource "aws_security_group_rule" "postgres_external" {
   to_port           = 5432
   protocol          = "tcp"
   cidr_blocks       = local.postgres_public_access_cidrs
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
