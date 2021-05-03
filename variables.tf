@@ -279,8 +279,14 @@ variable subnets {
 variable "security_group_id" {
   type    = string
   default = null
-  description = "Pre-exising Security Group id. Leave blank to have one created"
+  description = "Pre-existing Security Group id. Leave blank to have one created"
   
+}
+
+variable "igw_id" {
+  type = string
+  default = null
+  description = "Pre-existing VPC Internet Gateway id"
 }
 
 variable "create_jump_vm" {

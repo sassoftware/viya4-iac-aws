@@ -36,6 +36,12 @@ variable "existing_subnet_ids" {
   # }
 }
 
+variable "existing_igw" {
+  type = string
+  default = null
+  description = "Pre-existing VPC Internet Gateway id"
+}
+
 variable "enable_nat_gateway" {
   description = "Should be true if you want to provision NAT Gateways for each of your private networks"
   type        = bool

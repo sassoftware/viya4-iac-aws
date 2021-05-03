@@ -31,17 +31,17 @@ resource "aws_vpc" "byo" {
 }
 
 data "aws_subnet" "byo_public" {
-  count = length(var.existing_subnet_ids) == 0 ? 0 : length(var.existing_subnet_ids["public"])
+  count = contains(keys(var.existing_subnet_ids), "public") ? length(var.existing_subnet_ids["public"]) > 0 ? length(var.existing_subnet_ids["public"]) : 0 : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
 }
 
 data "aws_subnet" "byo_private" {
-  count = length(var.existing_subnet_ids) == 0 ? 0 : length(var.existing_subnet_ids["private"])
+  count = contains(keys(var.existing_subnet_ids), "private") ? length(var.existing_subnet_ids["private"]) > 0 ? length(var.existing_subnet_ids["private"]) : 0 : 0
   id    = element(var.existing_subnet_ids["private"], count.index)
 }
 
 data "aws_subnet" "byo_database" {
-  count = length(var.existing_subnet_ids) == 0 ? 0 : length(var.existing_subnet_ids["database"])
+  count = contains(keys(var.existing_subnet_ids), "database") ? length(var.existing_subnet_ids["database"]) > 0 ? length(var.existing_subnet_ids["database"]) : 0 : 0
   id    = element(var.existing_subnet_ids["database"], count.index)
 }
 
@@ -73,7 +73,7 @@ resource "aws_subnet" "public" {
 # Internet Gateway
 ###################
 resource "aws_internet_gateway" "this" {
-  count = length(var.subnets["public"]) > 0 || length(var.existing_subnet_ids) > 0 ? 1 : 0
+  count =  length(var.existing_subnet_ids) == 0 && var.existing_igw == null ? 1 : 0
 
   vpc_id = local.vpc_id
 
@@ -89,7 +89,7 @@ resource "aws_internet_gateway" "this" {
 # Publiс routes
 ################
 resource "aws_route_table" "public" {
-  count = length(local.public_subnets) > 0 ? 1 : 0
+  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
   vpc_id = local.vpc_id
 
   tags = merge(
@@ -106,7 +106,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route" "public_internet_gateway" {
-  count = length(var.subnets["public"]) > 0 || length(var.existing_subnet_ids) > 0 ? 1 : 0
+  count = length(var.existing_subnet_ids) == 0 && var.existing_igw == null ? 1 : 0
 
   route_table_id         = aws_route_table.public[0].id
   destination_cidr_block = "0.0.0.0/0"
@@ -122,23 +122,23 @@ resource "aws_route" "public_internet_gateway" {
 ##########################
 resource "aws_route_table_association" "private" {
 
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : length(data.aws_subnet.byo_private.*.id)
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
 
   subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.private.*.id, count.index) : element(data.aws_subnet.byo_private.*.id, count.index)
   route_table_id = element(aws_route_table.private.*.id, var.single_nat_gateway ? 0 : count.index)
 }
 
 resource "aws_route_table_association" "public" {
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : length(data.aws_subnet.byo_public.*.id)
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
 
   subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.public.*.id, count.index) : element(data.aws_subnet.byo_public.*.id, count.index)
   route_table_id = aws_route_table.public[0].id
 }
 
 resource "aws_route_table_association" "database" {
-  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : length(data.aws_subnet.byo_database.*.id)
+  count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["database"]) : 0
 
-  subnet_id = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.database.*.id, count.index) : element(data.aws_subnet.byo_database.*.id, count.index)
+  subnet_id = element(aws_subnet.database.*.id, count.index)
   route_table_id = element(
       coalescelist(aws_route_table.private.*.id),
     var.single_nat_gateway ? 0 : count.index,
@@ -173,7 +173,7 @@ resource "aws_subnet" "private" {
 # There are as many routing tables as the number of NAT gateways
 #################
 resource "aws_route_table" "private" {
-  count = local.max_subnet_length > 0 ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
 
   vpc_id = local.vpc_id
 
@@ -227,7 +227,7 @@ resource "aws_db_subnet_group" "database" {
 }
 
 resource "aws_eip" "nat" {
-  count = local.nat_gateway_count
+  count = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
 
   vpc = true
 
@@ -244,7 +244,7 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "this" {
-  count = var.enable_nat_gateway ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0  && var.enable_nat_gateway ? local.nat_gateway_count : 0
 
   allocation_id = element(
     aws_eip.nat.*.id, #local.nat_gateway_ips,
@@ -271,7 +271,7 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = var.enable_nat_gateway ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0  && var.enable_nat_gateway ? local.nat_gateway_count : 0
 
   route_table_id         = element(aws_route_table.private.*.id, count.index)
   destination_cidr_block = "0.0.0.0/0"
