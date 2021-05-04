@@ -36,7 +36,7 @@ variable "existing_subnet_ids" {
   # }
 }
 
-variable "existing_igw" {
+variable "existing_nat_id" {
   type = string
   default = null
   description = "Pre-existing VPC Internet Gateway id"
@@ -45,19 +45,19 @@ variable "existing_igw" {
 variable "enable_nat_gateway" {
   description = "Should be true if you want to provision NAT Gateways for each of your private networks"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "single_nat_gateway" {
   description = "Should be true if you want to provision a single shared NAT Gateway across all of your private networks"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_dns_hostnames" {
   description = "Should be true to enable DNS hostnames in the VPC"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_dns_support" {

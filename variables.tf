@@ -283,7 +283,7 @@ variable "security_group_id" {
   
 }
 
-variable "igw_id" {
+variable "nat_id" {
   type = string
   default = null
   description = "Pre-existing VPC Internet Gateway id"

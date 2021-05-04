@@ -93,7 +93,7 @@ output "postgres_server_port" {
 }
 
 output "nat_ip" {
-  value = length(var.subnet_ids) == 0 && length(var.subnets) != 0 ? module.vpc.nat_public_ips[0] : ""
+  value = module.vpc.nat_public_ips[0]
 }
 
 output "prefix" {

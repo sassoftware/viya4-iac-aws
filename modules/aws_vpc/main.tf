@@ -1,12 +1,5 @@
 locals {
-  max_subnet_length = length(var.existing_subnet_ids) == 0 ? max(
-    length(var.subnets["private"]),
-    length(var.subnets["database"]),
-  ) : max(length(data.aws_subnet.byo_private.*.id), length(data.aws_subnet.byo_database.*.id))
-  nat_gateway_count = var.single_nat_gateway ? 1 : local.max_subnet_length
-
   vpc_id           = var.vpc_id == null ? aws_vpc.byo[0].id : data.aws_vpc.byo[0].id
-  public_subnets   = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.byo_public.*.id
 }
 
 data "aws_vpc" "byo" {
@@ -73,7 +66,7 @@ resource "aws_subnet" "public" {
 # Internet Gateway
 ###################
 resource "aws_internet_gateway" "this" {
-  count =  length(var.existing_subnet_ids) == 0 && var.existing_igw == null ? 1 : 0
+  count =  length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? 1 : 0
 
   vpc_id = local.vpc_id
 
@@ -106,7 +99,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route" "public_internet_gateway" {
-  count = length(var.existing_subnet_ids) == 0 && var.existing_igw == null ? 1 : 0
+  count = length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? 1 : 0
 
   route_table_id         = aws_route_table.public[0].id
   destination_cidr_block = "0.0.0.0/0"
@@ -125,7 +118,7 @@ resource "aws_route_table_association" "private" {
   count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["private"]) : 0
 
   subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.private.*.id, count.index) : element(data.aws_subnet.byo_private.*.id, count.index)
-  route_table_id = element(aws_route_table.private.*.id, var.single_nat_gateway ? 0 : count.index)
+  route_table_id = element(aws_route_table.private.*.id, 0)
 }
 
 resource "aws_route_table_association" "public" {
@@ -140,9 +133,7 @@ resource "aws_route_table_association" "database" {
 
   subnet_id = element(aws_subnet.database.*.id, count.index)
   route_table_id = element(
-      coalescelist(aws_route_table.private.*.id),
-    var.single_nat_gateway ? 0 : count.index,
-  )
+      coalescelist(aws_route_table.private.*.id), 0)
 }
 
 #################
@@ -173,7 +164,7 @@ resource "aws_subnet" "private" {
 # There are as many routing tables as the number of NAT gateways
 #################
 resource "aws_route_table" "private" {
-  count = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
 
   vpc_id = local.vpc_id
 
@@ -227,7 +218,7 @@ resource "aws_db_subnet_group" "database" {
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.existing_subnet_ids) == 0 ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0 ? 1 : 0
 
   vpc = true
 
@@ -243,35 +234,33 @@ resource "aws_eip" "nat" {
   )
 }
 
-resource "aws_nat_gateway" "this" {
-  count = length(var.existing_subnet_ids) == 0  && var.enable_nat_gateway ? local.nat_gateway_count : 0
+data "aws_nat_gateway" "byo_nat" {
+  count = length(var.existing_subnet_ids) > 0 && var.existing_nat_id != null ? 1 : 0
+  id = var.existing_nat_id # alt. support vpc_id or subnet_id where NAT 
+}
 
-  allocation_id = element(
-    aws_eip.nat.*.id, #local.nat_gateway_ips,
-    var.single_nat_gateway ? 0 : count.index,
-  )
-  subnet_id = length(var.existing_subnet_ids) == 0 ? element(
-    aws_subnet.public.*.id,
-    var.single_nat_gateway ? 0 : count.index,
-  ) : element(var.existing_subnet_ids["public"], var.single_nat_gateway ? 0 : count.index, )
+resource "aws_nat_gateway" "this" {
+  count = length(var.existing_subnet_ids) > 0 && var.existing_nat_id != null ? 0 : 1
+
+  allocation_id = element(aws_eip.nat.*.id, 0)
+  subnet_id = element(aws_subnet.public.*.id,0)
 
   tags = merge(
     {
       "Name" = format(
         "%s-%s",
         var.name,
-        element(var.azs, var.single_nat_gateway ? 0 : count.index),
+        element(var.azs, 0),
       )
     },
     var.tags,
-    # var.nat_gateway_tags,
   )
 
   depends_on = [aws_internet_gateway.this]
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = length(var.existing_subnet_ids) == 0  && var.enable_nat_gateway ? local.nat_gateway_count : 0
+  count = length(var.existing_subnet_ids) == 0  ? 1 : 0
 
   route_table_id         = element(aws_route_table.private.*.id, count.index)
   destination_cidr_block = "0.0.0.0/0"

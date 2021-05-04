@@ -22,7 +22,7 @@ output "database_subnets" {
 
 output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
-  value       = aws_eip.nat.*.public_ip
+  value       = length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? aws_eip.nat.*.public_ip : data.aws_nat_gateway.byo_nat.*.public_ip
 }
 
 output "public_route_table_ids" {
