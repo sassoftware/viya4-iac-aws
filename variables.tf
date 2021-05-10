@@ -252,12 +252,12 @@ variable "vpc_id" {
 variable "subnet_ids" {
   type = map(list(string))
   default     = {}
-  description = "Map subnet usage roles to existing subnet ids"
+  description = "Map subnet usage roles to list of existing subnet ids"
   # Example:
-  # subnet_ids = {
-  #   'public': 'my_public_subnet_id', 
-  #   'private': 'my_private_subnet_id', 
-  #   'database': 'my_db_subnet_id'
+  # subnet_ids = {  # only needed if using pre-existing subnets
+  #   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
+  #   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  #   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
   # }
 }
 
@@ -286,7 +286,7 @@ variable "security_group_id" {
 variable "nat_id" {
   type = string
   default = null
-  description = "Pre-existing VPC Internet Gateway id"
+  description = "Pre-existing NAT Gateway id"
 }
 
 variable "create_jump_vm" {

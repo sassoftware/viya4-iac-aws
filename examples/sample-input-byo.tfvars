@@ -12,11 +12,12 @@ ssh_public_key                          = "~/.ssh/id_rsa.pub"
 # Bring your own existing resources
 vpc_id  = "<existing-vpc-id>" # only needed if using pre-existing VPC
 subnet_ids = {  # only needed if using pre-existing subnets
-  "public" : ["list-of-existing-public-subnets"],
-  "private" : ["list-of-existing-private-subnet-ids"],
-  "database" : ["list-of-existing-database-subnet-ids"]
+  "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
+  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"]] # only when 'create_postgres=true' 
 }
-security_group_id = "<existing-vpc-id>" # only needed if using pre-existing Security Group
+nat_id = "<existing-NAT-gateway-id>"
+security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
