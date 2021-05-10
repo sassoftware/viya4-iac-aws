@@ -91,14 +91,14 @@ The default values for the subnets variable are:
 ```
 
 ### Use Existing
-When desiring to deploy into existing vpc or subnets the variables below can be used to define the exiting resources
+If desired, you can deploy into an existing VPC, use existing Subnets, and provided an existing Cloud NAT IP address info. The variables below can be used to define the exiting resources
 | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of pre-existing VPC | string | null | Only required if deploying into existing VPC. Ensure `DNS hostnames` and `DNS resolution` are enabled |
  | subnet_ids | Existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing Subnets |
  | security_group_id | ID of existing Security Group | string | null | Only required if using existing Security Group. Ensure outbound rule for all traffic is enabled `0.0.0.0/0`|
 
-Example subnet_names variable:
+Example `subnet_ids` variable:
 
 ```yaml
 subnet_ids = {
@@ -107,6 +107,7 @@ subnet_ids = {
   "db" : ["<list-of-existing-public-subnet-ids>"]
 }
 ```
+Refer to [BYO Network](./BYOnetwork.md) document for additional deatils and requirements on using existing network resources and supported scenarios.
 
 ## General
 
