@@ -107,7 +107,7 @@ subnet_ids = {
   "db" : ["<list-of-existing-public-subnet-ids>"]
 }
 ```
-Refer to [BYO Network](./BYOnetwork.md) document for additional deatils and requirements on using existing network resources and supported scenarios.
+Refer to [BYO Network](./user/BYOnetwork.md) document for additional deatils and requirements on using existing network resources and supported scenarios.
 
 ## General
 
