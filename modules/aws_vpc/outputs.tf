@@ -7,22 +7,22 @@ output "vpc_id" {
 #subnet_ids
 output "public_subnets" {
   description = "List of IDs of public subnets"
-  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.byo_public.*.id
+  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.public.*.id
 }
 
 output "private_subnets" {
   description = "List of IDs of private subnets"
-  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.private.*.id : data.aws_subnet.byo_private.*.id
+  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.private.*.id : data.aws_subnet.private.*.id
 }
 
 output "database_subnets" {
-  description = "List of IDs of public subnets"
-  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.database.*.id : data.aws_subnet.byo_database.*.id
+  description = "List of IDs of database subnets"
+  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.database.*.id : data.aws_subnet.database.*.id
 }
 
 output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
-  value       = length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? aws_eip.nat.*.public_ip : data.aws_nat_gateway.byo_nat.*.public_ip
+  value       = var.existing_nat_id == null ? aws_eip.nat.*.public_ip : data.aws_nat_gateway.nat.*.public_ip
 }
 
 output "public_route_table_ids" {

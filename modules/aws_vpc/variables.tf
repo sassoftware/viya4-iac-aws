@@ -27,19 +27,13 @@ variable "subnets" {
 variable "existing_subnet_ids" {
   type        = map(list(string))
   default     = {}
-  description = "Map subnet usage roles to existing subnet ids"
-  # Example:
-  # subnet_names = {
-  #   'public': 'my_public_subnet', 
-  #   'private': 'my_private_subnet', 
-  #   'db': 'my_db_subnet'
-  # }
+  description = "Map subnet usage roles to existing list of subnet ids"
 }
 
 variable "existing_nat_id" {
   type = string
   default = null
-  description = "Pre-existing VPC Internet Gateway id"
+  description = "Pre-existing VPC NAT Gateway id"
 }
 
 variable "enable_nat_gateway" {

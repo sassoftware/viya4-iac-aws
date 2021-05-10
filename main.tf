@@ -60,7 +60,7 @@ data "aws_caller_identity" "terraform" {}
 
 locals {
 
-  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.byo_sg[0].id
+  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
   vm_public_access_cidrs               = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
@@ -126,7 +126,7 @@ module "vpc" {
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
 }
 
-data aws_security_group byo_sg {
+data aws_security_group sg {
   count = var.security_group_id == null ? 0 : 1
   id = var.security_group_id
 }
