@@ -14,6 +14,8 @@ This project contains Terraform scripts to provision AWS Cloud infrastructure re
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 
+Once the cloud resources are provisioned, see the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) repo to deploy SAS Viya 4 products. If you need more information on the SAS Viya 4 products refer to the official [SAS&reg; Viya&reg; 4 Operations](https://go.documentation.sas.com/?cdcId=itopscdc&cdcVersion=v_001LTS&docsetId=itopswlcm&docsetTarget=home.htm&locale=en) documentation for more details.
+
 ## Prerequisites
 
 Operational knowledge of:
