@@ -96,7 +96,7 @@ If desired, you can deploy into an existing VPC, use existing Subnets and provid
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of pre-existing VPC | string | null | Only required if deploying into existing VPC |
  | subnet_ids | Existing list of subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing Subnets |
-| nat_id | ID of pre-existing AWS NAT Gateway | string | null | Only required if deploying into existing VPC and SUbnets|
+| nat_id | ID of pre-existing AWS NAT Gateway | string | null | Only required if deploying into existing VPC and Subnets|
  | security_group_id | ID of existing Security Group | string | null | Only required if using existing Security Group. Ensure outbound rule for all traffic is enabled `0.0.0.0/0`|
 
 Example `subnet_ids` variable:

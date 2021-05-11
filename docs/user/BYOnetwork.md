@@ -1,11 +1,11 @@
-## Supported scenarios and requirements for using existing AWS network resources
+## Supported scenarios and requirements when using existing network resources
 
-The table below shows the scenarios supported with using existing/bring your own(BYO) network resources:
+The table below shows the supported scenarios when using existing/bring your own(BYO) network resources:
 
 | <div style="width:70px">Scenario</div> | <div style="width:70px">BYO resource</div> | <div style="width:500px">Requirements</div> | <div style="width:100px">Resources that will be created</dvi>|
 | :--- | :--- | :--- | :--- |
-| 1 | VPC | <ul><li>VPC block size must be IPv4 CIDR block with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>`vpc_id` must be provided</li><li>`subnets` CIDR blocks must match with VPC CIDR IPv4 CIDR block</li></ul> | Subnets and Security Group|
-| 2 | - VPC, <br>- Subnets,<ul><li>Public</li><li>Private</li><li>Database(only when `create_postgres=true`)</li></ul>- NAT Gateway | <ul><li>all requirements from Scenario #1 and additionally</li><li>`vpc_id`, `subnet_ids` must be provided</li><li>Required AWS Tags with `${var.prefix}` value replaced to match EKS Cluster name (see [AWS docs](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) for background), for <br>- Public Subnets:<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/${var.prefix}-eks"="shared"}`</li></ul>-Private Subnets:<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/${var.prefix}-eks"="shared"}`</li></ul>| Security Group |
+| 1 | VPC | <ul><li>VPC block size must be IPv4 CIDR block with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>`vpc_id` must be provided</li><li>`subnets` CIDR blocks must match with VPC CIDR IPv4 CIDR block</li></ul> | Subnets, NAT Gateway and Security Group|
+| 2 | - VPC, <br>- Subnets,<ul><li>Public</li><li>Private</li><li>Database(only when `create_postgres=true`)</li></ul>- NAT Gateway | <ul><li>all requirements from Scenario #1 and additionally</li><li>`vpc_id`, `subnet_ids` must be provided</li><li>AWS Tags with `<prefix>` value replaced with the [prefix](../../variables.tf#L2) input value for <br>- Public Subnets:<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>-Private Subnets:<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>See [AWS docs](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) for background on subnet tag requirements to match EKS Cluster name| Security Group |
 | 3 | - VPC, <br>- Subnets,<ul><li>Public</li><li>Private</li><li>Database(only when `create_postgres=true`)</li></ul>- NAT Gateway,<br>- Security Group |<ul><li>all requirements from Scenarios # 1 & 2 and additionally</li><li>`security_group_id` must be provided</li></ul>| None |
 
 
