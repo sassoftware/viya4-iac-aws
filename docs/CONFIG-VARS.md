@@ -91,7 +91,7 @@ The default values for the subnets variable are:
 ```
 
 ### Use Existing
-If desired, you can deploy into an existing VPC, use existing Subnets and provided NAT Gateway and existing Security Group. The variables in table below can be used to define the existing resources. Refer to [BYO Network](./user/BYOnetwork.md) page for supported scenarios on how to use existing network resources with additional details and requirements .
+If desired, you can deploy into an existing - VPC, Subnets and NAT Gateway, and Security Group. **Note**: all existing VPC/Subnet resources must be in the same AWS region as the input [location](./CONFIG-VARS.md#required-variables). The variables in the table below can be used to define the existing resources. Refer to [BYO Network](./user/BYOnetwork.md) page for all supported scenarios on how to these use existing network resources with additional details and requirements .
 | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of pre-existing VPC | string | null | Only required if deploying into existing VPC |
