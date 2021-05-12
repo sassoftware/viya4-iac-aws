@@ -14,7 +14,7 @@ vpc_id  = "<existing-vpc-id>" # only needed if using pre-existing VPC
 subnet_ids = {  # only needed if using pre-existing subnets
   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
-  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"]] # only when 'create_postgres=true' 
+  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
 }
 nat_id = "<existing-NAT-gateway-id>"
 security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
