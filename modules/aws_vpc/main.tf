@@ -1,3 +1,5 @@
+# This is customized based on - https://github.com/terraform-aws-modules/terraform-aws-vpc
+
 locals {
   vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
 }

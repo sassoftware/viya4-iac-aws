@@ -70,6 +70,7 @@ locals {
 
   jump_vm_subnet                       = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet_az                     = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
@@ -277,7 +278,7 @@ module "nfs" {
   data_disk_type              = var.nfs_raid_disk_type
   data_disk_size              = var.nfs_raid_disk_size
   data_disk_iops              = var.nfs_raid_disk_iops
-  data_disk_availability_zone = data.aws_availability_zones.available.names[0]
+  data_disk_availability_zone = local.nfs_vm_subnet_az
 
   create_vm      = var.storage_type == "standard" ? true : false
   vm_type        = var.nfs_vm_type

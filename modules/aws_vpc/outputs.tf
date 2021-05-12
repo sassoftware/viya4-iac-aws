@@ -10,9 +10,19 @@ output "public_subnets" {
   value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.public.*.id
 }
 
+output "public_subnet_azs" {
+  description = "List of public subnet AZs"
+  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.availability_zone : data.aws_subnet.public.*.availability_zone
+}
+
 output "private_subnets" {
   description = "List of IDs of private subnets"
   value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.private.*.id : data.aws_subnet.private.*.id
+}
+
+output "private_subnet_azs" {
+  description = "List of private subnet AZs"
+  value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.private.*.availability_zone : data.aws_subnet.private.*.availability_zone
 }
 
 output "database_subnets" {
