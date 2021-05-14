@@ -1,13 +1,12 @@
 ## Global
 variable "prefix" {
-  description = "A prefix used in the name for all the cloud resources created by this script. The prefix string must start with lowercase letter and contain only alphanumeric characters."
+  description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with lowercase letter and contain only alphanumeric characters and hyphen or dash(-), but can not start or end with '-'."
   type        = string
 
-  # validation {
-  #   condition = can(regex("^[a-z][a-zA-Z0-9]*$", var.prefix))
-  #   # condition     = length(var.prefix) < 7 && can(regex("^[a-z][a-zA-Z0-9]*$", var.prefix))
-  #   error_message = "ERROR: Input Value of 'prefix' must start with lowercase letter and can contain only alphanumeric characters [a-zA-Z0-9]."
-  # }
+  validation {
+    condition     = can(regex("^[a-z][-0-9a-z]*[0-9a-z]$", var.prefix))
+    error_message = "ERROR: Value of 'prefix'\n * must start with lowercase letter\n * can only contain lowercase letters, numbers, and hyphen or dash(-), but can't start or end with '-'."
+  }
 }
 
 ## Provider
