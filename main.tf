@@ -397,6 +397,7 @@ module "kubeconfig" {
   namespace                = "kube-system"
 
   cluster_name             = local.cluster_name
+  region                   = var.location
   endpoint                 = module.eks.cluster_endpoint
   ca_crt                   = local.kubeconfig_ca_cert
 
