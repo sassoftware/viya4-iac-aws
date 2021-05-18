@@ -443,6 +443,6 @@ variable "storage_type" {
 variable "create_static_kubeconfig" {
   description = "Allows the user to create a provider / service account based kube config file"
   type        = bool
-  default     = false
+  default     = true
 }
 
