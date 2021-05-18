@@ -4,23 +4,23 @@
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
-  required_version = ">= 0.13.0"
+  required_version = ">= 0.15.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.27.0"
+      version = "3.40.0"
     }
     random = {
       source = "hashicorp/random"
-      version = "3.0.1"
+      version = "3.1.0"
     }  
     local = {
       source = "hashicorp/local"
-      version = "2.0.0"
+      version = "2.1.0"
     }
     null = {
       source = "hashicorp/null"
-      version = "3.0.0"
+      version = "3.1.0"
     }
     template = {
       source = "hashicorp/template"
@@ -28,11 +28,11 @@ terraform {
     }
     external = {
       source = "hashicorp/external"
-      version = "2.0.0"
+      version = "2.1.0"
     }
     kubernetes = {
       source = "hashicorp/kubernetes"
-      version = "2.0.2"
+      version = "2.2.0"
     }
   }
 }
@@ -145,7 +145,7 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
+  tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
 }
 
 
@@ -154,7 +154,7 @@ resource "aws_efs_file_system" "efs-fs" {
   count            = var.storage_type == "ha" ? 1 : 0
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
-  tags             = merge(var.tags, map("Name", "${var.prefix}-efs"))
+  tags             = merge(var.tags, tomap({ Name: "${var.prefix}-efs" }))
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
@@ -291,7 +291,7 @@ module "nfs" {
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "3.8.0"
+  version = "4.1.0"
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -366,7 +366,7 @@ locals {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "14.0.0"
+  version                               = "16.0.0"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
@@ -407,7 +407,7 @@ module "kubeconfig" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "2.20.0"
+  version = "3.0.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 

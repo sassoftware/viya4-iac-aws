@@ -80,7 +80,7 @@ resource "aws_instance" "vm" {
     iops                  = var.os_disk_iops
   }
 
-  tags = merge(var.tags, map("Name", "${var.name}-vm"))
+  tags = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
 
 }
 
@@ -88,7 +88,7 @@ resource "aws_eip" "eip" {
   count = (var.create_vm && var.create_public_ip) ? 1 : 0
   vpc = true
   instance = aws_instance.vm.0.id
-  tags = merge(var.tags, map("Name", "${var.name}-eip"))
+  tags = merge(var.tags, tomap({ Name: "${var.name}-eip" }))
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
@@ -104,5 +104,5 @@ resource "aws_ebs_volume" "raid_disk" {
   size              = var.data_disk_size
   type              = var.data_disk_type
   iops              = var.data_disk_iops
-  tags              = merge(var.tags, map("Name", "${var.name}-vm"))
+  tags              = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
 }
