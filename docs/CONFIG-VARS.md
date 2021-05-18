@@ -11,6 +11,8 @@ Supported configuration variables are listed in the table below.  All variables 
       - [Using Static Credentials](#using-static-credentials)
       - [Using AWS Profile](#using-aws-profile)
   - [Admin Access](#admin-access)
+  - [Networking](#networking)
+    - [Use Existing](#use-existing)
   - [General](#general)
   - [Nodepools](#nodepools)
     - [Default Nodepool](#default-nodepool)
@@ -71,6 +73,41 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | cluster_endpoint_public_access_cidrs | IP Ranges allowed to access the AKS cluster api | list of strings | | for client admin access to the cluster, e.g. with `kubectl` |
 | vm_public_access_cidrs | IP Ranges allowed to access the VMs | list of strings | | opens port 22 for SSH access to the jump and/or nfs VM |
 | postgres_access_cidrs | IP Ranges allowed to access the AWS PostgreSQL Server | list of strings |||
+
+## Networking
+ | Name | Description | Type | Default | Notes |
+ | :--- | ---: | ---: | ---: | ---: |
+ | vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (aka bring your own VPC) |
+ | subnets | Subnets to be created and their settings | map | check below | This variable is ignored when subnet_ids is set (aka bring your own subnets). All defined subnets must exist within the vnet address space. |
+
+The default values for the subnets variable are:
+
+```yaml
+{
+  "private" : ["192.168.0.0/18", "192.168.64.0/18"],
+  "public" : ["192.168.129.0/25", "192.168.129.128/25"],
+  "database" : ["192.168.128.0/25", "192.168.128.128/25"]
+}
+```
+
+### Use Existing
+If desired, you can deploy into an existing - VPC, Subnets and NAT Gateway, and Security Group. **Note**: all existing VPC/Subnet resources must be in the same AWS region as the input [location](./CONFIG-VARS.md#required-variables). The variables in the table below can be used to define the existing resources. Refer to [BYO Network](./user/BYOnetwork.md) page for all supported scenarios on how to these use existing network resources with additional details and requirements .
+| Name | Description | Type | Default | Notes |
+ | :--- | ---: | ---: | ---: | ---: |
+ | vpc_id | ID of pre-existing VPC | string | null | Only required if deploying into existing VPC |
+ | subnet_ids | Existing list of subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing Subnets |
+| nat_id | ID of pre-existing AWS NAT Gateway | string | null | Only required if deploying into existing VPC and Subnets|
+ | security_group_id | ID of existing Security Group | string | null | Only required if using existing Security Group. Ensure outbound rule for all traffic is enabled `0.0.0.0/0`|
+
+Example `subnet_ids` variable:
+
+```yaml
+subnet_ids = {
+  "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
+  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
+}
+```
 
 ## General
 

@@ -13,6 +13,7 @@ data "template_file" "kubeconfig_provider" {
     cluster_name = var.cluster_name
     endpoint     = var.endpoint
     ca_crt       = var.ca_crt
+    region       = var.region
   }
 }
 

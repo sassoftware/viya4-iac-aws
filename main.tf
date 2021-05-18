@@ -59,6 +59,8 @@ data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "terraform" {}
 
 locals {
+
+  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_name                         = "${var.prefix}-eks"
   default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
   vm_public_access_cidrs               = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
@@ -68,6 +70,7 @@ locals {
 
   jump_vm_subnet                       = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet_az                     = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
@@ -108,47 +111,30 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
-# VPC Setup - https://github.com/terraform-aws-modules/terraform-aws-vpc
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "2.70.0"
+  source = "./modules/aws_vpc"
 
-  name = "${var.prefix}-vpc"
+  name = var.prefix
+  vpc_id = var.vpc_id
   cidr = var.vpc_cidr
-  # NOTE - Only have a list of 2 AZs. Then only look for these subnets in the EFS mount below.
-  # azs                  = slice( data.aws_availability_zones.available.names, 0,1 )
-  azs                  = data.aws_availability_zones.available.names
-  private_subnets      = var.private_subnets
-  public_subnets       = var.public_subnets
-  database_subnets     = var.database_subnets
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  azs  = data.aws_availability_zones.available.names
+  existing_subnet_ids = var.subnet_ids
+  subnets = var.subnets
+  existing_nat_id = var.nat_id
 
-  tags                = var.tags
+  tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
 }
 
-# Associate private subnets with the private routing table.
-resource "aws_route_table_association" "private" {
-  count = length(module.vpc.private_subnets)
-
-  subnet_id      = module.vpc.private_subnets[count.index]
-  route_table_id = module.vpc.private_route_table_ids[0]
-}
-
-# Associate public subnets with the public routing table.
-resource "aws_route_table_association" "public" {
-  count = length(module.vpc.public_subnets)
-
-  subnet_id      = module.vpc.public_subnets[count.index]
-  route_table_id = module.vpc.public_route_table_ids[0]
+data aws_security_group sg {
+  count = var.security_group_id == null ? 0 : 1
+  id = var.security_group_id
 }
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
 resource "aws_security_group" "sg" {
+  count = var.security_group_id == null ? 1 : 0
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
@@ -177,7 +163,7 @@ resource "aws_efs_mount_target" "efs-mt" {
   count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs.0.id
   subnet_id       = element(module.vpc.private_subnets, count.index)
-  security_groups = [aws_security_group.sg.id]
+  security_groups = [local.security_group_id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
@@ -210,7 +196,7 @@ module "jump" {
   name               = "${var.prefix}-jump"
   tags               = var.tags
   subnet_id          = local.jump_vm_subnet
-  security_group_ids = [aws_security_group.sg.id]
+  security_group_ids = [local.security_group_id]
   create_public_ip   = var.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -237,7 +223,7 @@ resource "aws_security_group_rule" "vms" {
   to_port           = 22
   protocol          = "tcp"
   cidr_blocks       = local.vm_public_access_cidrs
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 resource "aws_security_group_rule" "all" {
@@ -246,7 +232,7 @@ resource "aws_security_group_rule" "all" {
   from_port         = 0
   to_port           = 0
   protocol          = "all"
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
   self              = true
 }
 
@@ -280,7 +266,7 @@ module "nfs" {
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
-  security_group_ids = [aws_security_group.sg.id]
+  security_group_ids = [local.security_group_id]
   create_public_ip   = var.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -292,7 +278,7 @@ module "nfs" {
   data_disk_type              = var.nfs_raid_disk_type
   data_disk_size              = var.nfs_raid_disk_size
   data_disk_iops              = var.nfs_raid_disk_iops
-  data_disk_availability_zone = data.aws_availability_zones.available.names[0]
+  data_disk_availability_zone = local.nfs_vm_subnet_az
 
   create_vm      = var.storage_type == "standard" ? true : false
   vm_type        = var.nfs_vm_type
@@ -388,13 +374,13 @@ module "eks" {
   cluster_endpoint_public_access        = true
   cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                      = false
-  subnets                               = concat([module.vpc.private_subnets.0, module.vpc.private_subnets.1])
+  subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
 
   workers_group_defaults = {
     # tags = var.tags
-    additional_security_group_ids = [aws_security_group.sg.id]
+    additional_security_group_ids = [local.security_group_id]
   }
 
   # Added to support EBS CSI driver
@@ -411,6 +397,7 @@ module "kubeconfig" {
   namespace                = "kube-system"
 
   cluster_name             = local.cluster_name
+  region                   = var.location
   endpoint                 = module.eks.cluster_endpoint
   ca_crt                   = local.kubeconfig_ca_cert
 
@@ -440,7 +427,7 @@ module "db" {
   password = var.postgres_administrator_password
   port     = var.postgres_server_port
 
-  vpc_security_group_ids = [aws_security_group.sg.id]
+  vpc_security_group_ids = [local.security_group_id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -489,7 +476,7 @@ resource "aws_security_group_rule" "postgres_internal" {
   to_port           = 5432
   protocol          = "tcp"
   self              = true
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 resource "aws_security_group_rule" "postgres_external" {
@@ -500,7 +487,7 @@ resource "aws_security_group_rule" "postgres_external" {
   to_port           = 5432
   protocol          = "tcp"
   cidr_blocks       = local.postgres_public_access_cidrs
-  security_group_id = aws_security_group.sg.id
+  security_group_id = local.security_group_id
 }
 
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
