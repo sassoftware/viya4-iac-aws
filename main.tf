@@ -4,7 +4,7 @@
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
 terraform {
-  required_version = ">= 0.15.0"
+  required_version = ">= 0.15.3"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
