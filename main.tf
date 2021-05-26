@@ -3,39 +3,6 @@
 # Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
-terraform {
-  required_version = ">= 0.15.3"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "3.40.0"
-    }
-    random = {
-      source = "hashicorp/random"
-      version = "3.1.0"
-    }  
-    local = {
-      source = "hashicorp/local"
-      version = "2.1.0"
-    }
-    null = {
-      source = "hashicorp/null"
-      version = "3.1.0"
-    }
-    template = {
-      source = "hashicorp/template"
-      version = "2.2.0"
-    }
-    external = {
-      source = "hashicorp/external"
-      version = "2.1.0"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-      version = "2.2.0"
-    }
-  }
-}
 
 provider "aws" {
   region                  = var.location
@@ -366,7 +333,7 @@ locals {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "16.0.0"
+  version                               = "16.2.0"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
@@ -407,7 +374,7 @@ module "kubeconfig" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "3.0.0"
+  version = "3.1.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 
