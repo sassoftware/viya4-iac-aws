@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "3.27.0"
+      version = "3.42.0"
     }
     random = {
       source = "hashicorp/random"
@@ -366,7 +366,7 @@ locals {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "14.0.0"
+  version                               = "16.2.0"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
@@ -381,6 +381,8 @@ module "eks" {
   workers_group_defaults = {
     # tags = var.tags
     additional_security_group_ids = [local.security_group_id]
+    metadata_http_tokens = "required"
+    metadata_http_put_response_hop_limit = 1
   }
 
   # Added to support EBS CSI driver
