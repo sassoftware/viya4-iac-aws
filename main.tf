@@ -328,7 +328,7 @@ locals {
         additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
-        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limitq
+        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
       }
   ]
 
