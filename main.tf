@@ -72,7 +72,7 @@ locals {
   nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az                     = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
-  kubeconfig_filename = "${var.prefix}-eks-kubeconfig.conf"
+  kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
   kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority.0.data
 }
@@ -123,8 +123,8 @@ module "vpc" {
   existing_nat_id = var.nat_id
 
   tags = var.tags
-  public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
-  private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${var.prefix}-eks" = "shared" })
+  public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
 }
 
 data aws_security_group sg {
@@ -372,7 +372,7 @@ locals {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "16.2.0"
+  version                               = "17.0.3"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
