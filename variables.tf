@@ -155,19 +155,34 @@ variable "default_nodepool_custom_data" {
   default = ""
 }
 
+variable "default_nodepool_metadata_http_endpoint" {
+  default = "enabled"
+}
+
+variable "default_nodepool_metadata_http_tokens" {
+  default = "required"
+}
+
+variable "default_nodepool_metadata_http_put_response_hop_limit" {
+  default = 1
+}
+
 ## Dynamnic Nodepool config
 variable node_pools {
   description = "Node pool definitions"
   type = map(object({
-    vm_type      = string
-    os_disk_type = string
-    os_disk_size = number
-    os_disk_iops = number
-    min_nodes    = string
-    max_nodes    = string
-    node_taints  = list(string)
-    node_labels  = map(string)
-    custom_data  = string
+    vm_type                              = string
+    os_disk_type                         = string
+    os_disk_size                         = number
+    os_disk_iops                         = number
+    min_nodes                            = string
+    max_nodes                            = string
+    node_taints                          = list(string)
+    node_labels                          = map(string)
+    custom_data                          = string
+    metadata_http_endpoint               = string
+    metadata_http_tokens                 = string
+    metadata_http_put_response_hop_limit = number
   }))
 
   default = {
@@ -183,6 +198,9 @@ variable node_pools {
         "workload.sas.com/class" = "cas"
       }
       "custom_data" = ""
+      "metadata_http_endpoint"               = "enabled"
+      "metadata_http_tokens"                 = "required"
+      "metadata_http_put_response_hop_limit" = 1
     },
     compute = {
       "vm_type"      = "m5.8xlarge"
@@ -197,6 +215,9 @@ variable node_pools {
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
       "custom_data" = ""
+      "metadata_http_endpoint"               = "enabled"
+      "metadata_http_tokens"                 = "required"
+      "metadata_http_put_response_hop_limit" = 1
     },
     connect = {
       "vm_type"      = "m5.8xlarge"
@@ -211,6 +232,9 @@ variable node_pools {
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
       "custom_data" = ""
+      "metadata_http_endpoint"               = "enabled"
+      "metadata_http_tokens"                 = "required"
+      "metadata_http_put_response_hop_limit" = 1
     },
     stateless = {
       "vm_type"      = "m5.4xlarge"
@@ -224,6 +248,9 @@ variable node_pools {
         "workload.sas.com/class" = "stateless"
       }
       "custom_data" = ""
+      "metadata_http_endpoint"               = "enabled"
+      "metadata_http_tokens"                 = "required"
+      "metadata_http_put_response_hop_limit" = 1
     },
     stateful = {
       "vm_type"      = "m5.4xlarge"
@@ -237,6 +264,9 @@ variable node_pools {
         "workload.sas.com/class" = "stateful"
       }
       "custom_data" = ""
+      "metadata_http_endpoint"               = "enabled"
+      "metadata_http_tokens"                 = "required"
+      "metadata_http_put_response_hop_limit" = 1
     }
   }
 }
