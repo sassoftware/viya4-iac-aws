@@ -43,6 +43,9 @@ node_pools = {
       "workload.sas.com/class" = "cas"
     }
     "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   },
   compute = {
     "vm_type" = "m5.8xlarge"
@@ -57,6 +60,9 @@ node_pools = {
       "launcher.sas.com/prepullImage" = "sas-programming-environment"
     }
     "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   },
   connect = {
     "vm_type" = "m5.8xlarge"
@@ -71,6 +77,9 @@ node_pools = {
       "launcher.sas.com/prepullImage" = "sas-programming-environment"
     }
     "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   },
   stateless = {
     "vm_type" = "m5.4xlarge"
@@ -84,6 +93,9 @@ node_pools = {
       "workload.sas.com/class" = "stateless"
     }
     "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   },
   stateful = {
     "vm_type" = "m5.4xlarge"
@@ -97,6 +109,9 @@ node_pools = {
       "workload.sas.com/class" = "stateful"
     }
     "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   }
 }
 

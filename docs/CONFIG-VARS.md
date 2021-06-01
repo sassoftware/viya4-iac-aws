@@ -137,6 +137,9 @@ subnet_ids = {
 | default_nodepool_taints | Taints for the default nodepool VMs | list of strings | | |
 | default_nodepool_labels | Labels to add to the dfeault nodepool VMs | map | | |
 | default_nodepool_custom_data | Additional userdata that will be appended to the default userdata. | string | "" | The value must be an empty string "" or the path to a file containing a `bash` script snippet that will be executed on the node pool. |
+| default_nodepool_metadata_http_endpoint | The state of the default node pool's metadata service | string | "enabled" | Valid values are: enabled, disabled |
+| default_nodepool_metadata_http_tokens | The state of the session tokens for the default node pool | string | "required" | Valid values are: required, optional |
+| default_nodepool_metadata_http_put_response_hop_limit | The desired HTTP PUT response hop limit for instance metadata requests for the default node pool | number | 1 | Valid values are: null, and any number greater than 0 (zero) |
 
 ### Additional Nodepools
 
@@ -153,6 +156,9 @@ Additional node pools can be created separate from the default nodepool. This is
 | node_taints | Taints for the nodepool VMs | list of strings | | |
 | node_labels | Labels to add to the nodepool VMs | map | | On nodes you wish to run SAS pods you will need to include this label: `"workload.sas.com/node"  = ""` |
 | custom_data | Additional userdata that will be appended to the default userdata. | string | | The value must be an empty string "" or the path to a file containing a `bash` script snippet that will be executed on the node pool. |
+| metadata_http_endpoint | The state of the node pool's metadata service | string | "enabled" | Valid values are: enabled, disabled |
+| metadata_http_tokens | The state of the session tokens for the node pool | string | "required" | Valid values are: required, optional |
+| metadata_http_put_response_hop_limit | The desired HTTP PUT response hop limit for instance metadata requests for the node pool | number | 1 | Valid values are: a number greater than 0 (zero) |
 
 ## Storage
 
