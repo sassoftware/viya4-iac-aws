@@ -137,6 +137,8 @@
                 "iam:RemoveRoleFromInstanceProfile",
                 "iam:TagRole",
                 "iam:UntagRole",
+                "iam:TagPolicy",
+                "iam:TagInstanceProfile",
                 "iam:UpdateAssumeRolePolicy",
                 "iam:UpdateAccessKey",
                 "resource-groups:*",
