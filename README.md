@@ -33,10 +33,10 @@ Operational knowledge of:
   
   - #### Terraform
 
-    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.6
-    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.18.8
+    - [Terraform](https://www.terraform.io/downloads.html) - v0.15.5
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.19.9
     - [jq](https://stedolan.github.io/jq/) - v1.6
-    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console) - v2.1.20
+    - [AWS CLI](https://aws.amazon.com/cli) - (optional - useful as an alternative to the AWS Web Console) - v2.1.29
   
   - #### Docker
   
