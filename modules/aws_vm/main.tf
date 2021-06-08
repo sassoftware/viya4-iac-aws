@@ -3,7 +3,7 @@
 # Hack for assigning disk in a vm based on an index value. 
 locals {
   device_name = [
-    # "/dev/sdb", - NOTE: These are skipped, Ubuntu Server 18.04 LTS
+    # "/dev/sdb", - NOTE: These are skipped, Ubuntu Server 20.04 LTS
     # "/dev/sdc",         uses these for ephmeral storage.
     "/dev/sdd",
     "/dev/sde",
@@ -37,7 +37,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
 
   filter {
@@ -80,7 +80,7 @@ resource "aws_instance" "vm" {
     iops                  = var.os_disk_iops
   }
 
-  tags = merge(var.tags, map("Name", "${var.name}-vm"))
+  tags = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
 
 }
 
@@ -88,7 +88,7 @@ resource "aws_eip" "eip" {
   count = (var.create_vm && var.create_public_ip) ? 1 : 0
   vpc = true
   instance = aws_instance.vm.0.id
-  tags = merge(var.tags, map("Name", "${var.name}-eip"))
+  tags = merge(var.tags, tomap({ Name: "${var.name}-eip" }))
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
@@ -104,5 +104,5 @@ resource "aws_ebs_volume" "raid_disk" {
   size              = var.data_disk_size
   type              = var.data_disk_type
   iops              = var.data_disk_iops
-  tags              = merge(var.tags, map("Name", "${var.name}-vm"))
+  tags              = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
 }

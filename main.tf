@@ -3,39 +3,6 @@
 # Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
-terraform {
-  required_version = ">= 0.13.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "3.42.0"
-    }
-    random = {
-      source = "hashicorp/random"
-      version = "3.0.1"
-    }  
-    local = {
-      source = "hashicorp/local"
-      version = "2.0.0"
-    }
-    null = {
-      source = "hashicorp/null"
-      version = "3.0.0"
-    }
-    template = {
-      source = "hashicorp/template"
-      version = "2.2.0"
-    }
-    external = {
-      source = "hashicorp/external"
-      version = "2.0.0"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-      version = "2.0.2"
-    }
-  }
-}
 
 provider "aws" {
   region                  = var.location
@@ -145,7 +112,7 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = merge(var.tags, map("Name", "${var.prefix}-sg"))
+  tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
 }
 
 
@@ -154,7 +121,7 @@ resource "aws_efs_file_system" "efs-fs" {
   count            = var.storage_type == "ha" ? 1 : 0
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
-  tags             = merge(var.tags, map("Name", "${var.prefix}-efs"))
+  tags             = merge(var.tags, tomap({ Name: "${var.prefix}-efs" }))
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
@@ -291,7 +258,7 @@ module "nfs" {
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "3.8.0"
+  version = "4.1.0"
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -361,7 +328,7 @@ locals {
         additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
-        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit 
+        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
       }
   ]
 
@@ -415,7 +382,7 @@ module "kubeconfig" {
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "2.20.0"
+  version = "3.1.0"
 
   identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 

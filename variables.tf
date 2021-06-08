@@ -89,7 +89,7 @@ variable efs_performance_mode {
 ## Kubernetes
 variable "kubernetes_version" {
   description = "The EKS cluster K8s version"
-  default     = "1.18"
+  default     = "1.19"
 }
 
 variable "tags" {

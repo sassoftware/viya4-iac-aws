@@ -28,15 +28,15 @@ Operational knowledge of:
 ### Required
 
 - Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
-- Subscription to [Ubuntu 18.04 LTS - Bionic](https://aws.amazon.com/marketplace/pp/B07CQ33QKV/)
+- Subscription to [Ubuntu 20.04 LTS - Focal](https://aws.amazon.com/marketplace/pp/prodview-iftkyuwv2sjxi)
 - Terraform or Docker
   
   - #### Terraform
 
-    - [Terraform](https://www.terraform.io/downloads.html) - v0.13.6
-    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.18.8
+    - [Terraform](https://www.terraform.io/downloads.html) - v1.0.0
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.19.9
     - [jq](https://stedolan.github.io/jq/) - v1.6
-    - [AWS CLI v2.0](https://aws.amazon.com/cli) - (optional -useful as an alternative to the AWS Web Console) - v2.1.20
+    - [AWS CLI](https://aws.amazon.com/cli) - (optional - useful as an alternative to the AWS Web Console) - v2.1.29
   
   - #### Docker
   
@@ -62,7 +62,7 @@ See  [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentica
 
 ### Customize Input Values
 
-Create a file named `terraform.tfvars` to customize any input variable value. For starters, you can copy one of the provided sample variable definition files in [examples](./examples) folder. For more details on the variables declared in [variables.tf](variables.tf) refer to [CONFIG-VARS.md](docs/CONFIG-VARS.md).
+Create a file named `terraform.tfvars` to customize any input variable value documented in the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file. For starters, you can copy one of the provided sample variable definition files in [examples](./examples) folder. For more details on the variables declared refer to the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file.
 
 **NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules, access to the cluster will only be allowed via the AWS Console.
 
