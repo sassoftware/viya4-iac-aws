@@ -112,7 +112,7 @@ subnet_ids = {
 
 ## IAM
 
-By default, three custom IAM Policies, and two custom IAM Roles (with Instance Profiles) are being created. If your site security protocol does not allow automatic creation of IAM resources, you can provide pre-created Roles using the following options:
+By default, two custom IAM Policies, and two custom IAM Roles (with Instance Profiles) are being created. If your site security protocol does not allow automatic creation of IAM resources, you can provide pre-created Roles using the following options:
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
