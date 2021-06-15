@@ -116,8 +116,8 @@ By default, two custom IAM Policies, and two custom IAM Roles (with Instance Pro
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| cluster_iam_role_name | Name of pre-existing IAM Policy for the EKS cluster | string | "" | |
-| workers_iam_role_name | Name of pre-existing IAM Policy for the cluster node VMs | string | "" | |
+| cluster_iam_role_name | Name of pre-existing IAM Role for the EKS cluster | string | "" | |
+| workers_iam_role_name | Name of pre-existing IAM Role for the cluster node VMs | string | "" | |
 
 The Cluster IAM Role needs to include the following three AWS-managed Policies and one custom Policy.
 
