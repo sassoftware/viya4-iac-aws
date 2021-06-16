@@ -318,6 +318,19 @@ variable "nat_id" {
   description = "Pre-existing NAT Gateway id"
 }
 
+variable "cluster_iam_role_name" {
+  type = string
+  default = null
+  description = "Pre-existing IAM Role for the EKS cluster"
+}
+
+variable "workers_iam_role_name" {
+  type = string
+  default = null
+  description = "Pre-existing IAM Role for the Node VMs"
+}
+
+
 variable "create_jump_vm" {
   description = "Create bastion host VM"
   default = true

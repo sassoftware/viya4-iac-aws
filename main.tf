@@ -260,6 +260,8 @@ module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
   version = "4.1.0"
 
+  count = var.workers_iam_role_name == null ? 1 : 0
+
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
 
@@ -310,6 +312,7 @@ locals {
       metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
       metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
       metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
+
     }
   ]
 
@@ -329,6 +332,7 @@ locals {
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
         metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
+
       }
   ]
 
@@ -350,16 +354,22 @@ module "eks" {
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
+  
+  manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
+  workers_role_name                     = var.workers_iam_role_name
+  manage_cluster_iam_resources          = var.cluster_iam_role_name == null ? true : false
+  cluster_iam_role_name                 = var.cluster_iam_role_name
 
   workers_group_defaults = {
     # tags = var.tags
-    additional_security_group_ids = [local.security_group_id]
-    metadata_http_tokens = "required"
+    additional_security_group_ids        = [local.security_group_id]
+    metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
+    iam_instance_profile_name            = var.workers_iam_role_name
   }
 
   # Added to support EBS CSI driver
-  workers_additional_policies = [module.iam_policy.arn]
+  workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
 }

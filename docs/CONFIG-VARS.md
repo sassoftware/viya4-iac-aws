@@ -13,6 +13,7 @@ Supported configuration variables are listed in the table below.  All variables 
   - [Admin Access](#admin-access)
   - [Networking](#networking)
     - [Use Existing](#use-existing)
+  - [IAM](#iam)
   - [General](#general)
   - [Nodepools](#nodepools)
     - [Default Nodepool](#default-nodepool)
@@ -108,6 +109,79 @@ subnet_ids = {
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
+
+## IAM
+
+By default, two custom IAM Policies, and two custom IAM Roles (with Instance Profiles) are being created. If your site security protocol does not allow automatic creation of IAM resources, you can provide pre-created Roles using the following options:
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| cluster_iam_role_name | Name of pre-existing IAM Role for the EKS cluster | string | "" | |
+| workers_iam_role_name | Name of pre-existing IAM Role for the cluster node VMs | string | "" | |
+
+The Cluster IAM Role needs to include the following three AWS-managed Policies and one custom Policy.
+
+AWS managed Policies:
+
+- `AmazonEKSClusterPolicy`
+- `AmazonEKSServicePolicy`
+- `AmazonEKSVPCResourceController`
+
+Custom Policy:
+
+```yaml
+ "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeAccountAttributes"
+            ],
+            "Resource": "*"
+        }
+    ]
+```
+
+The Workers IAM Role needs to include the following three AWS-managed Policies and one custom Policy. It also needs to have an Instance Profile with the same name as the Role.
+
+AWS managed Policies:
+
+- `AmazonEKSWorkerNodePolicy`
+- `AmazonEKS_CNI_Policy`
+- `AmazonEC2ContainerRegistryReadOnly`
+
+Custom Policy:
+
+```yaml
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:CreateSnapshot",
+        "ec2:CreateTags",
+        "ec2:CreateVolume",
+        "ec2:DeleteSnapshot",
+        "ec2:DeleteTags",
+        "ec2:DeleteVolume",
+        "ec2:DescribeInstances",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeTags",
+        "ec2:DescribeVolumes",
+        "ec2:DetachVolume",
+        "elasticfilesystem:DescribeFileSystems",
+        "iam:DeletePolicyVersion"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+```
+
+
 
 ## General
 
