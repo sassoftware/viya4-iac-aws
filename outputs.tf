@@ -117,3 +117,7 @@ output "location" {
 output "cr_endpoint" {
   value = "https://${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazonaws.com"
 }
+
+output "cluster_node_pool_mode" {
+  value = var.cluster_node_pool_mode
+}
