@@ -354,6 +354,7 @@ module "eks" {
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
+  enable_irsa                           = true
   
   manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
   workers_role_name                     = var.workers_iam_role_name
@@ -372,6 +373,16 @@ module "eks" {
   workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
+}
+
+module "autoscaling" {
+  source       = "./modules/aws_autoscaling"
+  count        = var.autoscaling_enabled ? 1 : 0
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = var.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
 module "kubeconfig" {

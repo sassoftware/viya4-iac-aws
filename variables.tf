@@ -489,3 +489,9 @@ variable "create_static_kubeconfig" {
   default     = true
 }
 
+variable "autoscaling_enabled" {
+    description = "Enable autoscaling for your AWS cluster."
+    type        = bool
+    default     = true
+  
+}
