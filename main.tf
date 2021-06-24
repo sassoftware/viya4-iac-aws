@@ -354,7 +354,7 @@ module "eks" {
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
-  enable_irsa                           = true
+  enable_irsa                           = var.autoscaling_enabled
   
   manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
   workers_role_name                     = var.workers_iam_role_name
