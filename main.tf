@@ -362,7 +362,7 @@ module "eks" {
   cluster_iam_role_name                 = var.cluster_iam_role_name
 
   workers_group_defaults = {
-    tags = [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "TRUE", propagate_at_launch = true} ]
+    tags = [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ]
     additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
