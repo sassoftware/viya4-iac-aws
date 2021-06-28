@@ -354,6 +354,7 @@ module "eks" {
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
+  enable_irsa                           = var.autoscaling_enabled
   
   manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
   workers_role_name                     = var.workers_iam_role_name
@@ -361,7 +362,7 @@ module "eks" {
   cluster_iam_role_name                 = var.cluster_iam_role_name
 
   workers_group_defaults = {
-    # tags = var.tags
+    tags = [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ]
     additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
@@ -372,6 +373,16 @@ module "eks" {
   workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
+}
+
+module "autoscaling" {
+  source       = "./modules/aws_autoscaling"
+  count        = var.autoscaling_enabled ? 1 : 0
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = var.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
 module "kubeconfig" {

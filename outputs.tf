@@ -121,3 +121,7 @@ output "cr_endpoint" {
 output "cluster_node_pool_mode" {
   value = var.cluster_node_pool_mode
 }
+  
+output "autoscaler_account" {
+    value = var.autoscaling_enabled ? module.autoscaling.0.autoscaler_account : null
+}
