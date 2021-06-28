@@ -1,9 +1,7 @@
 ---
 name: Bug report
 about: Let us know about an unexpected error or incorrect behavior
-title: ''
 labels: bug, new
-assignees: ''
 
 ---
 
