@@ -324,7 +324,7 @@ locals {
         root_volume_size                     = np_value.os_disk_size
         root_volume_type                     = np_value.os_disk_type
         root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = np_value.min_nodes
+        asg_desired_capacity                 = var.autoscaling_enabled ? 1 : np_value.min_nodes # TODO - Remove when moving to managed nodes
         asg_min_size                         = np_value.min_nodes
         asg_max_size                         = np_value.max_nodes
         kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
@@ -332,7 +332,6 @@ locals {
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
         metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
-
       }
   ]
 
@@ -362,7 +361,7 @@ module "eks" {
   cluster_iam_role_name                 = var.cluster_iam_role_name
 
   workers_group_defaults = {
-    tags = [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ]
+    tags = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
     additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1

@@ -175,8 +175,8 @@ variable node_pools {
     os_disk_type                         = string
     os_disk_size                         = number
     os_disk_iops                         = number
-    min_nodes                            = string
-    max_nodes                            = string
+    min_nodes                            = number
+    max_nodes                            = number
     node_taints                          = list(string)
     node_labels                          = map(string)
     custom_data                          = string

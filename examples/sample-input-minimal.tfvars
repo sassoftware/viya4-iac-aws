@@ -29,7 +29,7 @@ default_nodepool_custom_data            = ""
 efs_performance_mode                    = "maxIO"
 storage_type                            = "standard"
 
-## Cluster Node Pools config - mimimal
+## Cluster Node Pools config - minimal
 cluster_node_pool_mode   = "minimal"
 node_pools = {
   cas = {
