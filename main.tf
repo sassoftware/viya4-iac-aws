@@ -324,7 +324,7 @@ locals {
         root_volume_size                     = np_value.os_disk_size
         root_volume_type                     = np_value.os_disk_type
         root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = var.autoscaling_enabled ? 1 : np_value.min_nodes # TODO - Remove when moving to managed nodes
+        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
         asg_min_size                         = np_value.min_nodes
         asg_max_size                         = np_value.max_nodes
         kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
