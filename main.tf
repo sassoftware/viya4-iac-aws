@@ -445,9 +445,6 @@ module "db" {
   # DB option group
   major_engine_version = var.postgres_server_version
 
-  # Snapshot name upon DB deletion
-  final_snapshot_identifier = (var.postgres_server_name == "" ? var.prefix : var.postgres_server_name)
-
   # Database Deletion Protection
   deletion_protection = var.postgres_deletion_protection
 
