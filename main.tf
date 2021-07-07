@@ -42,6 +42,8 @@ locals {
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
   kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority.0.data
+
+  tags = length(var.tags) != 0 ? var.tags : { environment = "${var.prefix}" }
 }
 
 data "external" "git_hash" {
@@ -262,7 +264,7 @@ module "iam_policy" {
 
   count = var.workers_iam_role_name == null ? 1 : 0
 
-  name        = "${var.prefix}_ebs_csi_policy"
+  name        = "${var.prefix}-ebs-csi-policy"
   description = "EBS CSI driver IAM Policy"
 
   policy = <<EOF
@@ -339,6 +341,19 @@ locals {
   worker_groups = concat(local.default_node_pool, local.user_node_pool)
 }
 
+resource "random_id" "cluster_iam_suffix" {
+  byte_length = 8
+}
+
+resource "random_id" "worker_iam_suffix" {
+  byte_length = 8
+}
+
+locals {
+  cluster_iam_role_name = var.cluster_iam_role_name == null ? "${local.cluster_name}${formatdate("YYYYMMDD", timestamp())}${random_id.cluster_iam_suffix.dec}" : var.cluster_iam_role_name
+  workers_iam_role_name = var.workers_iam_role_name == null ? "${local.cluster_name}${formatdate("YYYYMMDD", timestamp())}${random_id.worker_iam_suffix.dec}" : var.workers_iam_role_name
+}
+
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
@@ -356,9 +371,9 @@ module "eks" {
   enable_irsa                           = var.autoscaling_enabled
   
   manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
-  workers_role_name                     = var.workers_iam_role_name
+  workers_role_name                     = local.workers_iam_role_name # EC2
   manage_cluster_iam_resources          = var.cluster_iam_role_name == null ? true : false
-  cluster_iam_role_name                 = var.cluster_iam_role_name
+  cluster_iam_role_name                 = local.cluster_iam_role_name # EKS
 
   workers_group_defaults = {
     tags = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
@@ -493,7 +508,7 @@ resource "aws_resourcegroups_group" "aws_rg" {
     "AWS::AllSupported"
   ],
   "TagFilters": ${jsonencode([
-    for key, values in var.tags : {
+    for key, values in local.tags : {
       "Key" : key,
       "Values" : [values]
     }
