@@ -44,3 +44,8 @@ output "private_route_table_ids" {
   description = "List of IDs of private route tables"
   value       = aws_route_table.private.*.id
 }
+
+output "vpc_cidr" {
+  description = "CIDR block of VPC"
+  value       = var.vpc_id == null ? var.cidr : data.aws_vpc.vpc[0].cidr_block
+}

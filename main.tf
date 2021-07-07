@@ -209,7 +209,7 @@ data "template_file" "nfs-cloudconfig" {
 
   vars = {
     vm_admin        = var.nfs_vm_admin
-    base_cidr_block = var.vpc_cidr
+    base_cidr_block = module.vpc.vpc_cidr
   }
 
 }
@@ -346,7 +346,7 @@ module "eks" {
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
-  cluster_endpoint_private_access_cidrs = [var.vpc_cidr]
+  cluster_endpoint_private_access_cidrs = [module.vpc.vpc_cidr]
   cluster_endpoint_public_access        = true
   cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                      = false
