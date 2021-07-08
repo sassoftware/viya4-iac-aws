@@ -7,6 +7,10 @@ output "kube_config" {
   value = module.kubeconfig.kube_config
 }
 
+output "cluster_iam_role_arn" {
+  value = module.eks.cluster_iam_role_arn
+}
+
 output "worker_iam_role_arn" {
   value = module.eks.worker_iam_role_arn
 }
