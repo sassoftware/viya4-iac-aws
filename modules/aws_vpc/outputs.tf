@@ -7,11 +7,13 @@ output "vpc_id" {
 #subnet_ids
 output "public_subnets" {
   description = "List of IDs of public subnets"
+  # value       = var.private_cluster ? null : length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.public.*.id
   value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.id : data.aws_subnet.public.*.id
 }
 
 output "public_subnet_azs" {
   description = "List of public subnet AZs"
+  # value       = var.private_cluster ? null : length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.availability_zone : data.aws_subnet.public.*.availability_zone
   value       = length(var.existing_subnet_ids) == 0 ? aws_subnet.public.*.availability_zone : data.aws_subnet.public.*.availability_zone
 }
 
@@ -37,7 +39,7 @@ output "nat_public_ips" {
 
 output "public_route_table_ids" {
   description = "List of IDs of public route tables"
-  value       = aws_route_table.public.*.id
+  value       = var.private_cluster ? null : aws_route_table.public.*.id
 }
 
 output "private_route_table_ids" {

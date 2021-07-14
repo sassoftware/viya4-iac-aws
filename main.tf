@@ -35,9 +35,9 @@ locals {
   cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
   postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
-  jump_vm_subnet                       = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet_az                     = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+  jump_vm_subnet                       = var.private_cluster ? var.create_jump_public_ip ? concat(module.vpc.public_subnets, module.vpc.private_subnets) : module.vpc.private_subnets[0] : var.create_jump_public_ip ? module.vpc.public_subnets[0] : null
+  nfs_vm_subnet                        = var.private_cluster ? module.vpc.private_subnets[0] : var.create_nfs_public_ip ? module.vpc.public_subnets[0] : null
+  nfs_vm_subnet_az                     = var.private_cluster ? module.vpc.private_subnet_azs[0] : var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
@@ -81,13 +81,16 @@ provider "kubernetes" {
 module "vpc" {
   source = "./modules/aws_vpc"
 
-  name = var.prefix
-  vpc_id = var.vpc_id
-  cidr = var.vpc_cidr
-  azs  = data.aws_availability_zones.available.names
+  name                = var.prefix
+  vpc_id              = var.vpc_id
+  region              = var.location
+  security_group_id   = local.security_group_id
+  cidr                = var.vpc_cidr
+  azs                 = data.aws_availability_zones.available.names
+  private_cluster     = var.private_cluster
   existing_subnet_ids = var.subnet_ids
-  subnets = var.subnets
-  existing_nat_id = var.nat_id
+  subnets             = var.subnets
+  existing_nat_id     = var.nat_id
 
   tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
@@ -114,7 +117,6 @@ resource "aws_security_group" "sg" {
   }
   tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
 }
-
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
@@ -339,13 +341,14 @@ locals {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                = "terraform-aws-modules/eks/aws"
-  version                               = "16.2.0"
+  version                               = "17.1.0"
   cluster_name                          = local.cluster_name
   cluster_version                       = var.kubernetes_version
   cluster_endpoint_private_access       = true
-  cluster_endpoint_private_access_cidrs = [var.vpc_cidr]
-  cluster_endpoint_public_access        = true
-  cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
+  cluster_create_endpoint_private_access_sg_rule = var.private_cluster
+  cluster_endpoint_private_access_cidrs = var.private_cluster ? [var.vpc_cidr] : null
+  cluster_endpoint_public_access        = var.private_cluster ? false : true
+  cluster_endpoint_public_access_cidrs  = var.private_cluster ? [] : local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                      = false
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
@@ -356,6 +359,8 @@ module "eks" {
     additional_security_group_ids = [local.security_group_id]
     metadata_http_tokens = "required"
     metadata_http_put_response_hop_limit = 1
+
+    bootstrap_extra_args = var.private_cluster ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : null
   }
 
   # Added to support EBS CSI driver

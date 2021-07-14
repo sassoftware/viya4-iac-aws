@@ -1,7 +1,10 @@
 # This is customized based on - https://github.com/terraform-aws-modules/terraform-aws-vpc
 
 locals {
-  vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  vpc_id          = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  public_subnets  = length(var.existing_subnet_ids) == 0 ? aws_subnet.public : data.aws_subnet.public
+  private_subnets = length(var.existing_subnet_ids) == 0 ? aws_subnet.private : data.aws_subnet.private
+
 }
 
 data "aws_vpc" "vpc" {
@@ -25,7 +28,27 @@ resource "aws_vpc" "vpc" {
   )
 }
 
+resource "aws_vpc_endpoint" "private_endpoints" {
+  count              = var.private_cluster ? length(var.vpc_private_endpoints) : 0
+  vpc_id             = aws_vpc.vpc.0.id
+  service_name       = "com.amazonaws.${var.region}.${var.vpc_private_endpoints[count.index]}"
+  vpc_endpoint_type  = "Interface"
+  security_group_ids = [ var.security_group_id ]
+
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-private-endpoint-${var.vpc_private_endpoints[count.index]}")
+    },
+    var.tags,
+  )
+
+  subnet_ids = [ 
+    for subnet in local.private_subnets : subnet.id
+  ]
+}
+
 data "aws_subnet" "public" {
+  # count = var.private_cluster ? 0 : contains(keys(var.existing_subnet_ids), "public") ? length(var.existing_subnet_ids["public"]) > 0 ? length(var.existing_subnet_ids["public"]) : 0 : 0
   count = contains(keys(var.existing_subnet_ids), "public") ? length(var.existing_subnet_ids["public"]) > 0 ? length(var.existing_subnet_ids["public"]) : 0 : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
 }
@@ -45,6 +68,7 @@ data "aws_subnet" "database" {
 ################
 resource "aws_subnet" "public" {
   count                   = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
+  # count                   = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
   vpc_id                  = local.vpc_id
   cidr_block              = element(var.subnets["public"], count.index)
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
@@ -67,6 +91,7 @@ resource "aws_subnet" "public" {
 ###################
 # Internet Gateway
 ###################
+# TODO - Test if still needed with private networking.
 resource "aws_internet_gateway" "this" {
   count =  length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? 1 : 0
 
@@ -84,6 +109,7 @@ resource "aws_internet_gateway" "this" {
 # Publiс routes
 ################
 resource "aws_route_table" "public" {
+  # count = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 ? 1 : 0
   count = length(var.existing_subnet_ids) == 0 ? 1 : 0
   vpc_id = local.vpc_id
 
@@ -101,6 +127,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route" "public_internet_gateway" {
+  # count = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? 1 : 0
   count = length(var.existing_subnet_ids) == 0 && var.existing_nat_id == null ? 1 : 0
 
   route_table_id         = aws_route_table.public[0].id
@@ -124,6 +151,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route_table_association" "public" {
+  # count = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
   count = length(var.existing_subnet_ids) == 0 ? length(var.subnets["public"]) : 0
 
   subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.public.*.id, count.index) : element(data.aws_subnet.public.*.id, count.index)
@@ -243,6 +271,7 @@ data "aws_nat_gateway" "nat" {
 }
 
 resource "aws_nat_gateway" "this" {
+  # count = var.private_cluster ? 0 : var.existing_nat_id != null ? 0 : 1
   count = var.existing_nat_id != null ? 0 : 1
 
   allocation_id = element(aws_eip.nat.*.id, 0)
@@ -263,7 +292,8 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = length(var.existing_subnet_ids) == 0  ? 1 : 0
+  # count = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 ? 1 : 0
+  count = var.private_cluster ? 0 : length(var.existing_subnet_ids) == 0 ? 1 : 0
 
   route_table_id         = element(aws_route_table.private.*.id, count.index)
   destination_cidr_block = "0.0.0.0/0"
@@ -273,3 +303,7 @@ resource "aws_route" "private_nat_gateway" {
     create = "5m"
   }
 }
+
+# TODO - Add aws_vpc_endpoint - These endpoints https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html
+#  add private subnet ids - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint
+#  private_cluster flag - true/false for deployment
