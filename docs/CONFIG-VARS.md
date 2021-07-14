@@ -13,6 +13,7 @@ Supported configuration variables are listed in the table below.  All variables 
   - [Admin Access](#admin-access)
   - [Networking](#networking)
     - [Use Existing](#use-existing)
+  - [IAM](#iam)
   - [General](#general)
   - [Nodepools](#nodepools)
     - [Default Nodepool](#default-nodepool)
@@ -109,17 +110,91 @@ subnet_ids = {
 }
 ```
 
+## IAM
+
+By default, two custom IAM Policies, and two custom IAM Roles (with Instance Profiles) are being created. If your site security protocol does not allow automatic creation of IAM resources, you can provide pre-created Roles using the following options:
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| cluster_iam_role_name | Name of pre-existing IAM Role for the EKS cluster | string | "" | |
+| workers_iam_role_name | Name of pre-existing IAM Role for the cluster node VMs | string | "" | |
+
+The Cluster IAM Role needs to include the following three AWS-managed Policies and one custom Policy.
+
+AWS managed Policies:
+
+- `AmazonEKSClusterPolicy`
+- `AmazonEKSServicePolicy`
+- `AmazonEKSVPCResourceController`
+
+Custom Policy:
+
+```yaml
+ "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeAccountAttributes"
+            ],
+            "Resource": "*"
+        }
+    ]
+```
+
+The Workers IAM Role needs to include the following three AWS-managed Policies and one custom Policy. It also needs to have an Instance Profile with the same name as the Role.
+
+AWS managed Policies:
+
+- `AmazonEKSWorkerNodePolicy`
+- `AmazonEKS_CNI_Policy`
+- `AmazonEC2ContainerRegistryReadOnly`
+
+Custom Policy:
+
+```yaml
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:CreateSnapshot",
+        "ec2:CreateTags",
+        "ec2:CreateVolume",
+        "ec2:DeleteSnapshot",
+        "ec2:DeleteTags",
+        "ec2:DeleteVolume",
+        "ec2:DescribeInstances",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeTags",
+        "ec2:DescribeVolumes",
+        "ec2:DetachVolume",
+        "elasticfilesystem:DescribeFileSystems",
+        "iam:DeletePolicyVersion"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+```
+
+
+
 ## General
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | create_static_kubeconfig | Allows the user to create a provider / service account based kube config file | bool | false | A value of `false` will default to using the cloud providers mechanism for generating the kubeconfig file. A value of `true` will create a static kubeconfig which utilizes a `Service Account` and `Cluster Role Binding` to provide credentials. |
-| kubernetes_version | The EKS cluster K8S version | string | "1.18" | |
+| kubernetes_version | The EKS cluster K8S version | string | "1.19" | |
 | create_jump_vm | Create bastion host | bool | true| |
 | create_jump_public_ip | Add public ip to jump VM | bool | true | |
 | jump_vm_admin | OS Admin User for the Jump VM | string | "jumpuser" | |
 | jump_rwx_filestore_path | File store mount point on Jump server | string | "/viya-share" | This location cannot include "/mnt" as it's root location. This disk is ephemeral on Ubuntu which is the operating system being used for the Jump/NFS servers. |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
+| autoscaling_enabled | Enable Cluster Autoscaling | bool | true | |
 
 ## Nodepools
 

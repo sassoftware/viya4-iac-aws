@@ -139,6 +139,7 @@
                 "iam:UntagRole",
                 "iam:TagPolicy",
                 "iam:TagInstanceProfile",
+                "iam:TagOpenIDConnectProvider",
                 "iam:UpdateAssumeRolePolicy",
                 "iam:UpdateAccessKey",
                 "resource-groups:*",

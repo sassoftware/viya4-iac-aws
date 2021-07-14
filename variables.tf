@@ -175,8 +175,8 @@ variable node_pools {
     os_disk_type                         = string
     os_disk_size                         = number
     os_disk_iops                         = number
-    min_nodes                            = string
-    max_nodes                            = string
+    min_nodes                            = number
+    max_nodes                            = number
     node_taints                          = list(string)
     node_labels                          = map(string)
     custom_data                          = string
@@ -317,6 +317,19 @@ variable "nat_id" {
   default = null
   description = "Pre-existing NAT Gateway id"
 }
+
+variable "cluster_iam_role_name" {
+  type = string
+  default = null
+  description = "Pre-existing IAM Role for the EKS cluster"
+}
+
+variable "workers_iam_role_name" {
+  type = string
+  default = null
+  description = "Pre-existing IAM Role for the Node VMs"
+}
+
 
 variable "create_jump_vm" {
   description = "Create bastion host VM"
@@ -486,4 +499,16 @@ variable "vpc_private_endpoints" {
    description = "Endpoints needed for private cluster"
    type        = list(string)
    default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+
+variable "cluster_node_pool_mode" {
+  description = "Flag for predefined cluster node configurations - Values : default, minimal"
+  type        = string
+  default     = "default"
+
+}
+
+variable "autoscaling_enabled" {
+    description = "Enable autoscaling for your AWS cluster."
+    type        = bool
+    default     = true
 }

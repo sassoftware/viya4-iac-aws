@@ -211,7 +211,7 @@ data "template_file" "nfs-cloudconfig" {
 
   vars = {
     vm_admin        = var.nfs_vm_admin
-    base_cidr_block = var.vpc_cidr
+    base_cidr_block = module.vpc.vpc_cidr
   }
 
 }
@@ -261,6 +261,8 @@ module "nfs" {
 module "iam_policy" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
   version = "4.1.0"
+
+  count = var.workers_iam_role_name == null ? 1 : 0
 
   name        = "${var.prefix}_ebs_csi_policy"
   description = "EBS CSI driver IAM Policy"
@@ -312,6 +314,7 @@ locals {
       metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
       metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
       metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
+
     }
   ]
 
@@ -323,7 +326,7 @@ locals {
         root_volume_size                     = np_value.os_disk_size
         root_volume_type                     = np_value.os_disk_type
         root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = np_value.min_nodes
+        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
         asg_min_size                         = np_value.min_nodes
         asg_max_size                         = np_value.max_nodes
         kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
@@ -353,20 +356,36 @@ module "eks" {
   subnets                               = module.vpc.private_subnets
   vpc_id                                = module.vpc.vpc_id
   tags                                  = var.tags
+  enable_irsa                           = var.autoscaling_enabled
+  
+  manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
+  workers_role_name                     = var.workers_iam_role_name
+  manage_cluster_iam_resources          = var.cluster_iam_role_name == null ? true : false
+  cluster_iam_role_name                 = var.cluster_iam_role_name
 
   workers_group_defaults = {
-    # tags = var.tags
-    additional_security_group_ids = [local.security_group_id]
-    metadata_http_tokens = "required"
+    tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
+    additional_security_group_ids        = [local.security_group_id]
+    metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
-
-    bootstrap_extra_args = var.private_cluster ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : null
+    bootstrap_extra_args                 = var.private_cluster ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : null
+    iam_instance_profile_name            = var.workers_iam_role_name
   }
 
   # Added to support EBS CSI driver
-  workers_additional_policies = [module.iam_policy.arn]
+  workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
+}
+
+module "autoscaling" {
+  source       = "./modules/aws_autoscaling"
+  count        = var.autoscaling_enabled ? 1 : 0
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = var.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
 module "kubeconfig" {
@@ -428,9 +447,6 @@ module "db" {
 
   # DB option group
   major_engine_version = var.postgres_server_version
-
-  # Snapshot name upon DB deletion
-  final_snapshot_identifier = (var.postgres_server_name == "" ? var.prefix : var.postgres_server_name)
 
   # Database Deletion Protection
   deletion_protection = var.postgres_deletion_protection
