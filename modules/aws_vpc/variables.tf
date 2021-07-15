@@ -103,7 +103,7 @@ variable "map_public_ip_on_launch" {
   default     = true
 }
 
-variable "private_cluster" {
+variable "vpc_private_enabled" {
   description = "Use Private IP address for cluster API endpoint"
   type        = bool
   default     = false

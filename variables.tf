@@ -96,6 +96,11 @@ variable "tags" {
   description = "Map of common tags to be placed on the Resources"
   type        = map
   default     = { project_name = "viya" }
+
+  validation {
+    conditional = length(var.tags) > 0
+    error_message = "ERROR: You must provide at last one tag."
+  }
 }
 
 ## Default Nodepool config
@@ -337,7 +342,8 @@ variable "create_jump_vm" {
 }
 
 variable "create_jump_public_ip" {
-  default = true
+  type    = bool
+  default = null
 }
 
 variable "jump_vm_admin" {
@@ -369,7 +375,8 @@ variable "nfs_raid_disk_iops" {
 }
 
 variable "create_nfs_public_ip" {
-  default = false
+  type    = bool
+  default = null
 }
 
 variable "nfs_vm_admin" {
@@ -489,10 +496,15 @@ variable "create_static_kubeconfig" {
   default     = true
 }
 
-variable "private_cluster" {
+variable "infra_mode" {
   description = "Use Private IP address for cluster API endpoint"
-  type        = bool
-  default     = false
+  type        = string
+  default     = "standard"
+
+  validation {
+    condition     = contains(["standard", "private"], lower(var.infra_mode))
+    error_message = "ERROR: Supported values for `infra_mode` are - standard, private."
+  }
 }
 
 variable "vpc_private_endpoints" {
@@ -501,6 +513,7 @@ variable "vpc_private_endpoints" {
    default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
 }
 
+# TODO: Add conditional
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations - Values : default, minimal"
   type        = string
