@@ -72,7 +72,7 @@ data "aws_subnet" "database" {
 # Public subnet
 ################
 resource "aws_subnet" "public" {
-  count                   = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 : 1
+  count                   = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 : length(var.subnets["public"])
   vpc_id                  = local.vpc_id
   cidr_block              = element(var.subnets["public"], count.index)
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
