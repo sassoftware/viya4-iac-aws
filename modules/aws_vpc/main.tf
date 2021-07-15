@@ -1,14 +1,15 @@
 # This is customized based on - https://github.com/terraform-aws-modules/terraform-aws-vpc
 
 locals {
-  vpc_id          = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  existing_subnets = length(var.existing_subnet_ids) > 0 ? true : false
 
-  existing_public_subnets = contains(keys(var.existing_subnet_ids), "public") && length(var.existing_subnet_ids["public"]) > 0 ? true : false
-  existing_private_subnets = contains(keys(var.existing_subnet_ids), "private") && length(var.existing_subnet_ids["private"]) > 0 ? true : false
-  existing_database_subnets = contains(keys(var.existing_subnet_ids), "database") && length(var.existing_subnet_ids["database"]) > 0 ? true : false
+  existing_public_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "public") ? (length(var.existing_subnet_ids["public"]) > 0 ? true : false) : false
+  existing_private_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
+  existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
 
-  public_subnets  = existing_public_subnets ? data.aws_subnet.public : aws_subnet.public
-  private_subnets = existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
+  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public
+  private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
 
 }
 
@@ -143,26 +144,24 @@ resource "aws_route" "public_internet_gateway" {
 # Route table association
 ##########################
 resource "aws_route_table_association" "private" {
+  count = local.existing_private_subnets ? 0 : length(var.subnets["private"])
 
-  count = local.existing_private_subnets ? length(var.subnets["private"]) : 0
-
-  subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.private.*.id, count.index) : element(data.aws_subnet.private.*.id, count.index)
+  subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = element(aws_route_table.private.*.id, 0)
 }
 
 resource "aws_route_table_association" "public" {
-  count = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? length(var.subnets["public"]) : 0
+  count = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 :length(var.subnets["public"])
 
-  subnet_id      = length(var.existing_subnet_ids) == 0 ? element(aws_subnet.public.*.id, count.index) : element(data.aws_subnet.public.*.id, count.index)
-  route_table_id = aws_route_table.public[0].id
+  subnet_id      = element(aws_subnet.public.*.id, count.index)
+  route_table_id = element(aws_route_table.public.*.id, 0)
 }
 
 resource "aws_route_table_association" "database" {
-  count = local.existing_database_subnets ? length(var.subnets["database"]) : 0
+  count = local.existing_database_subnets ? 0 : length(var.subnets["database"])
 
-  subnet_id = element(aws_subnet.database.*.id, count.index)
-  route_table_id = element(
-      coalescelist(aws_route_table.private.*.id), 0)
+  subnet_id      = element(aws_subnet.database.*.id, count.index)
+  route_table_id = element(aws_route_table.private.*.id, 0)
 }
 
 #################

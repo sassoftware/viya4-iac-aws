@@ -304,12 +304,12 @@ module "eks" {
     additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
-    bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : null
+    bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
     iam_instance_profile_name            = var.workers_iam_role_name
   }
 
   # Added to support EBS CSI driver
-  workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
+  # workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
 }
