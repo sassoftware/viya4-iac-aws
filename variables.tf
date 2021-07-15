@@ -98,7 +98,7 @@ variable "tags" {
   default     = { project_name = "viya" }
 
   validation {
-    conditional = length(var.tags) > 0
+    condition = length(var.tags) > 0
     error_message = "ERROR: You must provide at last one tag."
   }
 }
