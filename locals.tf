@@ -1,32 +1,33 @@
 locals {
 
   # General
-  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
-  cluster_name                         = "${var.prefix}-eks"
+  security_group_id                     = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
+  cluster_name                          = "${var.prefix}-eks"
 
   # Infrastructure Mode
-  is_standard                          = var.infra_mode == "standard" ? true : false
-  is_private                           = var.infra_mode == "private" ? true : false
+  is_standard                           = var.infra_mode == "standard" ? true : false
+  is_private                            = var.infra_mode == "private" ? true : false
 
   # CIDRs
-  default_public_access_cidrs          = local.is_private ? [] : (var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs)
-  vm_public_access_cidrs               = local.is_private ? [] : (var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs)
-  cluster_endpoint_public_access_cidrs = local.is_private ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  postgres_public_access_cidrs         = local.is_private ? [] : (var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs)
+  default_public_access_cidrs           = local.is_private ? [] : (var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs)
+  vm_public_access_cidrs                = local.is_private ? [] : (var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs)
+  cluster_endpoint_public_access_cidrs  = local.is_private ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? [var.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
+  postgres_public_access_cidrs          = local.is_private ? [] : (var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs)
 
   # IPs
-  create_jump_public_ip                = var.create_jump_public_ip == null ? local.is_standard : var.create_jump_public_ip
-  create_nfs_public_ip                 = var.create_nfs_public_ip == null ? local.is_standard : var.create_nfs_public_ip
+  create_jump_public_ip                 = var.create_jump_public_ip == null ? local.is_standard : var.create_jump_public_ip
+  create_nfs_public_ip                  = var.create_nfs_public_ip == null ? local.is_standard : var.create_nfs_public_ip
 
   # Subnets
-  jump_vm_subnet                       = local.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet                        = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet_az                     = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+  jump_vm_subnet                        = local.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet                         = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet_az                      = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   # Kubernetes
-  kubeconfig_filename                  = "${local.cluster_name}-kubeconfig.conf"
-  kubeconfig_path                      = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert                   = data.aws_eks_cluster.cluster.certificate_authority.0.data
+  kubeconfig_filename                   = "${local.cluster_name}-kubeconfig.conf"
+  kubeconfig_path                       = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
+  kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority.0.data
 
   # Mapping node_pools to worker_groups
   default_node_pool = [

@@ -235,7 +235,7 @@ resource "aws_db_subnet_group" "database" {
   count = local.existing_database_subnets == false && length(var.subnets["database"]) > 0 ? 1 : 0
 
   name        = lower(var.name)
-  description = "XXX Database subnet group for ${var.name} XXXXX"
+  description = "Database subnet group for ${var.name}"
   subnet_ids  = aws_subnet.database.*.id
 
   tags = merge(

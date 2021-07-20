@@ -286,7 +286,7 @@ module "eks" {
   cluster_endpoint_private_access                = true
   cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
   cluster_endpoint_private_access_sg             = [local.security_group_id]
-  cluster_endpoint_private_access_cidrs          = var.cluster_endpoint_private_access_cidrs == null ? [var.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
+  cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
   cluster_endpoint_public_access                 = local.is_standard
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                               = false

@@ -72,25 +72,25 @@ output "nfs_public_dns" {
 }
 
 output "postgres_fqdn" {
-  value = var.create_postgres ? module.db.db_instance_address : ""
+  value = var.create_postgres ? module.db.db_instance_address : null
 }
 
 output "postgres_admin" {
-  value = var.create_postgres ? module.db.db_instance_username : ""
+  value = var.create_postgres ? module.db.db_instance_username : null
   sensitive = true
 }
 
 output "postgres_password" {
-  value = var.create_postgres ? module.db.db_instance_password : ""
+  value = var.create_postgres ? module.db.db_instance_password : null
   sensitive = true
 }
 
 output "postgres_server_name" {
-  value = var.create_postgres ? module.db.db_instance_id : ""
+  value = var.create_postgres ? module.db.db_instance_id : null
 }
 
 output "postgres_server_port" {
-  value = var.create_postgres ? module.db.db_instance_port : ""
+  value = var.create_postgres ? module.db.db_instance_port : null
 }
 
 output "postgres_ssl_enforcement_enabled" {
