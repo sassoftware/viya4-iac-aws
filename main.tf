@@ -25,25 +25,6 @@ data "aws_availability_zones" "available" {}
 
 data "aws_caller_identity" "terraform" {}
 
-locals {
-
-  security_group_id                    = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
-  cluster_name                         = "${var.prefix}-eks"
-  default_public_access_cidrs          = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
-  vm_public_access_cidrs               = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
-  cluster_endpoint_cidrs               = var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs
-  cluster_endpoint_public_access_cidrs = length(local.cluster_endpoint_cidrs) == 0 ? [] : local.cluster_endpoint_cidrs
-  postgres_public_access_cidrs         = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
-
-  jump_vm_subnet                       = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet                        = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet_az                     = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
-
-  kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
-  kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority.0.data
-}
-
 data "external" "git_hash" {
   program = ["files/tools/iac_git_info.sh"]
 }
@@ -81,13 +62,16 @@ provider "kubernetes" {
 module "vpc" {
   source = "./modules/aws_vpc"
 
-  name = var.prefix
-  vpc_id = var.vpc_id
-  cidr = var.vpc_cidr
-  azs  = data.aws_availability_zones.available.names
+  name                = var.prefix
+  vpc_id              = var.vpc_id
+  region              = var.location
+  security_group_id   = local.security_group_id
+  cidr                = var.vpc_cidr
+  azs                 = data.aws_availability_zones.available.names
+  vpc_private_enabled = local.is_private
   existing_subnet_ids = var.subnet_ids
-  subnets = var.subnets
-  existing_nat_id = var.nat_id
+  subnets             = var.subnets
+  existing_nat_id     = var.nat_id
 
   tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
@@ -114,7 +98,6 @@ resource "aws_security_group" "sg" {
   }
   tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
 }
-
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
@@ -164,7 +147,7 @@ module "jump" {
   tags               = var.tags
   subnet_id          = local.jump_vm_subnet
   security_group_ids = [local.security_group_id]
-  create_public_ip   = var.create_jump_public_ip
+  create_public_ip   = local.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -183,7 +166,7 @@ module "jump" {
 }
 
 resource "aws_security_group_rule" "vms" {
-  count             = ((var.storage_type == "standard" && var.create_nfs_public_ip) || var.create_jump_vm) && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
+  count             = ((var.storage_type == "standard" && local.create_nfs_public_ip) || var.create_jump_vm) && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
   type              = "ingress"
   description       = "Allow SSH from source"
   from_port         = 22
@@ -234,7 +217,7 @@ module "nfs" {
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
   security_group_ids = [local.security_group_id]
-  create_public_ip   = var.create_nfs_public_ip
+  create_public_ip   = local.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -256,120 +239,78 @@ module "nfs" {
 }
 
 # EBS CSI driver IAM Policy for EKS worker nodes - https://registry.terraform.io/modules/terraform-aws-modules/iam
-module "iam_policy" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "4.1.0"
+# module "iam_policy" {
+#   source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
+#   version = "4.1.0"
 
-  count = var.workers_iam_role_name == null ? 1 : 0
+#   count = var.workers_iam_role_name == null ? 1 : 0
 
-  name        = "${var.prefix}_ebs_csi_policy"
-  description = "EBS CSI driver IAM Policy"
+#   name        = "${var.prefix}_ebs_csi_policy"
+#   description = "EBS CSI driver IAM Policy"
 
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "ec2:AttachVolume",
-        "ec2:CreateSnapshot",
-        "ec2:CreateTags",
-        "ec2:CreateVolume",
-        "ec2:DeleteSnapshot",
-        "ec2:DeleteTags",
-        "ec2:DeleteVolume",
-        "ec2:DescribeInstances",
-        "ec2:DescribeSnapshots",
-        "ec2:DescribeTags",
-        "ec2:DescribeVolumes",
-        "ec2:DetachVolume",
-        "elasticfilesystem:DescribeFileSystems",
-        "iam:DeletePolicyVersion"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
-# Mapping node_pools to worker_groups
-locals {
-
-  default_node_pool = [
-    {
-      name                                 = "default"
-      instance_type                        = var.default_nodepool_vm_type
-      root_volume_size                     = var.default_nodepool_os_disk_size
-      root_volume_type                     = var.default_nodepool_os_disk_type
-      root_iops                            = var.default_nodepool_os_disk_iops
-      asg_desired_capacity                 = var.default_nodepool_node_count
-      asg_min_size                         = var.default_nodepool_min_nodes
-      asg_max_size                         = var.default_nodepool_max_nodes
-      kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
-      additional_userdata                  = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
-      metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
-      metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
-      metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
-
-    }
-  ]
-
-  user_node_pool = [
-    for np_key, np_value in var.node_pools :
-      {
-        name                                 = np_key
-        instance_type                        = np_value.vm_type
-        root_volume_size                     = np_value.os_disk_size
-        root_volume_type                     = np_value.os_disk_type
-        root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
-        asg_min_size                         = np_value.min_nodes
-        asg_max_size                         = np_value.max_nodes
-        kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
-        additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
-        metadata_http_endpoint               = np_value.metadata_http_endpoint
-        metadata_http_tokens                 = np_value.metadata_http_tokens
-        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
-      }
-  ]
-
-  # Merging the default_node_pool into the work_groups node pools
-  worker_groups = concat(local.default_node_pool, local.user_node_pool)
-}
+#   policy = <<EOF
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Action": [
+#         "ec2:AttachVolume",
+#         "ec2:CreateSnapshot",
+#         "ec2:CreateTags",
+#         "ec2:CreateVolume",
+#         "ec2:DeleteSnapshot",
+#         "ec2:DeleteTags",
+#         "ec2:DeleteVolume",
+#         "ec2:DescribeInstances",
+#         "ec2:DescribeSnapshots",
+#         "ec2:DescribeTags",
+#         "ec2:DescribeVolumes",
+#         "ec2:DetachVolume",
+#         "elasticfilesystem:DescribeFileSystems",
+#         "iam:DeletePolicyVersion"
+#       ],
+#       "Effect": "Allow",
+#       "Resource": "*"
+#     }
+#   ]
+# }
+# EOF
+# }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
-  source                                = "terraform-aws-modules/eks/aws"
-  version                               = "16.2.0"
-  cluster_name                          = local.cluster_name
-  cluster_version                       = var.kubernetes_version
-  cluster_endpoint_private_access       = true
-  cluster_endpoint_private_access_cidrs = [module.vpc.vpc_cidr]
-  cluster_endpoint_public_access        = true
-  cluster_endpoint_public_access_cidrs  = local.cluster_endpoint_public_access_cidrs
-  write_kubeconfig                      = false
-  subnets                               = module.vpc.private_subnets
-  vpc_id                                = module.vpc.vpc_id
-  tags                                  = var.tags
-  enable_irsa                           = var.autoscaling_enabled
+  source                                         = "terraform-aws-modules/eks/aws"
+  version                                        = "17.1.0"
+  cluster_name                                   = local.cluster_name
+  cluster_version                                = var.kubernetes_version
+  cluster_endpoint_private_access                = true
+  cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
+  cluster_endpoint_private_access_sg             = [local.security_group_id]
+  cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
+  cluster_endpoint_public_access                 = local.is_standard
+  cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
+  write_kubeconfig                               = false
+  subnets                                        = module.vpc.private_subnets
+  vpc_id                                         = module.vpc.vpc_id
+  tags                                           = var.tags
+  enable_irsa                                    = var.autoscaling_enabled
   
-  manage_worker_iam_resources           = var.workers_iam_role_name == null ? true : false
-  workers_role_name                     = var.workers_iam_role_name
-  manage_cluster_iam_resources          = var.cluster_iam_role_name == null ? true : false
-  cluster_iam_role_name                 = var.cluster_iam_role_name
+  manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
+  workers_role_name                              = var.workers_iam_role_name
+  manage_cluster_iam_resources                   = var.cluster_iam_role_name == null ? true : false
+  cluster_iam_role_name                          = var.cluster_iam_role_name
 
   workers_group_defaults = {
-    tags = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
+    tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
     additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
+    bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
     iam_instance_profile_name            = var.workers_iam_role_name
   }
 
   # Added to support EBS CSI driver
-  workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
+  # workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
   worker_groups = local.worker_groups
 }
@@ -449,8 +390,8 @@ module "db" {
 
   multi_az = var.postgres_multi_az
 
-  parameters = var.postgres_parameters
-  options    = var.postgres_options
+  parameters = local.postgres_parameters
+  options    = local.postgres_options
 
   # Flags for module to flag if postgres should be created or not.
   create_db_instance        = var.create_postgres

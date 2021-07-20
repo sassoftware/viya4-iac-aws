@@ -102,3 +102,25 @@ variable "map_public_ip_on_launch" {
   type        = bool
   default     = true
 }
+
+variable "vpc_private_enabled" {
+  description = "Use Private IP address for cluster API endpoint"
+  type        = bool
+  default     = false
+}
+
+variable "vpc_private_endpoints" {
+   description = "Endpoints needed for private cluster"
+   type        = list(string)
+   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+}
+
+variable "region" {
+  description = "Region"
+  type        = string
+}
+
+variable "security_group_id" {
+  description = "Security Group ID"
+  type        = string
+}

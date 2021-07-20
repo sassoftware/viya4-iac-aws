@@ -59,7 +59,13 @@ variable "default_public_access_cidrs" {
 }
 
 variable "cluster_endpoint_public_access_cidrs" {
-  description = "List of CIDRs to access Kubernetes cluster"
+  description = "List of CIDRs to access Kubernetes cluster - Public"
+  type        = list(string)
+  default     = null
+}
+
+variable "cluster_endpoint_private_access_cidrs" {
+  description = "List of CIDRs to access Kubernetes cluster - Private"
   type        = list(string)
   default     = null
 }
@@ -96,6 +102,11 @@ variable "tags" {
   description = "Map of common tags to be placed on the Resources"
   type        = map
   default     = { project_name = "viya" }
+
+  validation {
+    condition = length(var.tags) > 0
+    error_message = "ERROR: You must provide at last one tag."
+  }
 }
 
 ## Default Nodepool config
@@ -337,7 +348,8 @@ variable "create_jump_vm" {
 }
 
 variable "create_jump_public_ip" {
-  default = true
+  type    = bool
+  default = null
 }
 
 variable "jump_vm_admin" {
@@ -369,7 +381,8 @@ variable "nfs_raid_disk_iops" {
 }
 
 variable "create_nfs_public_ip" {
-  default = false
+  type    = bool
+  default = null
 }
 
 variable "nfs_vm_admin" {
@@ -457,6 +470,11 @@ variable "postgres_deletion_protection" {
   default = false
 }
 
+variable "postgres_ssl_enforcement_enabled" {
+  description = "Enforce SSL on connections to PostgreSQL server."
+  default     = true
+}
+
 variable "postgres_parameters" {
   type = list(object({
     name  = string
@@ -489,6 +507,24 @@ variable "create_static_kubeconfig" {
   default     = true
 }
 
+variable "infra_mode" {
+  description = "Use Private IP address for cluster API endpoint"
+  type        = string
+  default     = "standard"
+
+  validation {
+    condition     = contains(["standard", "private"], lower(var.infra_mode))
+    error_message = "ERROR: Supported values for `infra_mode` are - standard, private."
+  }
+}
+
+variable "vpc_private_endpoints" {
+   description = "Endpoints needed for private cluster"
+   type        = list(string)
+   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+}
+
+# TODO: Add conditional
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations - Values : default, minimal"
   type        = string
