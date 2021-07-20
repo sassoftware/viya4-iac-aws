@@ -4,7 +4,8 @@ output "cluster_endpoint" {
 }
 
 output "kube_config" {
-  value = module.kubeconfig.kube_config
+  value     = module.kubeconfig.kube_config
+  sensitive = true
 }
 
 output "worker_iam_role_arn" {
