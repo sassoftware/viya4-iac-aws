@@ -93,6 +93,10 @@ output "postgres_server_port" {
   value = var.create_postgres ? module.db.db_instance_port : ""
 }
 
+output "postgres_ssl_enforcement_enabled" {
+  value = var.create_postgres ? var.postgres_ssl_enforcement_enabled : null
+}
+
 output "nat_ip" {
   value = module.vpc.nat_public_ips[0]
 }

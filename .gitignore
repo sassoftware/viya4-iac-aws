@@ -38,3 +38,6 @@ terraform.tfvars
 
 # Mac files
 .DS_Store
+
+# Configuration files
+*.conf

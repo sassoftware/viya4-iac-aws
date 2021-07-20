@@ -78,7 +78,7 @@ create_nfs_public_ip                  = false
 nfs_vm_admin                          = "nfsuser"
 nfs_vm_type                           = "m5.xlarge"
 
-
 # Cloud Postgres values config
 create_postgres                       = false # set this to "false" when using internal Crunchy Postgres and AWS Postgres is NOT needed
+postgres_ssl_enforcement_enabled      = false
 postgres_administrator_password       = "mySup3rS3cretPassw0rd"

@@ -59,7 +59,13 @@ variable "default_public_access_cidrs" {
 }
 
 variable "cluster_endpoint_public_access_cidrs" {
-  description = "List of CIDRs to access Kubernetes cluster"
+  description = "List of CIDRs to access Kubernetes cluster - Public"
+  type        = list(string)
+  default     = null
+}
+
+variable "cluster_endpoint_private_access_cidrs" {
+  description = "List of CIDRs to access Kubernetes cluster - Private"
   type        = list(string)
   default     = null
 }
@@ -462,6 +468,11 @@ variable "postgres_multi_az" {
 
 variable "postgres_deletion_protection" {
   default = false
+}
+
+variable "postgres_ssl_enforcement_enabled" {
+  description = "Enforce SSL on connections to PostgreSQL server."
+  default     = true
 }
 
 variable "postgres_parameters" {
