@@ -72,6 +72,6 @@ locals {
 
   # Postgres options/parameters
   postgres_options    = var.create_postgres ? var.postgres_options : null
-  postgres_parameters = var.create_postgres ? var.postgres_ssl_enforcement_enabled ? concat(var.postgres_parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : var.postgres_parameters : null
+  postgres_parameters = var.create_postgres ? var.postgres_ssl_enforcement_enabled ? concat(var.postgres_parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(var.postgres_parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }]) : null
 
 }
