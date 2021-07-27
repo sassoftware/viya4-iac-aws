@@ -280,5 +280,6 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 | postgres_db_name | Name of database to create | string | "SharedServices" | |
 | postgres_multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | postgres_deletion_protection | Protect from accidental resource deletion | bool | false | |
+| postgres_ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
 | postgres_parameters | additional parameters for PostgreSQL server | list of maps | [] | |
 | postgres_options | additional options for PostgreSQL server | list of maps | [] |   |
