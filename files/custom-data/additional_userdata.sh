@@ -65,10 +65,10 @@ if [ -d "/nvme/disk" ]; then
   else
     rm -rf /nvme/disk
   fi
-  ln -s /pv-disks/$UUID /nvme/disk
-  echo "/nvme/disk has been symlinked to /pv-disks/$UUID"
 fi
+ln -s /pv-disks/$UUID /nvme/disk
+echo "/nvme/disk has been symlinked to /pv-disks/$UUID"
 
 mkdir -p /nvme/disk/{cache,saswork}
-chmod 777 -R /nvme
-chown -R nobody:nobody /nvme
+chmod 777 -R /nvme/disk/
+chown -R nobody:nobody /nvme/disk/

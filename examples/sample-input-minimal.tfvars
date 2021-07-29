@@ -21,7 +21,7 @@ tags                                    = { } # e.g., { "key1" = "value1", "key2
 
 ## Cluster config
 kubernetes_version                      = "1.19"
-default_nodepool_node_count             = 2
+default_nodepool_node_count             = 1
 default_nodepool_vm_type                = "m5.large"
 default_nodepool_custom_data            = ""
 
@@ -78,7 +78,7 @@ create_nfs_public_ip                  = false
 nfs_vm_admin                          = "nfsuser"
 nfs_vm_type                           = "m5.xlarge"
 
-
 # Cloud Postgres values config
 create_postgres                       = false # set this to "false" when using internal Crunchy Postgres and AWS Postgres is NOT needed
+postgres_ssl_enforcement_enabled      = false
 postgres_administrator_password       = "mySup3rS3cretPassw0rd"

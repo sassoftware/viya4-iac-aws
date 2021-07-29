@@ -4,7 +4,8 @@ output "cluster_endpoint" {
 }
 
 output "kube_config" {
-  value = module.kubeconfig.kube_config
+  value     = module.kubeconfig.kube_config
+  sensitive = true
 }
 
 output "worker_iam_role_arn" {
@@ -72,25 +73,29 @@ output "nfs_public_dns" {
 }
 
 output "postgres_fqdn" {
-  value = var.create_postgres ? module.db.db_instance_address : ""
+  value = var.create_postgres ? module.db.db_instance_address : null
 }
 
 output "postgres_admin" {
-  value = var.create_postgres ? module.db.db_instance_username : ""
+  value = var.create_postgres ? module.db.db_instance_username : null
   sensitive = true
 }
 
 output "postgres_password" {
-  value = var.create_postgres ? module.db.db_instance_password : ""
+  value = var.create_postgres ? module.db.db_instance_password : null
   sensitive = true
 }
 
 output "postgres_server_name" {
-  value = var.create_postgres ? module.db.db_instance_id : ""
+  value = var.create_postgres ? module.db.db_instance_id : null
 }
 
 output "postgres_server_port" {
-  value = var.create_postgres ? module.db.db_instance_port : ""
+  value = var.create_postgres ? module.db.db_instance_port : null
+}
+
+output "postgres_ssl_enforcement_enabled" {
+  value = var.create_postgres ? var.postgres_ssl_enforcement_enabled : null
 }
 
 output "nat_ip" {
@@ -121,7 +126,11 @@ output "cr_endpoint" {
 output "cluster_node_pool_mode" {
   value = var.cluster_node_pool_mode
 }
-  
+
 output "autoscaler_account" {
-    value = var.autoscaling_enabled ? module.autoscaling.0.autoscaler_account : null
+  value = var.autoscaling_enabled ? module.autoscaling.0.autoscaler_account : null
+}
+
+output "infra_mode" {
+  value = var.infra_mode
 }
