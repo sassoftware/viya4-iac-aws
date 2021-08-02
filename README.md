@@ -2,53 +2,64 @@
 
 ## Overview
 
-This project contains Terraform scripts to provision AWS Cloud infrastructure resources required to deploy SAS Viya 4 products. Here is a list of resources this project can create -
+This project contains Terraform scripts to provision the AWS cloud infrastructure resources that are required to deploy SAS Viya 4 product offerings. Here is a list of resources that this project can create:
 
   >- Amazon VPC and Security Group
-  >- Managed Amazon Elastic Kubernetes Service(EKS)
-  >- Self-Managed Node Groups with required Labels and Taints
-  >- Infrastructure to deploy SAS Viya CAS in SMP or MPP mode
+  >- Managed Amazon Elastic Kubernetes Service (EKS)
+  >- Self-managed node groups with required labels and taints
+  >- Infrastructure to deploy the SAS Viya CAS server in SMP or MPP mode
   >- Amazon Elastic Block Storage (EBS) for NFS
-  >- Amazon Elastic File System(EFS)
-  >- Amazon Relational Database Service(RDS)
+  >- Amazon Elastic File System (EFS)
+  >- Amazon Relational Database Service (RDS)
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 
-Once the cloud resources are provisioned, see the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) repo to deploy SAS Viya 4 products. If you need more information on the SAS Viya 4 products refer to the official [SAS&reg; Viya&reg; 4 Operations](https://go.documentation.sas.com/?cdcId=itopscdc&cdcVersion=v_001LTS&docsetId=itopswlcm&docsetTarget=home.htm&locale=en) documentation for more details.
+This project helps you to automate the cluster-provisioning phase of SAS Viya deployment. To learn about all phases and options of the
+SAS Viya deployment process, see [Getting Started with SAS Viya and Azure Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/n1d7qc4nfr3s5zn103a1qy0kj4l1.htm) in _SAS&reg; Viya&reg; Operations_.
+
+Once the cloud resources are provisioned, use the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) project to deploy 
+SAS Viya 4 in your cloud environment. For more information about SAS Viya 4 requirements and documentation for the deployment
+process, refer to the [SAS Viya 4 Operations Guide](https://go.documentation.sas.com/doc/en/itopscdc/default/itopswlcm/home.htm).
 
 ## Prerequisites
 
-Operational knowledge of:
+Use of these tools requires operational knowledge of the following technologies:
 
 - [Terraform](https://www.terraform.io/intro/index.html)
 - [Docker](https://www.docker.com/)
 - [AWS](https://aws.amazon.com)
 - [Kubernetes](https://kubernetes.io/docs/concepts/)
 
-### Required
+### Technical Prerequisites
 
-- Access to **AWS account** with a user associated with the supplied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
+This project supports two options for running Terraform scripts:
+- Terraform installed on your local machine
+- Using a Docker container to run Terraform (Docker is required)
+  
+  For more information, see [Docker Usage](./docs/user/DockerUsage.md). Using Docker to run the Terraform scripts is recommended.
+  
+The following are also required:
+- Access to an **AWS account** with a user that is associated with the applied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
 - Subscription to [Ubuntu 20.04 LTS - Focal](https://aws.amazon.com/marketplace/pp/prodview-iftkyuwv2sjxi)
-- Terraform or Docker
   
-  - #### Terraform
+#### Terraform Requirements:
 
-    - [Terraform](https://www.terraform.io/downloads.html) - v1.0.0
-    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.19.9
-    - [jq](https://stedolan.github.io/jq/) - v1.6
-    - [AWS CLI](https://aws.amazon.com/cli) - (optional - useful as an alternative to the AWS Web Console) - v2.1.29
+- [Terraform](https://www.terraform.io/downloads.html) v1.0.0
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.19.9
+- [jq](https://stedolan.github.io/jq/) v1.6
+- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.1.29
   
-  - #### Docker
+#### Docker Requirements:
   
-    - [Docker](https://docs.docker.com/get-docker/)
+- [Docker](https://docs.docker.com/get-docker/)
 
 ## Getting Started
 
-Ubuntu 18.04 LTS is the operating system used on the Jump/NFS servers. Ubuntu creates the `/mnt` location as an ephemeral drive and cannot be used as the root location of the `jump_rwx_filestore_path` variable.
+Ubuntu 18.04 LTS is the operating system that is used on the jump box and NFS servers. Ubuntu creates the `/mnt` location as an ephemeral drive, so it cannot be used as the root location of the `jump_rwx_filestore_path` variable.
 
-### Clone this project
+### Clone this Project
 
-Run these commands in a Terminal session:
+Run the following commands from a terminal session:
 
 ```bash
 # clone this repo
@@ -56,32 +67,39 @@ git clone https://github.com/sassoftware/viya4-iac-aws
 cd viya4-iac-aws
 ```
 
-### Authenticating Terraform to access AWS
+### Authenticate Terraform to Access AWS
 
-See  [Authenticating Terraform to access AWS](./docs/user/TerraformAWSAuthentication.md) for details.
+In order to create and destroy AWS resources on your behalf, Terraform needs an AWS account that has sufficient permissions to perform all the actions defined in the Terraform manifest. See [Authenticating Terraform to Access AWS](./docs/user/TerraformAWSAuthentication.md) for details.
+
 
 ### Customize Input Values
 
-Create a file named `terraform.tfvars` to customize any input variable value documented in the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file. For starters, you can copy one of the provided sample variable definition files in [examples](./examples) folder. For more details on the variables declared refer to the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file.
+Terraform scripts require variable definitions as input. Review and modify default values to meet your requirements. Create a file named
+`terraform.tfvars` to customize any input variable value documented in the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file. 
 
-**NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules, access to the cluster will only be allowed via the AWS Console.
+To get started, you can copy one of the example variable definition files provided in the [examples](./examples) folder. For more information about the
+variables that are declared in each file, refer to the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file.
 
-When using a variable definition file other than `terraform.tfvars`, see [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for additional command options.
+**NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules, 
+access to the cluster will only be allowed via the AWS Console.
 
-## Creating and Managaging the Cloud Resources
+You have the option to specify variable definitions that are not included in `terraform.tfvars` or to use a variable definition file other than
+`terraform.tfvars`. See [Advanced Terraform Usage](docs/user/AdvancedTerraformUsage.md) for more information.
 
-Create and manage the AWS cloud resources by either
+## Create and Manage Cloud Resources
 
-- using [Terraform](docs/user/TerraformUsage.md) directly on your workstation, or
-- using a [Docker container](docs/user/DockerUsage.md).
+Create and manage the required cloud resources. Perform one of the following steps, based on whether you are using Docker: 
+
+- run [Terraform](docs/user/TerraformUsage.md) directly on your workstation
+- run the [Docker container](docs/user/DockerUsage.md) (recommended)
 
 ## Troubleshooting
 
-See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequently found issues.
+See the [Troubleshooting](./docs/Troubleshooting.md) page for information about possible issues that you might encounter.
 
 ## Contributing
 
-> We welcome your contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to submit contributions to this project.
+> We welcome your contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to submit contributions to this project.
 
 ## License
 
@@ -89,12 +107,12 @@ See [troubleshooting](./docs/Troubleshooting.md) page for help with some frequen
 
 ## Additional Resources
 
-### AWS
+### AWS Resources
 
-- Installing AWS CLI v2 - https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
-- AWS EKS intro - https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
+- [Installing AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
+- [AWS EKS Intro](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html)
 
-### Terraform
+### Terraform Resources
 
-- AWS Provider - https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-- AWS EKS - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster
+- [AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [AWS EKS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster)
