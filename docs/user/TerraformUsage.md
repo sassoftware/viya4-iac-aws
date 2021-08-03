@@ -6,7 +6,7 @@ Use Terraform and the SAS IaC tools to create a Kubernetes cluster for your SAS 
 
 ### Prerequisites
 
-When using the Terraform CLI, make sure you have all the necessary tools [installed on your workstation](../../README.md#terraform).
+When using the Terraform CLI, make sure you have all the necessary tools [installed on your workstation](../../README.md#terraform-requirements).
 
 ### Set Up AWS Authentication
 
@@ -74,11 +74,11 @@ To destroy all the cloud resources created with the previous comamnds, run the f
 terraform destroy
 ```
 
-> **NOTE:** The '*destroy*' action is irreversible.
+> **NOTE:** The `destroy` action is irreversible.
 
 ## Interacting with the Kubernetes Cluster
 
-[Creating the cloud resources](#create-cloud-resources) writes the `kube_config` output value to a file `./[prefix]-eks-kubeconfig.conf.` When the Kubernetes cluster is ready, use `kubectl` to interact with the cluster.
+[Creating the cloud resources](#create-cloud-resources) writes the `kube_config` output value to a file, `./[prefix]-eks-kubeconfig.conf.` When the Kubernetes cluster is ready, use `kubectl` to interact with the cluster.
 
 **NOTE:** The value for [`cluster_endpoint_public_access_cidrs`](../CONFIG-VARS.md#admin-access) in CONFIG-VARS.md must be set to your local IP address or CIDR range.
 
