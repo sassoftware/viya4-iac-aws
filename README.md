@@ -55,7 +55,7 @@ The following are also required:
 
 ## Getting Started
 
-Ubuntu 18.04 LTS is the operating system that is used on the jump box and NFS servers. Ubuntu creates the `/mnt` location as an ephemeral drive, so it cannot be used as the root location of the `jump_rwx_filestore_path` variable.
+Ubuntu 18.04 LTS is the operating system that is used on the jump server and NFS server VMs. Ubuntu creates the `/mnt` location as an ephemeral drive, so it cannot be used as the root location of the `jump_rwx_filestore_path` variable.
 
 ### Clone this Project
 
