@@ -268,7 +268,6 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| create_postgres | Create an AWS Postgres DB (RDS) server instance | bool | false | |
 | postgres_server_name | Name of PostgreSQL server | string | "" | Changing this value trigger resource recreation |
 | postgres_server_version | The version of the PostgreSQL server | string | "11" | Changing this value trigger resource recreation |
 | postgres_instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
