@@ -22,9 +22,9 @@ security_group_id = "<existing-security-group-id>" # only needed if using pre-ex
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
 
-# **************  RECOMENDED  VARIABLES  ***************
+# **************  RECOMMENDED  VARIABLES  ***************
 default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
-# **************  RECOMENDED  VARIABLES  ***************
+# **************  RECOMMENDED  VARIABLES  ***************
 
 # Tags for all tagable items in your cluster.
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
