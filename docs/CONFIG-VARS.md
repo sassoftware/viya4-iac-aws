@@ -285,40 +285,17 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| server_version | The version of the PostgreSQL server | string | "11" | Changing this value trigger resource recreation |
-| instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
-| storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
-| backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
-| storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
-| administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
-| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
-| multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
-| deletion_protection | Protect from accidental resource deletion | bool | false | |
-| ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
-| parameters | additional parameters for PostgreSQL server | list(map(string)) | [] | More details can be found [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Parameters) |
-| options | additional options for PostgreSQL server | any | [] | |
-
-Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
-
-```terraform
-database_servers = {
-  default = {
-    administrator_password       = "D0ntL00kTh1sWay"
-  },
-  another_server = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
-    storage_encrypted            = false
-    backup_retention_days        = 7
-    multi_az                     = false
-    deletion_protection          = false
-    administrator_login          = "cpsadmin"
-    administrator_password       = "1tsAB3aut1fulDay"
-    server_version               = "12"
-    server_port                  = "5432"
-    ssl_enforcement_enabled      = true
-    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
-    options                      = []
-  }
-}
-```
+| postgres_server_name | Name of PostgreSQL server | string | "" | Changing this value trigger resource recreation |
+| postgres_server_version | The version of the PostgreSQL server | string | "11" | Changing this value trigger resource recreation |
+| postgres_instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
+| postgres_storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
+| postgres_backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
+| postgres_storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
+| postgres_administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | Changing this forces a new resource to be created |
+| postgres_administrator_password | The Password associated with the postgres_administrator_login for the PostgreSQL Server | string | | |
+| postgres_db_name | Name of database to create | string | "SharedServices" | |
+| postgres_multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
+| postgres_deletion_protection | Protect from accidental resource deletion | bool | false | |
+| postgres_ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
+| postgres_parameters | additional parameters for PostgreSQL server | list of maps | [] | |
+| postgres_options | additional options for PostgreSQL server | list of maps | [] |   |
