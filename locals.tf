@@ -71,8 +71,22 @@ locals {
   # Merging the default_node_pool into the work_groups node pools
   worker_groups = concat(local.default_node_pool, local.user_node_pool)
 
-  # Postgres options/parameters
-  postgres_options    = var.create_postgres ? var.postgres_options : null
-  postgres_parameters = var.create_postgres ? var.postgres_ssl_enforcement_enabled ? concat(var.postgres_parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(var.postgres_parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }]) : null
+  # PostgreSQL
+  postgres_servers    = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge( var.postgres_server_defaults, v, )}
+  postgres_sgr_ports  = var.postgres_servers != null && length(local.postgres_servers) != 0 ? [ for k,v in local.postgres_servers :
+      v.server_port
+  ] : []
+
+  postgres_outputs    = length(module.postgresql) != 0 ? { for k,v in module.postgresql :
+    k => {
+      "server_name" : module.postgresql[k].db_instance_id,
+      "fqdn" : module.postgresql[k].db_instance_address,
+      "admin" : module.postgresql[k].db_instance_username,
+      "password" : module.postgresql[k].db_instance_password,
+      "server_port" : module.postgresql[k].db_instance_port 
+      "ssl_enforcement_enabled" : local.postgres_servers[k].ssl_enforcement_enabled,
+      "internal" : false
+    }
+  } : {}
 
 }
