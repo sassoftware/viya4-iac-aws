@@ -429,7 +429,6 @@ variable "postgres_server_defaults" {
     server_version               = "11"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    # postgresql_configurations    = {}
     parameters                   = []
     options                      = []
   }
