@@ -72,7 +72,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Used to to set a default for all resources. |
 | cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | Used to enable client admin access to the cluster, with `kubectl` for example. |
-| vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump box and/or NFS VM. |
+| vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump VM and/or NFS VM. |
 | postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings |||
 
 ## Networking
@@ -195,10 +195,10 @@ Custom policy:
 | :--- | :--- | :--- | :--- | :--- |
 | create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | false | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
 | kubernetes_version | The EKS cluster Kubernetes version | string | "1.19" | |
-| create_jump_vm | Create bastion host (jump box) | bool | true| |
-| create_jump_public_ip | Add public IP address to jump box | bool | true | |
-| jump_vm_admin | OS admin user for the jump box | string | "jumpuser" | |
-| jump_rwx_filestore_path | File store mount point on jump box | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump box and NFS servers. |
+| create_jump_vm | Create bastion host (jump VM) | bool | true| |
+| create_jump_public_ip | Add public IP address to jump VM | bool | true | |
+| jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
+| jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 
