@@ -1,11 +1,11 @@
 ## Global
 variable "prefix" {
-  description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with lowercase letter and contain only alphanumeric characters and hyphen or dash(-), but can not start or end with '-'."
+  description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with a lowercase letter and contain only alphanumeric characters and hyphens or dashes (-), but cannot start or end with '-'."
   type        = string
 
   validation {
     condition     = can(regex("^[a-z][-0-9a-z]*[0-9a-z]$", var.prefix))
-    error_message = "ERROR: Value of 'prefix'\n * must start with lowercase letter\n * can only contain lowercase letters, numbers, and hyphen or dash(-), but can't start or end with '-'."
+    error_message = "ERROR: Value of 'prefix'\n * must start with lowercase letter\n * can only contain lowercase letters, numbers, hyphens, or dashes (-), but cannot start or end with '-'."
   }
 }
 
@@ -46,7 +46,7 @@ variable "aws_secret_access_key" {
 }
 
 variable "iac_tooling" {
-  description = "Value used to identify the tooling used to generate this providers infrastructure."
+  description = "Value used to identify the tooling used to generate this provider's infrastructure"
   type        = string
   default     = "terraform"
 }
@@ -71,7 +71,7 @@ variable "cluster_endpoint_private_access_cidrs" {
 }
 
 variable "vm_public_access_cidrs" {
-  description = "List of CIDRs to access jump or nfs VM"
+  description = "List of CIDRs to access jump VM or NFS VM"
   type        = list(string)
   default     = null
 }
@@ -84,7 +84,7 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific 
 variable "ssh_public_key" {
-  description = "ssh public key used to access VMs"
+  description = "SSH public key used to access VMs"
   default = "~/.ssh/id_rsa.pub"
 }
 
@@ -94,12 +94,12 @@ variable efs_performance_mode {
 
 ## Kubernetes
 variable "kubernetes_version" {
-  description = "The EKS cluster K8s version"
+  description = "The EKS cluster Kubernetes version"
   default     = "1.19"
 }
 
 variable "tags" {
-  description = "Map of common tags to be placed on the Resources"
+  description = "Map of common tags to be placed on the resources"
   type        = map
   default     = { project_name = "viya" }
 
@@ -109,7 +109,7 @@ variable "tags" {
   }
 }
 
-## Default Nodepool config
+## Default node pool config
 variable "create_default_nodepool" {
   description = "Create Default Node Pool"
   type        = bool
@@ -126,7 +126,7 @@ variable "default_nodepool_os_disk_type" {
 
   validation {
     condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
-    error_message = "ERROR: Support value for `default_nodepool_os_disk_type` are - gp2, io1."
+    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, io1."
   }
 }
 
@@ -178,7 +178,7 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
   default = 1
 }
 
-## Dynamnic Nodepool config
+## Dynamic node pool config
 variable node_pools {
   description = "Node pool definitions"
   type = map(object({
@@ -368,7 +368,7 @@ variable "jump_rwx_filestore_path" {
 }
 
 variable "nfs_raid_disk_size" {
-  description = "Size in Gb for each disk of the RAID0 cluster, when storage_type=standard"
+  description = "Size in GB for each disk of the RAID0 cluster, when storage_type=standard"
   default     = 128
 }
 
@@ -413,13 +413,13 @@ variable "os_disk_iops" {
 
 ## PostgresSQL
 variable "create_postgres" {
-  description = "Create an AWS Postgres DB (RDS)"
+  description = "Create an AWS PostgreSQL DB (RDS)"
   type        = bool
   default     = false
 }
 
 variable "postgres_server_name" {
-  description = "Specifies the name of the PostgreSQL Server. Changing this forces a new resource to be created."
+  description = "Specifies the name of the PostgreSQL server. Changing this forces a new resource to be created."
   default     = ""
 }
 
@@ -440,7 +440,7 @@ variable "postgres_storage_size" {
 }
 
 variable "postgres_backup_retention_days" {
-  description = "Backup retention days for the server, supported values are between 7 and 35 days."
+  description = "Backup retention days for the server. Supported values are between 7 and 35 days."
   default     = 7
 }
 
@@ -497,24 +497,24 @@ variable "storage_type" {
 
   validation {
     condition     = contains(["standard", "ha"], lower(var.storage_type))
-    error_message = "ERROR: Supported value for `storage_type` are - standard, ha."
+    error_message = "ERROR: Supported values for `storage_type` are standard, ha."
   }
 }
 
 variable "create_static_kubeconfig" {
-  description = "Allows the user to create a provider / service account based kube config file"
+  description = "Allows the user to create a provider- or service account-based kubeconfig file"
   type        = bool
   default     = true
 }
 
 variable "infra_mode" {
-  description = "Use Private IP address for cluster API endpoint"
+  description = "Use private IP address for cluster API endpoint"
   type        = string
   default     = "standard"
 
   validation {
     condition     = contains(["standard", "private"], lower(var.infra_mode))
-    error_message = "ERROR: Supported values for `infra_mode` are - standard, private."
+    error_message = "ERROR: Supported values for `infra_mode` are standard, private."
   }
 }
 
@@ -526,7 +526,7 @@ variable "vpc_private_endpoints" {
 
 # TODO: Add conditional
 variable "cluster_node_pool_mode" {
-  description = "Flag for predefined cluster node configurations - Values : default, minimal"
+  description = "Flag for predefined cluster node configurations. Supported values are default, minimal."
   type        = string
   default     = "default"
 
