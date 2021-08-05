@@ -269,7 +269,7 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 
 ## PostgreSQL Server
 
-When setting up *external databases servers*, you must provide information about those servers in the
+When setting up *external database servers*, you must provide information about those servers in the
 `postgres_servers` variable block. Each item in the variable block creates a unique database server.
 
 The variable has the following format:
@@ -310,7 +310,7 @@ Here is a sample of the `postgres_servers` variable with the `default` entry onl
 
 ```terraform
 database_servers = {
-  default = {=
+  default = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
   cps = {
