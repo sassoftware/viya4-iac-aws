@@ -266,7 +266,9 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 ## Postgres Servers
 
 When setting up *external databases servers*, you must provide information about those servers in the
-`postgres_servers` variable block. This variable has the following format:
+`postgres_servers` variable block. Each item in the variable block creates a unique database server.
+
+The variable has the following format:
 
 ```terraform
 postgres_servers = {
