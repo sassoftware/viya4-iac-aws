@@ -465,7 +465,7 @@ variable "postgres_servers" {
         v.administrator_login != "admin",
         length(v.administrator_login) > 0,
         length(v.administrator_login) < 17,
-        can(regex("^[a-zA-Z][a-zA-Z0-9_].*", v.administrator_login)),
+        can(regex("^[a-zA-Z][a-zA-Z0-9_]+$", v.administrator_login)),
        ]) : true
     ]) : true
     error_message = "ERROR: The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers."
