@@ -21,7 +21,7 @@ Supported configuration variables are listed in the table below.  All variables 
   - [Storage](#storage)
     - [NFS Server](#nfs-server)
     - [AWS Elastic File System (EFS)](#aws-elastic-file-system-efs)
-  - [Postgres](#postgres)
+  - [Postgres Servers](#postgres-servers)
 
 Terraform input variables can be set in the following ways:
 
@@ -263,7 +263,26 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
 
-## Postgres
+## Postgres Servers
+
+When setting up *external databases servers*, you must provide information about those servers in the
+`postgres_servers` variable block. This variable has the following format:
+
+```terraform
+postgres_servers = {
+  default = {},
+  foo = {},
+  bar = {},
+  .
+  .
+  .
+  baz = {},
+}
+```
+
+**NOTE**: the `default = {}` elements is always required when creating external databases. This will be the system level default data server.
+
+Each server element `foo = {}` can contain none, some, or all of the parameters listed below:
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -274,32 +293,20 @@ When `storage_type=ha`, [AWS Elastic File System](https://aws.amazon.com/efs/) s
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | Changing this forces a new resource to be created |
-| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | | |
+| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
 | parameters | additional parameters for PostgreSQL server | list of maps | [] | |
 | options | additional options for PostgreSQL server | list of maps | [] |   |
 
-Sample `postgres_servers` block
+Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `CPS` entry overriding all of the parameters:
 
 ```terraform
 database_servers = {
-  default = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
-    storage_encrypted            = false
-    backup_retention_days        = 7
-    multi_az                     = false
-    deletion_protection          = false
-    administrator_login          = "pgadmin"
+  default = {=
     administrator_password       = "D0ntL00kTh1sWay"
-    server_version               = "11"
-    server_port                  = "5432"
-    ssl_enforcement_enabled      = true
-    parameters                   = []
-    options                      = []
-  }
+  },
   cps = {
     instance_type                = "db.m5.xlarge"
     storage_size                 = 50
@@ -308,7 +315,7 @@ database_servers = {
     multi_az                     = false
     deletion_protection          = false
     administrator_login          = "cpsadmin"
-    administrator_password       = "D0ntL00kTh1sWay"
+    administrator_password       = "1tsAB3ut1fulDay"
     server_version               = "12"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
