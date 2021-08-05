@@ -269,26 +269,23 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 
 ## PostgreSQL Server
 
-When setting up *external database servers*, you must provide information about those servers in the
-`postgres_servers` variable block. Each item in the variable block creates a unique database server.
+When setting up ***external database servers***, you must provide information about those servers in the `postgres_servers` variable block. Each entry in the variable block represents a ***single data base server***.
+
+This code only configures database servers. No databases are created during the infrastructure setup.
 
 The variable has the following format:
 
 ```terraform
 postgres_servers = {
   default = {},
-  foo = {},
-  bar = {},
-  .
-  .
-  .
-  baz = {},
+  ...
 }
 ```
 
-**NOTE**: the `default = {}` elements is always required when creating external databases. This will be the default server.
 
-Each server element `foo = {}` can contain none, some, or all of the parameters listed below:
+**NOTE**: The `default = {}` elements is always required when creating external databases. This is the systems default database server.
+
+Each server element, like `foo = {}`, can contain none, some, or all of the parameters listed below:
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -306,7 +303,7 @@ Each server element `foo = {}` can contain none, some, or all of the parameters 
 | parameters | additional parameters for PostgreSQL server | list of maps | [] | |
 | options | additional options for PostgreSQL server | list of maps | [] |   |
 
-Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `CPS` entry overriding all of the parameters:
+Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
 
 ```terraform
 database_servers = {
