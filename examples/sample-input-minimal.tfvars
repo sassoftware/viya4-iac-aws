@@ -84,3 +84,10 @@ jump_vm_type                          = "t3.medium"
 create_nfs_public_ip                  = false
 nfs_vm_admin                          = "nfsuser"
 nfs_vm_type                           = "m5.xlarge"
+
+# AWS Postgres config - By having this entry a database server is created. If you do not
+#                       need an external database server remove the 'postgres_servers'
+#                       block below.
+# postgres_servers = {
+#   default = {},
+# }
