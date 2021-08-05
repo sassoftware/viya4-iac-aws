@@ -442,33 +442,49 @@ variable "postgres_servers" {
 
   # Checking for user provided "default" server
   validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
+    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : true
     error_message = "The provided map of PostgreSQL server objects does not contain the required 'default' key."
+  }
+
+  # Checking server name
+  validation {
+    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
+      for k,v in var.postgres_servers : alltrue([
+        length(k) > 0,
+        length(k) < 61,
+        can(regex("^[a-zA-Z]+[a-zA-Z0-9-]*[a-zA-Z0-9]$", k)),
+      ])
+    ]) : true
+    error_message = "ERROR: The database name must start with a letter, cannot end with a hyphen, can be between 1-60 characters in length, and only contain hyphends, letters, and numbers."
   }
 
   # Checking user provided login
   validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"adminstrator_login") ? ! contains(["azure_superuser", "azure_pg_admin", "admin", "administrator", "root", "guest", "public"], v.administrator_login) && ! can(regex("^pg_", v.administrator_login)) : true
-    ]) : false : true
-    error_message = "ERROR: The admin login name can't be azure_superuser, azure_pg_admin, admin, administrator, root, guest, or public. It can't start with pg_."
+    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
+      for k,v in var.postgres_servers : contains(keys(v),"administrator_login") ? alltrue([
+        v.administrator_login != "admin",
+        length(v.administrator_login) > 0,
+        length(v.administrator_login) < 17,
+        can(regex("^[a-zA-Z][a-zA-Z0-9_].*", v.administrator_login)),
+       ]) : true
+    ]) : true
+    error_message = "ERROR: The admin login name can not be 'admin', must start with a letter, and can be between 1-16 characters in length, and only contain underscores, letters, and numbers."
   }
 
   # Checking user provided password
-  validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
-        length(v.administrator_password) > 7,
-        length(v.administrator_login) < 129,
-        anytrue([
-          (can(regex("[0-9]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
-          (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
-          (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[0-9]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
-          (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[0-9]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)))
-        ])]) : true 
-    ]) : false : true
-    error_message = "ERROR: Password is not complex enough. It must contain between 8 and 128 characters. Your password must contain characters from three of the following categories:\n * English uppercase letters,\n * English lowercase letters,\n * numbers (0 through 9), and\n * non-alphanumeric characters (!, $, #, %, etc.)."
-  }
+  # validation {
+  #   condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
+  #     for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
+  #       length(v.administrator_password) > 7,
+  #       anytrue([
+  #         (can(regex("[0-9]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
+  #         (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
+  #         (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[0-9]+", v.administrator_password)) && can(regex("[A-Z]+", v.administrator_password))),
+  #         (can(regex("[!@#$%^&*(){}[]|<>~`,./_-+=]+", v.administrator_password)) && can(regex("[0-9]+", v.administrator_password)) && can(regex("[a-z]+", v.administrator_password)))
+  #       ])]) : true 
+  #   ]) : false : true
+  #   error_message = "ERROR: Password is not complex enough. It must contain between 8 and 128 characters. Your password must contain characters from three of the following categories:\n * English uppercase letters,\n * English lowercase letters,\n * numbers (0 through 9), and\n * non-alphanumeric characters (!, $, #, %, etc.)."
+  # }
 }
 
 variable "storage_type" {
