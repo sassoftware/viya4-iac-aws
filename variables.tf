@@ -476,7 +476,7 @@ variable "postgres_servers" {
     condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
       for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
         length(v.administrator_password) > 7,
-        can(regex("^[^/'\"@]*$", v.administrator_password)),
+        can(regex("^[^/'\"@]+$", v.administrator_password)),
       ]) : true 
     ]) : true
     error_message = "ERROR: The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters."
