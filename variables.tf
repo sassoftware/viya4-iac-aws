@@ -442,43 +442,43 @@ variable "postgres_servers" {
 
   # Checking for user provided "default" server
   validation {
-    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : true
+    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
     error_message = "The provided map of PostgreSQL server objects does not contain the required 'default' key."
   }
 
   # Checking server name
   validation {
-    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
+    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
       for k,v in var.postgres_servers : alltrue([
         length(k) > 0,
         length(k) < 61,
         can(regex("^[a-zA-Z]+[a-zA-Z0-9-]*[a-zA-Z0-9]$", k)),
       ])
-    ]) : true
+    ]) : false : true
     error_message = "ERROR: The database name must start with a letter, cannot end with a hyphen, must be between 1-60 characters in length, and can only contain hyphends, letters, and numbers."
   }
 
   # Checking user provided login
   validation {
-    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
+    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
       for k,v in var.postgres_servers : contains(keys(v),"administrator_login") ? alltrue([
         v.administrator_login != "admin",
         length(v.administrator_login) > 0,
         length(v.administrator_login) < 17,
         can(regex("^[a-zA-Z][a-zA-Z0-9_]+$", v.administrator_login)),
        ]) : true
-    ]) : true
+    ]) : false : true
     error_message = "ERROR: The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers."
   }
 
   # Checking user provided password
   validation {
-    condition = var.postgres_servers != null && length(var.postgres_servers) != 0 ? alltrue([
+    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
       for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
         length(v.administrator_password) > 7,
         can(regex("^[^/'\"@]+$", v.administrator_password)),
       ]) : true 
-    ]) : true
+    ]) : false : true
     error_message = "ERROR: The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters."
   }
 }

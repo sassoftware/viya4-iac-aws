@@ -73,9 +73,9 @@ locals {
 
   # PostgreSQL
   postgres_servers    = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge( var.postgres_server_defaults, v, )}
-  postgres_sgr_ports  = var.postgres_servers != null && length(local.postgres_servers) != 0 ? [ for k,v in local.postgres_servers :
+  postgres_sgr_ports  = var.postgres_servers != null ? length(local.postgres_servers) != 0 ? [ for k,v in local.postgres_servers :
       v.server_port
-  ] : []
+  ] : [] : null
 
   postgres_outputs    = length(module.postgresql) != 0 ? { for k,v in module.postgresql :
     k => {

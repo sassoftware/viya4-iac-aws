@@ -400,7 +400,7 @@ module "postgresql" {
 }
 
 resource "aws_security_group_rule" "postgres_internal" {
-  for_each          = toset(local.postgres_sgr_ports)
+  for_each          = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
   type              = "ingress"
   description       = "Allow Postgres within network"
   from_port         = each.key
@@ -411,7 +411,7 @@ resource "aws_security_group_rule" "postgres_internal" {
 }
 
 resource "aws_security_group_rule" "postgres_external" {
-  for_each          = length(local.postgres_public_access_cidrs) > 0 ? toset(local.postgres_sgr_ports) : toset([])
+  for_each          = length(local.postgres_public_access_cidrs) > 0 ? local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([]) : toset([])
   type              = "ingress"
   description       = "Allow Postgres from source"
   from_port         = each.key
