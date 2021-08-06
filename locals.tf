@@ -88,5 +88,4 @@ locals {
       "internal" : false
     }
   } : {}
-
 }

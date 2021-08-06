@@ -411,7 +411,12 @@ variable "os_disk_iops" {
   default = 0
 }
 
-## PostgreSQL
+## PostgresSQL
+variable "create_postgres" {
+  description = "Create an AWS Postgres DB (RDS)"
+  type        = bool
+  default     = false
+}
 
 # Defaults
 variable "postgres_server_defaults" {
@@ -434,17 +439,13 @@ variable "postgres_server_defaults" {
   }
 }
 
-# User inputs
-variable "postgres_servers" {
-  description = "Map of PostgreSQL server objects"
-  type        = any
-  default     = null
+variable "postgres_server_version" {
+  default = "11"
+}
 
-  # Checking for user provided "default" server
-  validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
-    error_message = "The provided map of PostgreSQL server objects does not contain the required 'default' key."
-  }
+variable "postgres_server_port" {
+  default = "5432"
+}
 
   # Checking server name
   validation {

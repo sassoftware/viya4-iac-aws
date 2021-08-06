@@ -341,26 +341,27 @@ module "kubeconfig" {
 }
 
 # Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
-module "postgresql" {
+module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "3.3.0"
+  version = "3.1.0"
 
-  for_each   = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
-
-  identifier = lower("${var.prefix}-${each.key}-pgsql")
+  identifier = (var.postgres_server_name == "" ? "${var.prefix}db" : var.postgres_server_name)
 
   engine            = "postgres"
-  engine_version    = each.value.server_version
-  instance_class    = each.value.instance_type
-  allocated_storage = each.value.storage_size
-  storage_encrypted = each.value.storage_encrypted
+  engine_version    = var.postgres_server_version
+  instance_class    = var.postgres_instance_type # sku_name
+  allocated_storage = var.postgres_storage_size
+  storage_encrypted = var.postgres_storage_encrypted
+
+  # kms_key_id        = "arm:aws:kms:<region>:<account id>:key/<kms key id>"
+  name = var.postgres_db_name
 
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
   # user cannot be used as it is a reserved word used by the engine"
-  username = each.value.administrator_login
-  password = each.value.administrator_password
-  port     = each.value.server_port
+  username = var.postgres_administrator_login
+  password = var.postgres_administrator_password
+  port     = var.postgres_server_port
 
   vpc_security_group_ids = [local.security_group_id]
 
@@ -368,43 +369,45 @@ module "postgresql" {
   backup_window      = "03:00-06:00"
 
   # disable backups to create DB faster
-  backup_retention_period = each.value.backup_retention_days
+  backup_retention_period = var.postgres_backup_retention_days
 
   tags = var.tags
+
+  # enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
   subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
 
   # DB parameter group
-  family = "postgres${each.value.server_version}"
+  family = "postgres${var.postgres_server_version}"
 
   # DB option group
-  major_engine_version = each.value.server_version
+  major_engine_version = var.postgres_server_version
 
   # Database Deletion Protection
-  deletion_protection = each.value.deletion_protection
+  deletion_protection = var.postgres_deletion_protection
 
-  multi_az = each.value.multi_az
+  multi_az = var.postgres_multi_az
 
-  # TODO - Look at simplifying contact logic
-  parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }])
-  options    = each.value.options
+  parameters = local.postgres_parameters
+  options    = local.postgres_options
 
   # Flags for module to flag if postgres should be created or not.
-  create_db_instance        = true
-  create_db_subnet_group    = true
-  create_db_parameter_group = true
-  create_db_option_group    = true
+  create_db_instance        = var.create_postgres
+  create_db_subnet_group    = var.create_postgres
+  create_db_parameter_group = var.create_postgres
+  create_db_option_group    = var.create_postgres
 
 }
 
 resource "aws_security_group_rule" "postgres_internal" {
   for_each          = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
+
   type              = "ingress"
   description       = "Allow Postgres within network"
-  from_port         = each.key
-  to_port           = each.key
+  from_port         = 5432
+  to_port           = 5432
   protocol          = "tcp"
   self              = true
   security_group_id = local.security_group_id
@@ -412,10 +415,11 @@ resource "aws_security_group_rule" "postgres_internal" {
 
 resource "aws_security_group_rule" "postgres_external" {
   for_each          = length(local.postgres_public_access_cidrs) > 0 ? local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([]) : toset([])
+
   type              = "ingress"
   description       = "Allow Postgres from source"
-  from_port         = each.key
-  to_port           = each.key
+  from_port         = 5432
+  to_port           = 5432
   protocol          = "tcp"
   cidr_blocks       = local.postgres_public_access_cidrs
   security_group_id = local.security_group_id
