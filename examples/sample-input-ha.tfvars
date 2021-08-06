@@ -127,10 +127,3 @@ node_pools = {
 
 # Jump Server
 create_jump_vm                        = true
-
-# AWS Postgres config - By having this entry a database server is created. If you do not
-#                       need an external database server remove the 'postgres_servers'
-#                       block below.
-postgres_servers = {
-  default = {},
-}
