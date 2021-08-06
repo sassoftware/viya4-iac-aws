@@ -439,13 +439,11 @@ variable "postgres_server_defaults" {
   }
 }
 
-variable "postgres_server_version" {
-  default = "11"
-}
-
-variable "postgres_server_port" {
-  default = "5432"
-}
+# User inputs
+variable "postgres_servers" {
+  description = "Map of PostgreSQL server objects"
+  type        = any
+  default     = null
 
   # Checking server name
   validation {
