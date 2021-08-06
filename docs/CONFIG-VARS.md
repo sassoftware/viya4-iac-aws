@@ -269,7 +269,7 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 
 ## PostgreSQL Server
 
-When setting up ***external database servers***, you must provide information about those servers in the `postgres_servers` variable block. Each entry in the variable block represents a ***single data base server***.
+When setting up ***external database servers***, you must provide information about those servers in the `postgres_servers` variable block. Each entry in the variable block represents a ***single database server***.
 
 This code only configures database servers. No databases are created during the infrastructure setup.
 
