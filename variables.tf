@@ -455,7 +455,7 @@ variable "postgres_servers" {
         can(regex("^[a-zA-Z]+[a-zA-Z0-9-]*[a-zA-Z0-9]$", k)),
       ])
     ]) : false : true
-    error_message = "ERROR: The database name must start with a letter, cannot end with a hyphen, must be between 1-60 characters in length, and can only contain hyphends, letters, and numbers."
+    error_message = "ERROR: The database server name must start with a letter, cannot end with a hyphen, must be between 1-60 characters in length, and can only contain hyphends, letters, and numbers."
   }
 
   # Checking user provided login

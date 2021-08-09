@@ -295,8 +295,8 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
-| administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | Changing this forces a new resource to be created |
-| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | |
+| administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
+| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
