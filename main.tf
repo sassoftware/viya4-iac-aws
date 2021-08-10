@@ -78,33 +78,13 @@ module "vpc" {
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
 }
 
-data aws_security_group sg {
-  count = var.security_group_id == null ? 0 : 1
-  id = var.security_group_id
-}
-
-# Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
-resource "aws_security_group" "sg" {
-  count = var.security_group_id == null ? 1 : 0
-  name   = "${var.prefix}-sg"
-  vpc_id = module.vpc.vpc_id
-
-  egress {
-    description = "Allow all outbound traffic."
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
-}
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
   count            = var.storage_type == "ha" ? 1 : 0
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
-  tags             = merge(var.tags, tomap({ Name: "${var.prefix}-efs" }))
+  tags             = merge(var.tags, { "Name": "${var.prefix}-efs" })
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
@@ -113,7 +93,7 @@ resource "aws_efs_mount_target" "efs-mt" {
   count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs.0.id
   subnet_id       = element(module.vpc.private_subnets, count.index)
-  security_groups = [local.security_group_id]
+  security_groups = [local.workers_security_group_id]
 }
 
 # Processing the cloud-init/jump/cloud-config template file
@@ -146,7 +126,7 @@ module "jump" {
   name               = "${var.prefix}-jump"
   tags               = var.tags
   subnet_id          = local.jump_vm_subnet
-  security_group_ids = [local.security_group_id]
+  security_group_ids = [local.security_group_id, local.workers_security_group_id]
   create_public_ip   = local.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -161,29 +141,8 @@ module "jump" {
 
   cloud_init = data.template_cloudinit_config.jump.rendered
 
-  depends_on = [module.nfs, aws_security_group_rule.all]
+  depends_on = [module.nfs]
 
-}
-
-resource "aws_security_group_rule" "vms" {
-  count             = ((var.storage_type == "standard" && local.create_nfs_public_ip) || var.create_jump_vm) && length(local.vm_public_access_cidrs) > 0 ? 1 : 0
-  type              = "ingress"
-  description       = "Allow SSH from source"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = local.vm_public_access_cidrs
-  security_group_id = local.security_group_id
-}
-
-resource "aws_security_group_rule" "all" {
-  type              = "ingress"
-  description       = "Allow internal security group communication."
-  from_port         = 0
-  to_port           = 0
-  protocol          = "all"
-  security_group_id = local.security_group_id
-  self              = true
 }
 
 data "template_file" "nfs-cloudconfig" {
@@ -217,7 +176,7 @@ module "nfs" {
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
-  security_group_ids = [local.security_group_id]
+  security_group_ids = [local.security_group_id, local.workers_security_group_id]
   create_public_ip   = local.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
@@ -300,10 +259,13 @@ module "eks" {
   workers_role_name                              = var.workers_iam_role_name
   manage_cluster_iam_resources                   = var.cluster_iam_role_name == null ? true : false
   cluster_iam_role_name                          = var.cluster_iam_role_name
+  worker_create_security_group                   = false
+  worker_security_group_id                       = local.workers_security_group_id
+  cluster_create_security_group                  = false
+  cluster_security_group_id                      = local.cluster_security_group_id
 
   workers_group_defaults = {
     tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
-    additional_security_group_ids        = [local.security_group_id]
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
     bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
@@ -341,7 +303,7 @@ module "kubeconfig" {
   depends_on = [ module.eks ]
 }
 
-# Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
+# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/3.3.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
   version = "3.3.0"
@@ -363,7 +325,7 @@ module "postgresql" {
   password = each.value.administrator_password
   port     = each.value.server_port
 
-  vpc_security_group_ids = [local.security_group_id]
+  vpc_security_group_ids = [local.security_group_id, local.workers_security_group_id]
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -388,7 +350,6 @@ module "postgresql" {
 
   multi_az = each.value.multi_az
 
-  # TODO - Look at simplifying contact logic
   parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }])
   options    = each.value.options
 
@@ -399,29 +360,6 @@ module "postgresql" {
   create_db_option_group    = true
 
 }
-
-resource "aws_security_group_rule" "postgres_internal" {
-  for_each          = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
-  type              = "ingress"
-  description       = "Allow Postgres within network"
-  from_port         = each.key
-  to_port           = each.key
-  protocol          = "tcp"
-  self              = true
-  security_group_id = local.security_group_id
-}
-
-resource "aws_security_group_rule" "postgres_external" {
-  for_each          = length(local.postgres_public_access_cidrs) > 0 ? local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([]) : toset([])
-  type              = "ingress"
-  description       = "Allow Postgres from source"
-  from_port         = each.key
-  to_port           = each.key
-  protocol          = "tcp"
-  cidr_blocks       = local.postgres_public_access_cidrs
-  security_group_id = local.security_group_id
-}
-
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
 resource "aws_resourcegroups_group" "aws_rg" {
   name = "${var.prefix}-rg"

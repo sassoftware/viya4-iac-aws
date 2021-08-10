@@ -6,14 +6,52 @@ You have the option to use existing network resources with SAS Viya 4 Terraform 
 
 | Scenario|Required Variables|Additional Requirements|Resources to be Created|
 | :--- | :--- | :--- | :--- |
-| 1. You must work with an existing VPC. | `vpc_id` | <ul><li>VPC does not contain any subnets or other network components. See the [AWS guide to VPC Networking](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html) for more information</li><li>VPC block size must be IPv4 with '/16' subnet mask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>The values for the [`subnets` variable](../CONFIG-VARS.md#networking) must match the VPC IPv4 CIDR block</li></ul> | Subnets, NAT gateway, and Security Group |
-| 2. You want to configure all components of your VPC network &mdash; subnets, routes and associations, internet and NAT gateways. | `vpc_id`, <br>`subnet_ids`, and <br>`nat_id` | <ul><li>This must be a <b>fully functional AWS VPC Network</b></li><li>VPC block size must be IPv4 with '/16' subnet mask (supports 65,536 IP addresses)</li><li>AWS **DNS hostnames** and **DNS resolution** settings must be enabled</li><li>The CIDR blocks defined for `subnet_ids` must match the VPC IPv4 CIDR block</li><li>Subnet Availability Zones must be within the location defined in [CONFIG-VARS](../CONFIG-VARS.md#required-variables)</li><li>AWS tags with `<prefix>` value replaced with the [prefix](../CONFIG-VARS.md#required-variables) input value for <br>- **Public Subnets:**<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>- **Private Subnets:**<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>See the [AWS user documentation](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) for information about subnet tag requirements to match the EKS cluster name. | Security Group |
-| 3. You want to configure all components of your VPC network and Security Group. | `vpc_id`,<br>`subnet_ids`, <br>`nat_id`, and <br>`security_group_id` | All requirements from Scenario #2 and the Security Group. | None |
+| 1. When you have to work with an existing VPC | `vpc_id` | <ul><li>VPC does not contain any Subnets or other [Network components](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html)</li><li>VPC block size must be IPv4 with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>[`subnets`](../CONFIG-VARS.md#networking) CIDR blocks must match with VPC IPv4 CIDR block</li></ul> | Subnets, NAT Gateway and Security Group|
+| 2. When you want to configure all components of your VPC network - Subnets, Routes & associations, Internet and NAT Gateways | `vpc_id`, <br>`subnet_ids` and <br>`nat_id` | <ul><li>This must be a <b>fully functional AWS VPC Network</b></li><li>VPC block size must be IPv4 with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>`subnet_ids` CIDR blocks must match with VPC IPv4 CIDR block</li><li>Subnets Availability Zones must be within the [location](../CONFIG-VARS.md#required-variables)</li><li>AWS Tags with `<prefix>` value replaced with the [prefix](../CONFIG-VARS.md#required-variables) input value for <br>- Public Subnets:<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>-Private Subnets:<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>See [AWS docs](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) for background on subnet tag requirements to match EKS Cluster name| Security Group |
+| 3. When you want to configure all components of your VPC network and Security Groups | `vpc_id`,<br>`subnet_ids`, <br>`nat_id`, <br>`security_group_id`, <br>`cluster_security_group_id`, and <br>`workers_security_group_id` |<ul><li>all requirements from Scenarios #2 and [these pre-defined Security Groups](#security-groups)</li></ul>| None |
 ||||||
 
-## Helpful Resources
-  
-When creating your BYO network resources, consult with your Network Administrator and use any of the methods documented in the following resources to create a working AWS VPC network:  
+### Security Groups
+
+#### External Access Security Group
+
+This Security Group is used to set external access to the Jump/NFS VMs and Postgres.
+
+| | Protocol | Ports | Source | Destination|
+| :--- | :--- | :--- | :--- | :--- |
+| Outbound | All | All |  | 0.0.0.0/0 |
+| Inbound PostgreSQL external | TCP | 5432 | <optional> the value you would set for the [`postgres_public_access_cidrs`](../CONFIG-VARS.md#admin-access) variable | |
+| Inbound ssh access for JUMP/NFS VMs | TCP | 22 | the value you would set for the [`vm_public_access_cidrs`](../CONFIG-VARS.md#admin-access) variable ||
+
+
+#### Cluster Security Group
+
+Allow communication from Node VMs to Cluster control plane.
+
+| | Protocol | Ports | Source | Destination|
+| :--- | :--- | :--- | :--- | :--- |
+| Outbound | All | All |  | 0.0.0.0/0 |
+| Inbound from Node VMs to Cluster api | TCP | 443 | workers security group | |
+
+#### Workers Security Group
+
+Allow communication among Node VMs, from Cluster control plane to Node VMs and between Node VMs, Jump VM, and data sources (efs, nfs, postgres).
+
+| | Protocol | Ports | Source | Destination|
+| :--- | :--- | :--- | :--- | :--- |
+| Outbound | All | All |  | 0.0.0.0/0 |
+| Inbound allow workers to talk to each other | All | All | self ||
+| Inbound from cluster control plane | TCP |1025 - 65535 | Cluster security group ||
+| Inbound from cluster control plane | TCP | 443 | Cluster Security Group ||
+
+This security group also needs the following tag:
+`"kubernetes.io/cluster/<cluster name>" = "owned"`
+
+For more information on these Security Groups, please see https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html.
+
+
+
+When creating your BYO Network resources you should consult with your Network Administrator and use any of these methods to create a working AWS VPC Network:
 - [AWS QuickStarts for VPC](https://aws.amazon.com/quickstart/architecture/vpc/)
 - See the "simple-vpc" and "complete-vpc" examples in [terraform-aws-vpc module](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples) 
 

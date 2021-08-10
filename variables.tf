@@ -323,6 +323,18 @@ variable "security_group_id" {
   
 }
 
+variable "cluster_security_group_id" {
+  type    = string
+  default = null
+  description = "Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created"
+}
+
+variable "workers_security_group_id" {
+  type    = string
+  default = null
+  description = "Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created"
+}
+
 variable "nat_id" {
   type = string
   default = null

@@ -66,7 +66,9 @@ To enable access for other administrative client applications (for example `kube
 To do this, specify ranges of IP addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 Contact your Network Administrator to find the public CIDR range of your network.
 
-You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list `[]` to deny access explicitly.
+Please note that these values are used to add Ingress rules into to an AWS Security Group that by default gets created by terraform. If you specify a pre-existing  [Security Group](#use_existing), you need to add your access CIDRs to that Security Group yourself. The values in this section will not be applied.
+
+You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list `[]` to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
@@ -74,7 +76,6 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | Used to enable client admin access to the cluster, with `kubectl` for example. |
 | vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump VM and/or NFS VM. |
 | postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings |||
-
 ## Networking
  | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
@@ -103,8 +104,10 @@ The variables in the table below can be used to define the existing resources. R
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of existing VPC | string | null | Only required if deploying into existing VPC. |
  | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. |
-| nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. |
- | security_group_id | ID of existing Security Group | string | null | Only required if using existing Security Group. Ensure that outbound rule for all traffic is enabled: `0.0.0.0/0`. |
+ | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. | 
+ | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
+| cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
+| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sourcess (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
 
 Example `subnet_ids` variable:
 
@@ -300,8 +303,8 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
-| parameters | additional parameters for PostgreSQL server | list of maps | [] | |
-| options | additional options for PostgreSQL server | list of maps | [] |   |
+| parameters | additional parameters for PostgreSQL server | list(map(string)) | [] | More details can be found [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Parameters) |
+| options | additional options for PostgreSQL server | any | [] | |
 
 Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
 
@@ -310,7 +313,7 @@ database_servers = {
   default = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
-  cps = {
+  another_server = {
     instance_type                = "db.m5.xlarge"
     storage_size                 = 50
     storage_encrypted            = false
@@ -322,7 +325,7 @@ database_servers = {
     server_version               = "12"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = []
+    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
     options                      = []
   }
 }
