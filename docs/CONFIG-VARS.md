@@ -66,14 +66,16 @@ To allow access for other administrative client applications (for example `kubec
 To do this, specify ranges of IP in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 Contact your Network System Administrator to find the public CIDR range of your network.
 
-You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use and empty list `[]` to disallow access explicitly.
+Please note that these values are used to add Ingress rules into to an AWS Security Group that by default gets created by terraform. If you specify a pre-existing  [Security Group](#sg_id), you need to add your access CIDRs to that Security Group yourself. The values in this section will not be applied. 
+
+You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list `[]` to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP Ranges allowed to access all created cloud resources | list of strings | | Use to to set a default for all Resources |
 | cluster_endpoint_public_access_cidrs | IP Ranges allowed to access the AKS cluster api | list of strings | | for client admin access to the cluster, e.g. with `kubectl` |
-| vm_public_access_cidrs | IP Ranges allowed to access the VMs | list of strings | | opens port 22 for SSH access to the jump and/or nfs VM |
-| postgres_access_cidrs | IP Ranges allowed to access the AWS PostgreSQL Server | list of strings |||
+| <a name="vm_public_access_cidrs">vm_public_access_cidrs</a> | IP Ranges allowed to access the VMs | list of strings | | opens port 22 for SSH access to the jump and/or nfs VM |
+| <a name="postgre_access_cidrs">postgres_access_cidrs</a> | IP Ranges allowed to access the AWS PostgreSQL Server | list of strings |||
 
 ## Networking
  | Name | Description | Type | Default | Notes |
@@ -98,7 +100,9 @@ If desired, you can deploy into an existing - VPC, Subnets and NAT Gateway, and 
  | vpc_id | ID of pre-existing VPC | string | null | Only required if deploying into existing VPC |
  | subnet_ids | Existing list of subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing Subnets |
 | nat_id | ID of pre-existing AWS NAT Gateway | string | null | Only required if deploying into existing VPC and Subnets|
- | security_group_id | ID of existing Security Group | string | null | Only required if using existing Security Group. Ensure outbound rule for all traffic is enabled `0.0.0.0/0`|
+ | <a name="sg_id">security_group_id</a> | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
+| cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
+| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sourcess (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
 
 Example `subnet_ids` variable:
 

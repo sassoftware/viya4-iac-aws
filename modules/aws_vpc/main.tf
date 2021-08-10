@@ -36,7 +36,7 @@ resource "aws_vpc" "vpc" {
 
 resource "aws_vpc_endpoint" "private_endpoints" {
   count              = length(var.vpc_private_endpoints)
-  vpc_id             = aws_vpc.vpc.0.id
+  vpc_id             = local.vpc_id
   service_name       = "com.amazonaws.${var.region}.${var.vpc_private_endpoints[count.index]}"
   vpc_endpoint_type  = "Interface"
   security_group_ids = [ var.security_group_id ]
@@ -54,17 +54,17 @@ resource "aws_vpc_endpoint" "private_endpoints" {
 }
 
 data "aws_subnet" "public" {
-  count = local.existing_public_subnets ? 1 : 0
+  count = local.existing_public_subnets ? length(var.subnets["public"]) : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
 }
 
 data "aws_subnet" "private" {
-  count = local.existing_private_subnets ? 1 : 0
+  count = local.existing_private_subnets ? length(var.subnets["private"]) : 0
   id    = element(var.existing_subnet_ids["private"], count.index)
 }
 
 data "aws_subnet" "database" {
-  count = local.existing_database_subnets ? 1 : 0
+  count = local.existing_database_subnets ? length(var.subnets["database"]) : 0
   id    = element(var.existing_subnet_ids["database"], count.index)
 }
 
