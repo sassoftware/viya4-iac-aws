@@ -387,7 +387,6 @@ module "postgresql" {
 
   multi_az = each.value.multi_az
 
-  # TODO - Look at simplifying contact logic
   parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }])
   options    = each.value.options
 

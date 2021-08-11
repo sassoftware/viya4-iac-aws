@@ -297,7 +297,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
 | parameters | additional parameters for PostgreSQL server | list of maps | [] | |
-| options | additional options for PostgreSQL server | list of maps | [] |   |
+| options | additional options for PostgreSQL server | list of maps | [] |  More details can be found [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Parameters) |
 
 Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
 

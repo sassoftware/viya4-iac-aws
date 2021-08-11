@@ -516,7 +516,6 @@ variable "vpc_private_endpoints" {
    default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
 }
 
-# TODO: Add conditional
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations - Values : default, minimal"
   type        = string
