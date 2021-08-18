@@ -16,7 +16,7 @@ body:
 
         If you're not sure which versions are supported, here's a link : https://github.com/sassoftware/viya4-iac-aws#terraform to help.
     validations:
-      required: true
+      required: false
   - type: textarea
     id: tf_vars
     attributes:
@@ -28,7 +28,7 @@ body:
         
         security reasons, do not copy and paste any sensitive information in this issue, like account information and passwords etc.
     validations:
-      required: true
+      required: false
   - type: textarea
     id: tf_steps_to_reproduce
     attributes:
