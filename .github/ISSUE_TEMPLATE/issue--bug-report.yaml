@@ -56,7 +56,7 @@ body:
     attributes:
       label: Additional Context
       description: |
-        Are there anything atypical about your situation that we should know? For example: Are you passing any unusual command line options or environment variables to opt-in to non-default behavior?
+        Is there anything atypical about your situation that we should know? For example: Are you passing any unusual command line options or environment variables to opt-in to non-default behavior?
     validations:
       required: false
   - type: input
