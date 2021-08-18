@@ -29,6 +29,13 @@ default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
 # Tags for all tagable items in your cluster.
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
 
+# Postgres config - By having this entry a database server is created. If you do not
+#                   need an external database server remove the 'postgres_servers'
+#                   block below.
+postgres_servers = {
+  default = {},
+}
+
 ## Cluster config
 kubernetes_version                      = "1.19"
 default_nodepool_node_count             = 2
@@ -127,8 +134,3 @@ node_pools = {
 
 # Jump Server
 create_jump_vm                        = true
-
-# Cloud Postgres values config
-create_postgres                       = true # set this to "false" when using internal Crunchy Postgres and AWS Postgres is NOT needed
-postgres_ssl_enforcement_enabled      = false
-postgres_administrator_password       = "mySup3rS3cretPassw0rd"
