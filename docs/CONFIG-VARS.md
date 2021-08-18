@@ -278,7 +278,6 @@ postgres_servers = {
 }
 ```
 
-
 **NOTE**: The `default = {}` elements is always required when creating external databases. This is the systems default database server.
 
 Each server element, like `foo = {}`, can contain none, some, or all of the parameters listed below:
