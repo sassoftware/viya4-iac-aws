@@ -1,6 +1,6 @@
 name: Bug report
 description: |
-  Welcome, Thanks for opening an issue. The more information you provide, the easier it is for us to assess the problem, prioritize, assign, develop, then release a fix. The SAS Viya 4 IaC team
+  Welcome, Thanks for opening an issue. The more information you provide, the easier it is for us to assess the problem, prioritize, assign, develop, then release a fix. The SAS Viya 4 IaC team.
 labels: [bug, new]
 body:
   - type: textarea
