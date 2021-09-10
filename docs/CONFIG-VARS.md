@@ -181,8 +181,6 @@ Custom Policy:
   ]
 ```
 
-
-
 ## General
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -278,7 +276,6 @@ postgres_servers = {
 }
 ```
 
-
 **NOTE**: The `default = {}` elements is always required when creating external databases. This is the systems default database server.
 
 Each server element, like `foo = {}`, can contain none, some, or all of the parameters listed below:
@@ -296,8 +293,9 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
-| parameters | additional parameters for PostgreSQL server | list of maps | [] | |
-| options | additional options for PostgreSQL server | list of maps | [] |   |
+| parameters | additional parameters for PostgreSQL server | list(map(string)) | [] | More details can be found [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Parameters) |
+| options | additional options for PostgreSQL server | any | [] | |
+
 
 Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
 
@@ -306,7 +304,7 @@ database_servers = {
   default = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
-  cps = {
+  another_server = {
     instance_type                = "db.m5.xlarge"
     storage_size                 = 50
     storage_encrypted            = false
@@ -318,7 +316,7 @@ database_servers = {
     server_version               = "12"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = []
+    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
     options                      = []
   }
 }

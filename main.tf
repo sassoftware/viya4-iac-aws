@@ -340,7 +340,7 @@ module "kubeconfig" {
   depends_on = [ module.eks ]
 }
 
-# Database Setup - https://github.com/terraform-aws-modules/terraform-aws-rds
+# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/3.3.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
   version = "3.3.0"
@@ -387,7 +387,6 @@ module "postgresql" {
 
   multi_az = each.value.multi_az
 
-  # TODO - Look at simplifying contact logic
   parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }])
   options    = each.value.options
 
