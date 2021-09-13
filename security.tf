@@ -16,7 +16,7 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = merge(var.tags, tomap({ Name: "${var.prefix}-sg" }))
+  tags = merge(var.tags, { "Name": "${var.prefix}-sg" })
 }
 
 resource "aws_security_group_rule" "vms" {
