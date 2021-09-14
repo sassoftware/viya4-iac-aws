@@ -127,6 +127,45 @@ resource "aws_security_group" "workers_security_group" {
   ]
 
 }
+  
+resource "aws_security_group_rule" "worker_self" {
+
+  count  = var.workers_security_group_id == null ? 1 : 0
+
+  type              = "ingress"
+  description       = "Allow node to comunicate with each other."
+  from_port         = 0
+  protocol          = "-1"
+  self              = true
+  to_port           = 0
+  security_group_id = aws_security_group.workers_security_group.0.id
+}
+
+resource "aws_security_group_rule" "worker_cluster_api" {
+
+  count  = var.workers_security_group_id == null ? 1 : 0
+
+  type                     = "ingress"
+  description              = "Allow workers pods to receive communication from the cluster control plane."
+  from_port                = 1025
+  protocol                 = "tcp"
+  source_security_group_id = local.cluster_security_group_id
+  to_port                  = 65535
+  security_group_id        = aws_security_group.workers_security_group.0.id
+}
+
+resource "aws_security_group_rule" "worker_cluster_api_443" {
+
+  count  = var.workers_security_group_id == null ? 1 : 0
+
+  type                     = "ingress"
+  description              = "Allow pods running extension API servers on port 443 to receive communication from cluster control plane."
+  from_port                = 443
+  protocol                 = "tcp"
+  source_security_group_id = local.cluster_security_group_id
+  to_port                  = 443
+  security_group_id        = aws_security_group.workers_security_group.0.id
+}  
 
 
 
