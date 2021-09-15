@@ -237,6 +237,12 @@ module "nfs" {
 # EOF
 # }
 
+resource "aws_key_pair" "eks" {
+  key_name   = "${local.cluster_name}-admin"
+  public_key = file(var.ssh_public_key)
+  count      = var.cluster_node_ssh_access ? 1 : 0
+}
+
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                         = "terraform-aws-modules/eks/aws"
@@ -270,6 +276,7 @@ module "eks" {
     metadata_http_put_response_hop_limit = 1
     bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
     iam_instance_profile_name            = var.workers_iam_role_name
+    key_name                             = var.cluster_node_ssh_access ? aws_key_pair.eks[0].key_name : ""
   }
 
   # Added to support EBS CSI driver

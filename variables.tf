@@ -540,3 +540,10 @@ variable "autoscaling_enabled" {
     type        = bool
     default     = true
 }
+
+variable "cluster_node_ssh_access" {
+  description = "Should we add the supplied public key to the cluster nodes?"
+  type        = bool
+  default     = false
+
+}

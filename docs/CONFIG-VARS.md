@@ -202,6 +202,7 @@ Custom policy:
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
+| cluster_node_ssh_access | Add the supplied public key to the nodepools launch config, allowing ssh access to it | bool | false | |
 
 ## Node Pools
 
