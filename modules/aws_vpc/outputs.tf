@@ -44,7 +44,7 @@ output "database_subnets" {
 
 output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
-  value       = var.vpc_private_enabled ? null : var.existing_nat_id == null ? aws_eip.nat.*.public_ip : data.aws_nat_gateway.nat_gateway.*.public_ip
+  value       = var.existing_nat_id == null ? aws_eip.nat.*.public_ip : data.aws_nat_gateway.nat_gateway.*.public_ip
 }
 
 output "public_route_table_ids" {
