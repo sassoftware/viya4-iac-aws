@@ -15,6 +15,12 @@ output "public_subnet_azs" {
   value       = var.vpc_private_enabled ? null : local.existing_public_subnets ? data.aws_subnet.public.*.availability_zone : aws_subnet.public.*.availability_zone
 }
 
+output "public_subnet_cidrs" {
+  description = "CIDR blocks of public subnets"
+  value       = local.existing_public_subnets ? data.aws_subnet.public.*.cidr_block : aws_subnet.public.*.cidr_block
+}
+
+
 output "private_subnets" {
   description = "List of IDs of private subnets"
   value       = local.existing_private_subnets ? data.aws_subnet.private.*.id : aws_subnet.private.*.id
@@ -24,6 +30,12 @@ output "private_subnet_azs" {
   description = "List of private subnet AZs"
   value       = local.existing_private_subnets ? data.aws_subnet.private.*.availability_zone : aws_subnet.private.*.availability_zone
 }
+
+output "private_subnet_cidrs" {
+  description = "CIDR blocks of private subnets"
+  value       = local.existing_private_subnets ? data.aws_subnet.private.*.cidr_block : aws_subnet.private.*.cidr_block
+}
+
 
 output "database_subnets" {
   description = "List of IDs of database subnets"

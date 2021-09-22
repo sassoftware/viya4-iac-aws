@@ -44,15 +44,18 @@ runcmd:
   # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/raid-config.html
   - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep 'nvme' | grep -v 'nvme0' | xargs)
   - mkfs -t ext4 /dev/md0
-  - mdadm --detail --scan | tee -a /etc/mdadm.conf  
+  - mdadm --detail --scan | tee -a /etc/mdadm.conf
   # Update /etc/fstab
   #
   - echo "/dev/md0       /export        ext4        defaults,nofail,x-systemd.requires=cloud-init.service,barrier=0,discard        0  2" >>/etc/fstab
   - mount -a
   #
-  # Update /etc/exports - NOTE: The CIDR provided works for the whole VPC
+  # Update /etc/exports
   #
-  - echo "/export         ${base_cidr_block}(rw,no_root_squash,async,insecure,fsid=0,crossmnt,no_subtree_check)" >> /etc/exports
+  - for cidr_block in ${public_subnet_cidrs} ${private_subnet_cidrs}
+  - do
+  -   echo "/export         $cidr_block(rw,no_root_squash,async,insecure,fsid=0,crossmnt,no_subtree_check)" >> /etc/exports
+  - done
   #
   # Restart nfs-server service
   #
