@@ -98,10 +98,23 @@ resource "aws_efs_mount_target" "efs-mt" {
 
 # Processing the cloud-init/jump/cloud-config template file
 data "template_file" "jump-cloudconfig" {
+  count              = var.create_jump_vm ? 1 : 0
   template = file("${path.module}/files/cloud-init/jump/cloud-config")
   vars = {
-    rwx_filestore_endpoint  = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.private_ip_address
-    rwx_filestore_path      = var.storage_type == "ha" ? "/" : "/export"
+    rwx_filestore_endpoint  = ( var.storage_type == "ha"
+                                ? aws_efs_file_system.efs-fs.0.dns_name
+                                : ( var.storage_type == "standard"
+                                    ? module.nfs.0.private_ip_address
+                                    : ""
+                                  )
+                              )
+    rwx_filestore_path      = ( var.storage_type == "ha"
+                                ? "/"
+                                : ( var.storage_type == "standard"
+                                    ? "/export"
+                                    : ""
+                                  )
+                              )
     jump_rwx_filestore_path = var.jump_rwx_filestore_path
     vm_admin                = var.jump_vm_admin
   }
@@ -111,17 +124,19 @@ data "template_file" "jump-cloudconfig" {
 
 # Defining the cloud-config to use
 data "template_cloudinit_config" "jump" {
+  count              = var.create_jump_vm ? 1 : 0
   gzip          = true
   base64_encode = true
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.jump-cloudconfig.rendered
+    content      = data.template_file.jump-cloudconfig.0.rendered
   }
 }
 
 # Jump BOX
 module "jump" {
+  count              = var.create_jump_vm ? 1 : 0
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-jump"
   tags               = var.tags
@@ -134,12 +149,11 @@ module "jump" {
   os_disk_delete_on_termination = var.os_disk_delete_on_termination
   os_disk_iops                  = var.os_disk_iops
 
-  create_vm      = var.create_jump_vm
   vm_type        = var.jump_vm_type
   vm_admin       = var.jump_vm_admin
   ssh_public_key = file(var.ssh_public_key)
 
-  cloud_init = data.template_cloudinit_config.jump.rendered
+  cloud_init = data.template_cloudinit_config.jump.0.rendered
 
   depends_on = [module.nfs]
 
@@ -172,6 +186,7 @@ data "template_cloudinit_config" "nfs" {
 
 # NFS Server VM
 module "nfs" {
+  count              = var.storage_type == "standard" ? 1 : 0
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-nfs-server"
   tags               = var.tags
@@ -190,7 +205,6 @@ module "nfs" {
   data_disk_iops              = var.nfs_raid_disk_iops
   data_disk_availability_zone = local.nfs_vm_subnet_az
 
-  create_vm      = var.storage_type == "standard" ? true : false
   vm_type        = var.nfs_vm_type
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = file(var.ssh_public_key)

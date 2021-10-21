@@ -13,63 +13,72 @@ output "worker_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
-  value = var.storage_type == "ha" ? element(coalescelist(aws_efs_file_system.efs-fs.*.id, [""]), 0) : null
+  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id : null
 }
 
 output "rwx_filestore_endpoint" {
-  value = var.storage_type == "ha" ? element(coalescelist(aws_efs_file_system.efs-fs.*.dns_name, [""]), 0) : module.nfs.private_dns
+  value = ( var.storage_type == "none"
+            ? null
+            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_dns
+          )
 }
 
 output "rwx_filestore_path" {
-  value = var.storage_type == "ha" ? "/" : "/export"
+  value = ( var.storage_type == "none"
+            ? null
+            : var.storage_type == "ha" ? "/" : "/export"
+          )
 }
 
 output "efs_arn" {
-  value = var.storage_type == "ha" ? element(coalescelist(aws_efs_file_system.efs-fs.*.arn, [""]), 0) : null
+  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.arn : null
 }
 
 output "jump_private_ip" {
-  value = var.create_jump_vm ? module.jump.private_ip_address : ""
+  value = var.create_jump_vm ? module.jump.0.private_ip_address : null
 }
 
 output "jump_public_ip" {
-  value = var.create_jump_vm ? module.jump.public_ip_address : ""
+  value = var.create_jump_vm ? module.jump.0.public_ip_address : null
 }
 
 output jump_admin_username {
-  value = var.create_jump_vm ? module.jump.admin_username : ""
+  value = var.create_jump_vm ? module.jump.0.admin_username : null
 }
 
 output "jump_private_dns" {
-  value = var.create_jump_vm ? module.jump.private_dns : ""
+  value = var.create_jump_vm ? module.jump.0.private_dns : null
 }
 
 output "jump_public_dns" {
-  value = var.create_jump_vm ? module.jump.public_dns : ""
+  value = var.create_jump_vm ? module.jump.0.public_dns : null
 }
 
 output jump_rwx_filestore_path {
-  value = var.create_jump_vm ? var.jump_rwx_filestore_path : null
+  value = ( var.storage_type != "none"
+            ? var.create_jump_vm ? var.jump_rwx_filestore_path : null 
+            : null 
+          )
 }
 
 output "nfs_private_ip" {
-  value = var.storage_type == "standard" ? module.nfs.private_ip_address : null
+  value = var.storage_type == "standard" ? module.nfs.0.private_ip_address : null
 }
 
 output "nfs_public_ip" {
-  value = var.storage_type == "standard" ? module.nfs.public_ip_address : null
+  value = var.storage_type == "standard" ? module.nfs.0.public_ip_address : null
 }
 
 output "nfs_admin_username" {
-  value = var.storage_type == "standard" ? module.nfs.admin_username : null
+  value = var.storage_type == "standard" ? module.nfs.0.admin_username : null
 }
 
 output "nsf_private_dns" {
-  value = var.storage_type == "standard" ? module.nfs.private_dns : null
+  value = var.storage_type == "standard" ? module.nfs.0.private_dns : null
 }
 
 output "nfs_public_dns" {
-  value = var.storage_type == "standard" ? module.nfs.public_dns : null
+  value = var.storage_type == "standard" ? module.nfs.0.public_dns : null
 }
 
 #postgres
