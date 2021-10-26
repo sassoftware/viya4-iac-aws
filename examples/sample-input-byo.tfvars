@@ -6,7 +6,6 @@
 # These required variables' values MUST be provided by the User
 prefix                                  = "<prefix-value>"
 location                                = "<aws-location-value>" # e.g., "us-east-1"
-ssh_public_key                          = "~/.ssh/id_rsa.pub"
 # ****************  REQUIRED VARIABLES  ****************
 
 # Bring your own existing resources
