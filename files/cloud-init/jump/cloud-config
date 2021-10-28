@@ -16,20 +16,20 @@ packages:
   - nfs-common
 
 #
+# Update /etc/fstab
+#
+mounts:
+  - ${mounts}
+
+#
 # Add nfs mounts
 #
 runcmd:
   - if ! [ -z "${rwx_filestore_endpoint}" ]
   - then
       #
-      # Update /etc/fstab
-      #
-  -   MOUNT="${rwx_filestore_endpoint}:${rwx_filestore_path} ${jump_rwx_filestore_path} nfs rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0 0"
-  -   grep -q "$MOUNT" /etc/fstab || echo "$MOUNT" | tee -a /etc/fstab
-      #
       # mount the nfs
       #
-  -   mkdir -p ${jump_rwx_filestore_path}
   -   while [ `df -h | grep "${rwx_filestore_endpoint}:${rwx_filestore_path}" | wc -l` -eq 0 ]; do sleep 5 && mount -a ; done
       #
       # Change permissions and owener

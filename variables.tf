@@ -498,10 +498,10 @@ variable "postgres_servers" {
 variable "storage_type" {
   type    = string
   default = "standard"
-
+  # NOTE: storage_type=none is for internal use only
   validation {
     condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
-    error_message = "ERROR: Supported values for `storage_type` are standard, ha, none."
+    error_message = "ERROR: Supported values for `storage_type` are standard, ha."
   }
 }
 

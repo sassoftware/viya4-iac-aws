@@ -246,7 +246,7 @@ Additional node pools can be created separately from the default node pool. This
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| storage_type | Type of Storage. Valid Values: "standard", "ha", "none" | string | "standard" | <li>`"standard"` creates NFS server VM<li>`"ha"` creates an AWS EFS mountpoint<li>`"none"` skips creating storage |
+| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates NFS server VM; a value of "ha" creates an AWS EFS mountpoint. |
 
 ### NFS Server
 
