@@ -1,17 +1,11 @@
 locals {
-  rwx_filestore_endpoint  = ( var.storage_type == "ha"
-                              ? aws_efs_file_system.efs-fs.0.dns_name
-                              : ( var.storage_type == "standard"
-                                  ? module.nfs.0.private_ip_address
-                                  : ""
-                                )
+  rwx_filestore_endpoint  = ( var.storage_type == "none"
+                              ? "" 
+                              : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
                             )
-  rwx_filestore_path      = ( var.storage_type == "ha"
-                              ? "/"
-                              : ( var.storage_type == "standard"
-                                  ? "/export"
-                                  : ""
-                                )
+  rwx_filestore_path      = ( var.storage_type == "none"
+                              ? ""
+                              : var.storage_type == "ha" ? "/" : "/export"
                             )
 }
 
