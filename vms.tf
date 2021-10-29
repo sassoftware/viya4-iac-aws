@@ -1,17 +1,11 @@
 locals {
-  rwx_filestore_endpoint  = ( var.storage_type == "ha"
-                              ? aws_efs_file_system.efs-fs.0.dns_name
-                              : ( var.storage_type == "standard"
-                                  ? module.nfs.0.private_ip_address
-                                  : ""
-                                )
+  rwx_filestore_endpoint  = ( var.storage_type == "none"
+                              ? "" 
+                              : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
                             )
-  rwx_filestore_path      = ( var.storage_type == "ha"
-                              ? "/"
-                              : ( var.storage_type == "standard"
-                                  ? "/export"
-                                  : ""
-                                )
+  rwx_filestore_path      = ( var.storage_type == "none"
+                              ? ""
+                              : var.storage_type == "ha" ? "/" : "/export"
                             )
 }
 
@@ -87,7 +81,7 @@ module "jump" {
 
   vm_type        = var.jump_vm_type
   vm_admin       = var.jump_vm_admin
-  ssh_public_key = public.ssh_public_key
+  ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.0.rendered
 
@@ -143,7 +137,7 @@ module "nfs" {
 
   vm_type        = var.nfs_vm_type
   vm_admin       = var.nfs_vm_admin
-  ssh_public_key = public.ssh_public_key
+  ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.nfs.0.rendered
 }
