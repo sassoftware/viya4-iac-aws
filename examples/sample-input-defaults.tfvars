@@ -12,7 +12,8 @@ location                                = "<aws-location-value>" # e.g., "us-eas
 #          to your cluster will be blocked by default.
 
 # **************  RECOMMENDED  VARIABLES  ***************
-default_public_access_cidrs             = []  # e.g., ["123.45.6.89/32"]
+default_public_access_cidrs = []  # e.g., ["123.45.6.89/32"]
+ssh_public_key              = "~/.ssh/id_rsa.pub"
 # **************  RECOMMENDED  VARIABLES  ***************
 
 # Tags for all tagable items in your cluster.
