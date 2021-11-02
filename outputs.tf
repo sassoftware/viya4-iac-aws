@@ -11,6 +11,9 @@ output "kube_config" {
 output "worker_iam_role_arn" {
   value = module.eks.worker_iam_role_arn
 }
+output "cluster_iam_role_arn" {
+  value = module.eks.cluster_iam_role_arn
+}
 
 output "rwx_filestore_id" {
   value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id : null
