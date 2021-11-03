@@ -36,7 +36,6 @@ Terraform input variables can be set in the following ways:
 | :--- | :--- | :--- | :--- | :--- |
 | prefix | A prefix used in the name of all the AWS resources created by this script | string | | The prefix string must start with a lowercase letter and can contain only lowercase alphanumeric characters and dashes (-), but cannot end with a dash. |
 | location | The AWS Region with which to provision all resources in this script | string | "us-east-1" | |
-| ssh_public_key | Name of file with public SSH key for VMs | string | "~/.ssh/id_rsa.pub" | Value is required in order to access your VMs. |
 
 ### AWS Authentication
 
@@ -202,6 +201,7 @@ Custom policy:
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
+| ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 
 ## Node Pools
 
