@@ -63,7 +63,6 @@ resource "aws_key_pair" "admin" {
 }
 
 resource "aws_instance" "vm" {
-  count         = var.create_vm ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.vm_type
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
@@ -86,21 +85,21 @@ resource "aws_instance" "vm" {
 }
 
 resource "aws_eip" "eip" {
-  count = (var.create_vm && var.create_public_ip) ? 1 : 0
+  count = var.create_public_ip ? 1 : 0
   vpc = true
-  instance = aws_instance.vm.0.id
+  instance = aws_instance.vm.id
   tags = merge(var.tags, tomap({ Name: "${var.name}-eip" }))
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
-  count       = var.create_vm ? var.data_disk_count : 0
+  count       = var.data_disk_count
   device_name = element(local.device_name, count.index)
-  instance_id = aws_instance.vm.0.id
+  instance_id = aws_instance.vm.id
   volume_id   = element(aws_ebs_volume.raid_disk.*.id, count.index)
 }
 
 resource "aws_ebs_volume" "raid_disk" {
-  count             = var.create_vm ? var.data_disk_count : 0
+  count             = var.data_disk_count
   availability_zone = var.data_disk_availability_zone
   size              = var.data_disk_size
   type              = var.data_disk_type

@@ -44,7 +44,8 @@ runcmd:
   # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/raid-config.html
   - mdadm --create --verbose /dev/md0 --level=0 --name=nfs-raid --raid-devices=4 $(lsblk -frnp | grep 'nvme' | grep -v 'nvme0' | xargs)
   - mkfs -t ext4 /dev/md0
-  - mdadm --detail --scan | tee -a /etc/mdadm.conf
+  - mdadm --detail --scan | tee -a /etc/mdadm/mdadm.conf
+  - update-initramfs -u
   # Update /etc/fstab
   #
   - echo "/dev/md0       /export        ext4        defaults,nofail,x-systemd.requires=cloud-init.service,barrier=0,discard        0  2" >>/etc/fstab

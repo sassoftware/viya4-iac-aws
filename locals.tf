@@ -27,6 +27,12 @@ locals {
   nfs_vm_subnet                         = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az                      = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
+  ssh_public_key = ( var.create_jump_vm || var.storage_type == "standard"
+                     ? file(var.ssh_public_key)
+                     : null
+                   )
+
+
   # Kubernetes
   kubeconfig_filename                   = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path                       = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename

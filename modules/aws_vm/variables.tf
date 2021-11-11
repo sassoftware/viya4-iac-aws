@@ -75,10 +75,6 @@ variable "os_disk_iops" {
   default = 0
 }
 
-variable "create_vm" {
-  default = true
-}
-
 variable "subnet_id" {
   type = string
 }
