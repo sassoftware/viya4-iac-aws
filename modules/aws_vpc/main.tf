@@ -124,7 +124,6 @@ resource "aws_route_table" "public" {
       )
     },
     var.tags,
-    var.public_subnet_tags,
   )
 }
 
@@ -205,7 +204,6 @@ resource "aws_route_table" "private" {
       )
     },
     var.tags,
-    var.private_subnet_tags,
   )
 }
 

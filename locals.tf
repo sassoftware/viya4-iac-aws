@@ -12,7 +12,7 @@ locals {
   # CIDRs
   vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? var.default_public_access_cidrs : var.vm_public_access_cidrs
   cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "public" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? var.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? [var.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? [module.vpc.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
   postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? var.default_public_access_cidrs : var.postgres_public_access_cidrs
 
 
