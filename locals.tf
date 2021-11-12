@@ -7,25 +7,19 @@ locals {
 
   cluster_name                          = "${var.prefix}-eks"
 
-  # Infrastructure Mode
-  is_standard                           = var.infra_mode == "standard" ? true : false
-  is_private                            = var.infra_mode == "private" ? true : false
+  #is_private                            = var.infra_mode == "private" ? true : false
 
   # CIDRs
-  default_public_access_cidrs           = local.is_private ? [] : (var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs)
-  vm_public_access_cidrs                = local.is_private ? [] : (var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs)
-  cluster_endpoint_public_access_cidrs  = local.is_private ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+  vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? var.default_public_access_cidrs : var.vm_public_access_cidrs
+  cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "public" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? var.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
   cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? [var.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
-  postgres_public_access_cidrs          = local.is_private ? [] : (var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs)
+  postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? var.default_public_access_cidrs : var.postgres_public_access_cidrs
 
-  # IPs
-  create_jump_public_ip                 = var.create_jump_public_ip == null ? local.is_standard : var.create_jump_public_ip
-  create_nfs_public_ip                  = var.create_nfs_public_ip == null ? local.is_standard : var.create_nfs_public_ip
 
   # Subnets
-  jump_vm_subnet                        = local.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet                         = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet_az                      = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+  jump_vm_subnet                        = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet                         = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet_az                      = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   ssh_public_key = ( var.create_jump_vm || var.storage_type == "standard"
                      ? file(var.ssh_public_key)

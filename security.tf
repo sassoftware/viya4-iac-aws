@@ -20,7 +20,7 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "vms" {
-  count             =  ( ( (var.storage_type == "standard" && local.create_nfs_public_ip) || var.create_jump_vm ) 
+  count             =  ( ( (var.storage_type == "standard" && var.create_nfs_public_ip) || var.create_jump_vm ) 
                          && length(local.vm_public_access_cidrs) > 0
                          && var.security_group_id == null
                        )  ? 1 : 0

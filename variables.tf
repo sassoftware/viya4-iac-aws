@@ -511,14 +511,14 @@ variable "create_static_kubeconfig" {
   default     = true
 }
 
-variable "infra_mode" {
-  description = "Use private IP address for cluster API endpoint"
+variable "cluster_api_mode" {
+  description = "Use Public or Private IP address for the cluster API endpoint"
   type        = string
-  default     = "standard"
+  default     = "public"
 
   validation {
-    condition     = contains(["standard", "private"], lower(var.infra_mode))
-    error_message = "ERROR: Supported values for `infra_mode` are standard, private."
+    condition     = contains(["public", "private"], lower(var.cluster_api_mode))
+    error_message = "ERROR: Supported values for `cluster_api_mode` are - public, private."
   }
 }
 

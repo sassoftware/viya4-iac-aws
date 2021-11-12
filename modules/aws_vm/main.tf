@@ -57,7 +57,6 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_key_pair" "admin" {
-  count = var.create_vm ? 1 : 0
   key_name   = "${var.name}-admin"
   public_key = var.ssh_public_key
 }
@@ -66,7 +65,7 @@ resource "aws_instance" "vm" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.vm_type
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
-  key_name      = aws_key_pair.admin.0.key_name
+  key_name      = aws_key_pair.admin.key_name
   availability_zone = var.data_disk_availability_zone
   
   vpc_security_group_ids      = var.security_group_ids
