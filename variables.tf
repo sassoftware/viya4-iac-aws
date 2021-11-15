@@ -397,6 +397,11 @@ variable "create_nfs_public_ip" {
   default = null
 }
 
+variable "use_single_subnet_for_workers" {
+  type    = bool
+  default = false 
+}
+
 variable "nfs_vm_admin" {
   description = "OS Admin User for NFS VM, when storage_type=standard"
   default     = "nfsuser"

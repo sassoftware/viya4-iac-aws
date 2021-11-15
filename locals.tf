@@ -26,6 +26,7 @@ locals {
   jump_vm_subnet                        = local.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet                         = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az                      = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+  worker_vm_subnets                     = var.use_single_subnet_for_workers ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
 
   ssh_public_key = ( var.create_jump_vm || var.storage_type == "standard"
                      ? file(var.ssh_public_key)
@@ -54,7 +55,7 @@ locals {
       metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
       metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
       metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
-
+      subnets                              = local.worker_vm_subnets
     }
   ]
 
@@ -74,6 +75,7 @@ locals {
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
         metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
+        subnets                              = local.worker_vm_subnets
       }
   ]
 
