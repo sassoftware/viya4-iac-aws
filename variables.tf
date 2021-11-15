@@ -15,6 +15,12 @@ variable "location" {
   default     = "us-east-1"
 }
 
+variable "azs" {
+  description = "A list of availability zones names or ids in the region"
+  type = list(string)
+  default = null
+}
+
 variable "aws_profile" {
   description = "Name of Profile in the credentials file"
   type        = string

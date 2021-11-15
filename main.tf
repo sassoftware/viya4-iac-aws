@@ -67,7 +67,7 @@ module "vpc" {
   region              = var.location
   security_group_id   = local.security_group_id
   cidr                = var.vpc_cidr
-  azs                 = data.aws_availability_zones.available.names
+  azs                 = local.specific_azs
   vpc_private_enabled = local.is_private
   existing_subnet_ids = var.subnet_ids
   subnets             = var.subnets

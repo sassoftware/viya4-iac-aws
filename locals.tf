@@ -7,6 +7,8 @@ locals {
 
   cluster_name                          = "${var.prefix}-eks"
 
+  specific_azs                          = var.azs == null ? data.aws_availability_zones.available.names : var.azs
+
   # Infrastructure Mode
   is_standard                           = var.infra_mode == "standard" ? true : false
   is_private                            = var.infra_mode == "private" ? true : false
