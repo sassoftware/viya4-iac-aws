@@ -10,10 +10,12 @@ locals {
   #is_private                            = var.infra_mode == "private" ? true : false
 
   # CIDRs
-  vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? var.default_public_access_cidrs : var.vm_public_access_cidrs
-  cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "public" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? var.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+  default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
+  vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
+  cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+# XXX : should be all subnet cidrs, not the vpc cidr
   cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? [module.vpc.vpc_cidr] : var.cluster_endpoint_private_access_cidrs
-  postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? var.default_public_access_cidrs : var.postgres_public_access_cidrs
+  postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
 
   # Subnets
