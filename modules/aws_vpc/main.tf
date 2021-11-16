@@ -72,7 +72,7 @@ data "aws_subnet" "database" {
 # Public subnet
 ################
 resource "aws_subnet" "public" {
-  count                   = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 : length(var.subnets["public"])
+  count                   = local.existing_public_subnets ? 0 : length(var.subnets["public"])
   vpc_id                  = local.vpc_id
   cidr_block              = element(var.subnets["public"], count.index)
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
@@ -96,7 +96,7 @@ resource "aws_subnet" "public" {
 # Internet Gateway
 ###################
 resource "aws_internet_gateway" "this" {
-  count =  var.vpc_private_enabled ? 0 : var.existing_nat_id == null ? 1 : 0
+  count =  var.existing_nat_id == null ? 1 : 0
 
   vpc_id = local.vpc_id
 
@@ -112,7 +112,7 @@ resource "aws_internet_gateway" "this" {
 # Publiс routes
 ################
 resource "aws_route_table" "public" {
-  count = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 : 1
+  count = local.existing_public_subnets ? 0 : 1
   vpc_id = local.vpc_id
 
   tags = merge(
@@ -128,7 +128,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route" "public_internet_gateway" {
-  count = var.vpc_private_enabled ? 0 : var.existing_nat_id == null ? 1 : 0
+  count = var.existing_nat_id == null ? 1 : 0
 
   route_table_id         = aws_route_table.public[0].id
   destination_cidr_block = "0.0.0.0/0"
@@ -150,7 +150,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route_table_association" "public" {
-  count = var.vpc_private_enabled ? 0 : local.existing_public_subnets ? 0 :length(var.subnets["public"])
+  count = local.existing_public_subnets ? 0 :length(var.subnets["public"])
 
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = element(aws_route_table.public.*.id, 0)
@@ -245,7 +245,7 @@ resource "aws_db_subnet_group" "database" {
 }
 
 resource "aws_eip" "nat" {
-  count = var.vpc_private_enabled ? 0 : var.existing_nat_id == null ? 1 : 0
+  count = var.existing_nat_id == null ? 1 : 0
 
   vpc = true
 
@@ -267,7 +267,7 @@ data "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  count = var.vpc_private_enabled ? 0 : var.existing_nat_id == null ? 1 : 0
+  count = var.existing_nat_id == null ? 1 : 0
 
   allocation_id = element(aws_eip.nat.*.id, 0)
   subnet_id = local.existing_public_subnets ? element(data.aws_subnet.public.*.id, 0) : element(aws_subnet.public.*.id,0)
@@ -287,7 +287,7 @@ resource "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = var.vpc_private_enabled ? 0 : var.existing_nat_id == null ? 1 : 0
+  count = var.existing_nat_id == null ? 1 : 0
 
   route_table_id         = element(aws_route_table.private.*.id, count.index)
   destination_cidr_block = "0.0.0.0/0"
