@@ -205,6 +205,7 @@ Custom policy:
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
+| cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 
 ## Node Pools
 
