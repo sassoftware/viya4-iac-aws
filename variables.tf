@@ -522,12 +522,6 @@ variable "cluster_api_mode" {
   }
 }
 
-variable "vpc_private_endpoints" {
-   description = "Endpoints needed for private cluster"
-   type        = list(string)
-   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
-}
-
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations. Supported values are default, minimal."
   type        = string

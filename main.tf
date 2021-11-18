@@ -71,7 +71,6 @@ module "vpc" {
   existing_subnet_ids = var.subnet_ids
   subnets             = var.subnets
   existing_nat_id     = var.nat_id
-  vpc_private_endpoints = []
 
   tags = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })

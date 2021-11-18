@@ -34,25 +34,6 @@ resource "aws_vpc" "vpc" {
   )
 }
 
-resource "aws_vpc_endpoint" "private_endpoints" {
-  count              = length(var.vpc_private_endpoints)
-  vpc_id             = local.vpc_id
-  service_name       = "com.amazonaws.${var.region}.${var.vpc_private_endpoints[count.index]}"
-  vpc_endpoint_type  = "Interface"
-  security_group_ids = [ var.security_group_id ]
-
-  tags = merge(
-    {
-      "Name" = format("%s", "${var.name}-private-endpoint-${var.vpc_private_endpoints[count.index]}")
-    },
-    var.tags,
-  )
-
-  subnet_ids = [ 
-    for subnet in local.private_subnets : subnet.id
-  ]
-}
-
 data "aws_subnet" "public" {
   count = local.existing_public_subnets ? length(var.subnets["public"]) : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
