@@ -21,8 +21,8 @@ resource "aws_security_group" "sg" {
 
 resource "aws_security_group_rule" "vms" {
   count                       = ( length(local.vm_public_access_cidrs) > 0
-                                  && (   (var.create_jump_public_ip && var.create_jump_vm )
-                                      || (var.create_nfs_public_ip && var.storage_type == "standard")
+                                  && (   (local.create_jump_public_ip && var.create_jump_vm )
+                                      || (local.create_nfs_public_ip && var.storage_type == "standard")
                                      )
                                   ? 1 : 0
                                 )
