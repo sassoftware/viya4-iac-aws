@@ -361,7 +361,7 @@ variable "create_jump_vm" {
 
 variable "create_jump_public_ip" {
   type    = bool
-  default = null
+  default = true
 }
 
 variable "jump_vm_admin" {
@@ -394,7 +394,7 @@ variable "nfs_raid_disk_iops" {
 
 variable "create_nfs_public_ip" {
   type    = bool
-  default = null
+  default = false
 }
 
 variable "nfs_vm_admin" {

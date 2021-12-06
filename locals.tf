@@ -15,15 +15,10 @@ locals {
   cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs
   postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
-  # IPs
-  create_jump_public_ip                 = var.create_jump_public_ip == null ? true : var.create_jump_public_ip
-  create_nfs_public_ip                  = var.create_nfs_public_ip == null ? false : var.create_nfs_public_ip
-
-
   # Subnets
-  jump_vm_subnet                        = local.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet                         = local.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
-  nfs_vm_subnet_az                      = local.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+  jump_vm_subnet                        = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet                         = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet_az                      = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
   ssh_public_key = ( var.create_jump_vm || var.storage_type == "standard"
                      ? file(var.ssh_public_key)
