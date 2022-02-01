@@ -93,7 +93,7 @@ Create and manage the required cloud resources. Perform one of the following ste
 - run [Terraform](docs/user/TerraformUsage.md) directly on your workstation
 - run the [Docker container](docs/user/DockerUsage.md) (recommended)
 
-### Increase the Max Prepared Transactions in Postgres
+### Increase the Max Prepared Transactions for External Postgres Database
 
 If you are using an external Postgres server, you will need to ensure that the max prepared transactions is at least 1024. You can verify this information by opening the AWS Console and navigating to the RDS Service. Select your Postgres instance, open the Configuration tab, and click on the link to the database's parameter group. Search for the 'max_prepared_transactions' parameter.
 
