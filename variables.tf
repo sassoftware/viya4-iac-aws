@@ -282,6 +282,13 @@ variable node_pools {
   }
 }
 
+# GPU node config - required ONLY when 'gpu={}' is configured in 'var.node_pools'
+variable "gpu_image_id" {
+  type = string
+  default = "ami-04774ee377f8e9fe4" # available in 'us-east-1'
+  description = "x86 accelerated AMI id from https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html#gpu-ami"
+}
+
 # Networking
 variable "vpc_id" {
   type    = string

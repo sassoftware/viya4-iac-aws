@@ -75,6 +75,27 @@ locals {
         metadata_http_tokens                 = np_value.metadata_http_tokens
         metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
       }
+      if length(regexall ( "gpu", lower(np_key)) ) <= 0 
+  ]
+
+  gpu_node_pool = [
+    for np_key, np_value in var.node_pools :
+      {
+        name                                 = np_key
+        instance_type                        = np_value.vm_type
+        root_volume_size                     = np_value.os_disk_size
+        root_volume_type                     = np_value.os_disk_type
+        root_iops                            = np_value.os_disk_iops
+        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
+        asg_min_size                         = np_value.min_nodes
+        asg_max_size                         = np_value.max_nodes
+        kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
+        additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+        metadata_http_endpoint               = np_value.metadata_http_endpoint
+        metadata_http_tokens                 = np_value.metadata_http_tokens
+        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
+      }
+      if length(regexall ( "gpu", lower(np_key)) ) > 0 
   ]
 
   # Merging the default_node_pool into the work_groups node pools
