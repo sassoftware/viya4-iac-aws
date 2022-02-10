@@ -82,6 +82,17 @@ resource "aws_eks_node_group" "gpu_ng" {
     max_size     = local.gpu_node_pool[count.index].asg_max_size
     min_size     = local.gpu_node_pool[count.index].asg_min_size
   }
+
+  labels = tomap (local.gpu_node_pool[count.index].labels)
+
+  dynamic "taint" {
+    for_each = tolist(local.gpu_node_pool[count.index].taints)
+    content {
+      key    = "${element(split("=", taint.value),0)}"
+      value  = "${element(split(":", element( split("=", taint.value), 1)), 0 )}"
+      effect = "${upper(element(split(":", element( split("=", taint.value), 1)), 1 ))}"
+    }
+  }
 }
 
 # resource "aws_autoscaling_group" "gpu_ng" {
