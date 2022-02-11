@@ -202,6 +202,7 @@ Custom policy:
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
+| gpu_image_id | [Amazon EKS optimized Amazon Linux AMI](https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html) id for x86 accelerated computing based on `kubernetes_version` and `region`  | string | "" | Required only when creating Node Pools with GPU accelerated instances, see [Additional Node pools](#additional-node-pools) |
 
 ## Node Pools
 
@@ -225,7 +226,7 @@ Custom policy:
 
 ### Additional Node Pools
 
-Additional node pools can be created separately from the default node pool. This is done with the `node_pools` variable, which is a map of objects. Each node pool requires the following variables:
+Additional node pools can be created separately from the default node pool. This is done with the `node_pools` variable, which is a map of objects. In order to create node pools with instances for GPU accelerated computing, the label must contain the string '*gpu*' e.g., `my_gpu_nodepool = { }` and a valid value for [`gpu_image_id`](#general). Each node pool requires the following variables:
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |

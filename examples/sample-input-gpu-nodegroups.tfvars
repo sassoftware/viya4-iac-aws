@@ -62,7 +62,7 @@ node_pools = {
     "os_disk_iops" = 0
     "min_nodes" = 1
     "max_nodes" = 2
-    "node_taints" = ["nvidia.com/gpu=present:NO_SCHEDULE", "workload.sas.com/class=cas:PREFER_NO_SCHEDULE"]
+    "node_taints" = ["nvidia.com/gpu=present:NoSchedule", "workload.sas.com/class=cas:PreferNoSchedule"]
     "node_labels" = {
       "workload.sas.com/class" = "cas"
       "accelerator"  = "nvidia"
