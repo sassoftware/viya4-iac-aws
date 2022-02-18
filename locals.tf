@@ -39,8 +39,8 @@ locals {
   kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority.0.data
 
   # Mapping node_pools to worker_groups
-  default_node_pool = [
-    {
+  default_node_pool = {
+    default = {
       name                                 = "default"
       instance_type                        = var.default_nodepool_vm_type
       root_volume_size                     = var.default_nodepool_os_disk_size
@@ -54,14 +54,14 @@ locals {
       metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
       metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
       metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
-
+      tags                                 = var.tags
     }
-  ]
+  }
 
-  user_node_pool = [
-    for np_key, np_value in var.node_pools :
-      {
-        name                                 = np_key
+  user_node_pool = {
+    for key, np_value in var.node_pools :
+      key => {
+        name                                 = key
         instance_type                        = np_value.vm_type
         root_volume_size                     = np_value.os_disk_size
         root_volume_type                     = np_value.os_disk_type
@@ -74,11 +74,12 @@ locals {
         metadata_http_endpoint               = np_value.metadata_http_endpoint
         metadata_http_tokens                 = np_value.metadata_http_tokens
         metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
+        tags                                 = var.tags
       }
-  ]
+  }
 
   # Merging the default_node_pool into the work_groups node pools
-  worker_groups = concat(local.default_node_pool, local.user_node_pool)
+  worker_groups = merge(local.default_node_pool, local.user_node_pool)
 
   # PostgreSQL
   postgres_servers    = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge( var.postgres_server_defaults, v, )}

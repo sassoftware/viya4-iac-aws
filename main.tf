@@ -81,31 +81,32 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                         = "terraform-aws-modules/eks/aws"
-  version                                        = "18.2.7"
+  version                                        = "18.7.1"
   cluster_name                                   = local.cluster_name
   cluster_version                                = var.kubernetes_version
   cluster_endpoint_private_access                = true
-  cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
-  cluster_endpoint_private_access_sg             = [local.security_group_id]
-  cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
+  # cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
+  # cluster_endpoint_private_access_sg             = [local.security_group_id]
+  # cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
   cluster_endpoint_public_access                 = local.is_standard
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
-  write_kubeconfig                               = false
-  subnets                                        = module.vpc.private_subnets
+  # write_kubeconfig                               = false
+  subnet_ids                                        = module.vpc.private_subnets
   vpc_id                                         = module.vpc.vpc_id
   tags                                           = var.tags
   enable_irsa                                    = var.autoscaling_enabled
   
-  manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
-  workers_role_name                              = var.workers_iam_role_name
-  manage_cluster_iam_resources                   = var.cluster_iam_role_name == null ? true : false
-  cluster_iam_role_name                          = var.cluster_iam_role_name
-  worker_create_security_group                   = false
-  worker_security_group_id                       = local.workers_security_group_id
-  cluster_create_security_group                  = false
+  # manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
+  # workers_role_name                              = var.workers_iam_role_name                   
+  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
+  iam_role_name                                  = var.cluster_iam_role_name  # cluster_iam_role_name
+                    
+  create_node_security_group                     = false                            # worker_create_security_group                   
+  node_security_group_id                         = local.workers_security_group_id   # worker_security_group_id  
+  create_cluster_security_group                  = false                                              # cluster_create_security_group
   cluster_security_group_id                      = local.cluster_security_group_id
 
-  workers_group_defaults = {
+  self_managed_node_group_defaults = {                                                                # workers_group_defaults
     tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
@@ -116,7 +117,7 @@ module "eks" {
   # Added to support EBS CSI driver
   # workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
-  worker_groups = local.worker_groups
+  self_managed_node_groups = local.worker_groups                                                       # worker_groups
 }
 
 module "autoscaling" {

@@ -8,9 +8,9 @@ output "kube_config" {
   sensitive = true
 }
 
-output "worker_iam_role_arn" {
-  value = module.eks.worker_iam_role_arn
-}
+# output "worker_iam_role_arn" {
+#   value = module.eks.worker_iam_role_arn
+# }
 output "cluster_iam_role_arn" {
   value = module.eks.cluster_iam_role_arn
 }
