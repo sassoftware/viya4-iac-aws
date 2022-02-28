@@ -93,32 +93,65 @@ module "eks" {
   # write_kubeconfig                               = false
   subnet_ids                                        = module.vpc.private_subnets
   vpc_id                                         = module.vpc.vpc_id
-  tags                                           = var.tags
+  # tags                                           = var.tags
   enable_irsa                                    = var.autoscaling_enabled
   
   # manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
   # workers_role_name                              = var.workers_iam_role_name                   
-  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
-  iam_role_name                                  = var.cluster_iam_role_name  # cluster_iam_role_name
-                    
-  create_node_security_group                     = false                            # worker_create_security_group                   
-  node_security_group_id                         = local.workers_security_group_id   # worker_security_group_id  
-  create_cluster_security_group                  = false                                              # cluster_create_security_group
-  cluster_security_group_id                      = local.cluster_security_group_id
 
-  self_managed_node_group_defaults = {                                                                # workers_group_defaults
-    tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
+  # BYO IAM policy(!)
+  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
+  iam_role_name                                  = var.cluster_iam_role_name        # cluster_iam_role_name                    
+  create_node_security_group                     = false                            # worker_create_security_group                   
+  node_security_group_id                         = local.workers_security_group_id  # worker_security_group_id  
+  create_cluster_security_group                  = false                            # cluster_create_security_group
+  cluster_security_group_id                      = local.cluster_security_group_id
+  create_cloudwatch_log_group                    = false
+
+  self_managed_node_group_defaults = {                                              # workers_group_defaults
+    # vpc_security_group_ids               = [aws_security_group.additional.id]
+    node_security_group_id               = local.workers_security_group_id
+    tags                                 =  { "kubernetes.io/cluster/${local.cluster_name}" : "owned" } # var.autoscaling_enabled ? { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true } : null
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
     bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
     iam_instance_profile_name            = var.workers_iam_role_name
+    enable_monitoring                    = false
+    create_iam_instance_profile          = false
+    create_security_group                = false
   }
-
+  # TODO: TBD v17.* ->v18.*
   # Added to support EBS CSI driver
   # workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
 
-  self_managed_node_groups = local.worker_groups                                                       # worker_groups
+  self_managed_node_groups = {
+
+    # Default node group - as provisioned by the module defaults
+    # default_node_group = {}
+
+
+    viya = local.worker_groups                                    # worker_groups
+  }
 }
+
+# ## New
+# resource "aws_security_group" "additional" {
+#   name_prefix = "${local.cluster_name}-additional"
+#   vpc_id      = module.vpc.vpc_id
+
+#   ingress {
+#     from_port = 22
+#     to_port   = 22
+#     protocol  = "tcp"
+#     cidr_blocks = [
+#       "10.0.0.0/8",
+#       "172.16.0.0/12",
+#       "192.168.0.0/16",
+#     ]
+#   }
+
+#   tags = var.tags
+# }
 
 module "autoscaling" {
   source       = "./modules/aws_autoscaling"

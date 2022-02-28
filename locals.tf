@@ -41,40 +41,44 @@ locals {
   # Mapping node_pools to worker_groups
   default_node_pool = {
     default = {
-      name                                 = "default"
-      instance_type                        = var.default_nodepool_vm_type
-      root_volume_size                     = var.default_nodepool_os_disk_size
-      root_volume_type                     = var.default_nodepool_os_disk_type
-      root_iops                            = var.default_nodepool_os_disk_iops
-      asg_desired_capacity                 = var.default_nodepool_node_count
-      asg_min_size                         = var.default_nodepool_min_nodes
-      asg_max_size                         = var.default_nodepool_max_nodes
-      kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
-      additional_userdata                  = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
-      metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
-      metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
-      metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
-      tags                                 = var.tags
+      name                              = "default"
+      instance_type                     = var.default_nodepool_vm_type
+      disk_size                         = var.default_nodepool_os_disk_size
+      # volume_type                     = var.default_nodepool_os_disk_type
+      # iops                            = var.default_nodepool_os_disk_iops
+      desired_size                      = var.default_nodepool_node_count
+      min_size                          = var.default_nodepool_min_nodes
+      max_size                          = var.default_nodepool_max_nodes
+      bootstrap_extra_args              = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
+      post_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      metadata_options                  = { 
+          http_endpoint                 = var.default_nodepool_metadata_http_endpoint
+          http_tokens                   = var.default_nodepool_metadata_http_tokens
+          http_put_response_hop_limit   = var.default_nodepool_metadata_http_put_response_hop_limit
+      }
+      tags                              = var.tags
     }
   }
 
   user_node_pool = {
     for key, np_value in var.node_pools :
       key => {
-        name                                 = key
-        instance_type                        = np_value.vm_type
-        root_volume_size                     = np_value.os_disk_size
-        root_volume_type                     = np_value.os_disk_type
-        root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
-        asg_min_size                         = np_value.min_nodes
-        asg_max_size                         = np_value.max_nodes
-        kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
-        additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
-        metadata_http_endpoint               = np_value.metadata_http_endpoint
-        metadata_http_tokens                 = np_value.metadata_http_tokens
-        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
-        tags                                 = var.tags
+        name                            = key
+        instance_type                   = np_value.vm_type
+        disk_size                       = np_value.os_disk_size
+        # volume_type                   = np_value.os_disk_type
+        # iops                          = np_value.os_disk_iops
+        desired_size                    = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
+        min_size                        = np_value.min_nodes
+        max_size                        = np_value.max_nodes
+        bootstrap_extra_args            = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
+        post_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+        metadata_options                = { 
+            http_endpoint               = var.default_nodepool_metadata_http_endpoint
+            http_tokens                 = var.default_nodepool_metadata_http_tokens
+            http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
+        }
+        tags                            = var.tags
       }
   }
 
