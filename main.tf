@@ -85,40 +85,89 @@ module "eks" {
   cluster_name                                   = local.cluster_name
   cluster_version                                = var.kubernetes_version
   cluster_endpoint_private_access                = true
+  cluster_endpoint_public_access                 = true # local.is_standard
   # cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
   # cluster_endpoint_private_access_sg             = [local.security_group_id]
   # cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
-  cluster_endpoint_public_access                 = local.is_standard
+  
+  ##TODO: addons fail
+  # cluster_addons = {
+  #   coredns = {
+  #     resolve_conflicts = "OVERWRITE"
+  #   }
+  #   kube-proxy = {}
+  #   vpc-cni = {
+  #     resolve_conflicts = "OVERWRITE"
+  #   }
+  # }
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
   # write_kubeconfig                               = false
   subnet_ids                                        = module.vpc.private_subnets
   vpc_id                                         = module.vpc.vpc_id
   # tags                                           = var.tags
-  enable_irsa                                    = var.autoscaling_enabled
+  # enable_irsa                                    = var.autoscaling_enabled
   
   # manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
   # workers_role_name                              = var.workers_iam_role_name                   
 
   # BYO IAM policy(!)
-  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
-  iam_role_name                                  = var.cluster_iam_role_name        # cluster_iam_role_name                    
-  create_node_security_group                     = false                            # worker_create_security_group                   
-  node_security_group_id                         = local.workers_security_group_id  # worker_security_group_id  
-  create_cluster_security_group                  = false                            # cluster_create_security_group
-  cluster_security_group_id                      = local.cluster_security_group_id
-  create_cloudwatch_log_group                    = false
+  # create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
+  # iam_role_name                                  = var.cluster_iam_role_name        # cluster_iam_role_name
+  # iam_role_additional_policies = [
+  #   "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  # ]
 
+  # create_node_security_group                     = false                            # worker_create_security_group                   
+  # node_security_group_id                         = local.workers_security_group_id  # worker_security_group_id  
+  # create_cluster_security_group                  = false                            # cluster_create_security_group
+  # cluster_security_group_id                      = local.cluster_security_group_id
+  # create_cloudwatch_log_group                    = false
+
+    # Extend cluster security group rules
+  # cluster_security_group_additional_rules = {
+  #   egress_nodes_ephemeral_ports_tcp = {
+  #     description                = "To node 1025-65535"
+  #     protocol                   = "tcp"
+  #     from_port                  = 1025
+  #     to_port                    = 65535
+  #     type                       = "egress"
+  #     source_node_security_group = true
+  #   }
+  # }
+
+  # Extend node-to-node security group rules
+  # node_security_group_additional_rules = {
+  #   ingress_self_all = {
+  #     description = "Node to node all ports/protocols"
+  #     protocol    = "-1"
+  #     from_port   = 0
+  #     to_port     = 0
+  #     type        = "ingress"
+  #     self        = true
+  #   }
+  #   egress_all = {
+  #     description      = "Node all egress"
+  #     protocol         = "-1"
+  #     from_port        = 0
+  #     to_port          = 0
+  #     type             = "egress"
+  #     cidr_blocks      = ["0.0.0.0/0"]
+  #     ipv6_cidr_blocks = ["::/0"]
+  #   }
+  # }
+  
   self_managed_node_group_defaults = {                                              # workers_group_defaults
+    disk_size                            = 50
     # vpc_security_group_ids               = [aws_security_group.additional.id]
-    node_security_group_id               = local.workers_security_group_id
-    tags                                 =  { "kubernetes.io/cluster/${local.cluster_name}" : "owned" } # var.autoscaling_enabled ? { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true } : null
-    metadata_http_tokens                 = "required"
-    metadata_http_put_response_hop_limit = 1
-    bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
-    iam_instance_profile_name            = var.workers_iam_role_name
+    # node_security_group_id               = local.workers_security_group_id
+    # tags                                 =  { "kubernetes.io/cluster/${local.cluster_name}" : "owned" } # var.autoscaling_enabled ? { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true } : null
+    # metadata_http_tokens                 = "required"
+    # metadata_http_put_response_hop_limit = 1
+    # bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
+    # iam_instance_profile_name            = var.workers_iam_role_name
     enable_monitoring                    = false
-    create_iam_instance_profile          = false
-    create_security_group                = false
+    # create_iam_instance_profile          = false
+    # create_security_group                = false
   }
   # TODO: TBD v17.* ->v18.*
   # Added to support EBS CSI driver
@@ -127,14 +176,150 @@ module "eks" {
   self_managed_node_groups = {
 
     # Default node group - as provisioned by the module defaults
-    # default_node_group = {}
+    default_node_group = {}
 
 
-    viya = local.worker_groups                                    # worker_groups
+    # viya = local.worker_groups                                    # worker_groups
+    viya = {
+      name  = "${var.prefix}-stateless-ng"
+      use_name_prefix = false
+      ## TODO: try with e.g., subnet_ids = module.vpc.public_subnets
+      subnet_ids  = module.vpc.public_subnets
+
+      min_size     = 1
+      max_size     = 3
+      desired_size = 1
+
+      # ami_id               = data.aws_ami.eks_default.id
+      bootstrap_extra_args = "--kubelet-extra-args '--max-pods=110'"
+
+      disk_size     = 256
+      instance_type = "m6i.large"
+
+      launch_template_name            = "${var.prefix}-lt"
+      launch_template_use_name_prefix = true
+      launch_template_description     = "Self managed node group example launch template"
+
+      ebs_optimized          = true
+      # vpc_security_group_ids = [aws_security_group.additional.id]
+      enable_monitoring      = false
+
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = 75
+            volume_type           = "gp3"
+            iops                  = 3000
+            throughput            = 150
+            encrypted             = true
+            # kms_key_id            = aws_kms_key.ebs.arn
+            delete_on_termination = true
+          }
+        }
+      }
+
+      metadata_options = {
+        http_endpoint               = "enabled"
+        http_tokens                 = "required"
+        http_put_response_hop_limit = 2
+        instance_metadata_tags      = "disabled"
+      }
+
+      create_iam_role          = true # var.cluster_iam_role_name == null ? true : false   # manage_cluster_iam_resources
+      iam_role_name            = "iacgpuiamrole" # var.cluster_iam_role_name        # cluster_iam_role_name
+      iam_role_use_name_prefix = false
+      iam_role_description     = "Self managed node group complete example role"
+      iam_role_tags = {
+        Purpose = "Protector of the kubelet"
+      }
+      iam_role_additional_policies = [
+        "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+      ]
+
+      create_security_group          = true
+      security_group_name            = "${var.prefix}-stateless-ng-sg"
+      security_group_use_name_prefix = false
+      security_group_description     = "Self managed node group complete example security group"
+      security_group_rules = {
+        phoneHome = {
+          description                   = "Hello cluster"
+          protocol                      = "udp"
+          from_port                     = 53
+          to_port                       = 53
+          type                          = "egress"
+          source_cluster_security_group = true # bit of reflection lookup
+        }
+      }
+      security_group_tags = {
+        Purpose = "Protector of the kubelet"
+      }
+
+      tags = {
+        ExtraTag = "${var.prefix}-Viya Stateless NG Tag"
+      }
+    }
+  }
+  tags = var.tags
+}
+
+###-- BEGIN TODO: TBD new code added for v18 upgrades
+################################################################################
+# aws-auth configmap
+# Only EKS managed node groups automatically add roles to aws-auth configmap
+# so we need to ensure fargate profiles and self-managed node roles are added
+################################################################################
+
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_id
+}
+
+locals {
+  kubeconfig = yamlencode({
+    apiVersion      = "v1"
+    kind            = "Config"
+    current-context = "terraform"
+    clusters = [{
+      name = module.eks.cluster_id
+      cluster = {
+        certificate-authority-data = module.eks.cluster_certificate_authority_data
+        server                     = module.eks.cluster_endpoint
+      }
+    }]
+    contexts = [{
+      name = "terraform"
+      context = {
+        cluster = module.eks.cluster_id
+        user    = "terraform"
+      }
+    }]
+    users = [{
+      name = "terraform"
+      user = {
+        token = data.aws_eks_cluster_auth.this.token
+      }
+    }]
+  })
+}
+
+resource "null_resource" "apply" {
+  triggers = {
+    kubeconfig = base64encode(local.kubeconfig)
+    cmd_patch  = <<-EOT
+      kubectl create configmap aws-auth -n kube-system --kubeconfig <(echo $KUBECONFIG | base64 --decode)
+      kubectl patch configmap/aws-auth --patch "${module.eks.aws_auth_configmap_yaml}" -n kube-system --kubeconfig <(echo $KUBECONFIG | base64 --decode)
+    EOT
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    environment = {
+      KUBECONFIG = self.triggers.kubeconfig
+    }
+    command = self.triggers.cmd_patch
   }
 }
 
-# ## New
 # resource "aws_security_group" "additional" {
 #   name_prefix = "${local.cluster_name}-additional"
 #   vpc_id      = module.vpc.vpc_id
@@ -152,6 +337,7 @@ module "eks" {
 
 #   tags = var.tags
 # }
+###--END TODO: TBD new code added for v18 upgrades
 
 module "autoscaling" {
   source       = "./modules/aws_autoscaling"
