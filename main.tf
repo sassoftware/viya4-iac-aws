@@ -68,7 +68,6 @@ module "vpc" {
   security_group_id   = local.security_group_id
   cidr                = var.vpc_cidr
   azs                 = data.aws_availability_zones.available.names
-  vpc_private_enabled = local.is_private
   existing_subnet_ids = var.subnet_ids
   subnets             = var.subnets
   existing_nat_id     = var.nat_id
@@ -88,7 +87,7 @@ module "eks" {
   cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
   cluster_endpoint_private_access_sg             = [local.security_group_id]
   cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
-  cluster_endpoint_public_access                 = local.is_standard
+  cluster_endpoint_public_access                 = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
   write_kubeconfig                               = false
   subnets                                        = module.vpc.private_subnets
@@ -109,13 +108,8 @@ module "eks" {
     tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
     metadata_http_tokens                 = "required"
     metadata_http_put_response_hop_limit = 1
-    bootstrap_extra_args                 = local.is_private ? "--apiserver-endpoint ${data.aws_eks_cluster.cluster.endpoint} --b64-cluster-ca" + base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data) : ""
     iam_instance_profile_name            = var.workers_iam_role_name
   }
-
-  # Added to support EBS CSI driver
-  # workers_additional_policies = [var.workers_iam_role_name == null ? module.iam_policy.0.arn : null]
-
   worker_groups = local.worker_groups
 }
 
