@@ -4,8 +4,8 @@
 
 # ****************  REQUIRED VARIABLES  ****************
 # These required variables' values MUST be provided by the User
-prefix                                  = "<prefix-value>"
-location                                = "<aws-location-value>" # e.g., "us-east-1"
+prefix                                  = "<myViya>"
+location                                = "<us-east-1>"  
 # ****************  REQUIRED VARIABLES  ****************
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
@@ -81,6 +81,6 @@ jump_vm_type                          = "t3.medium"
 
 # NFS Server
 # required ONLY when storage_type is "standard" to create NFS Server VM
-create_nfs_public_ip                  = false
+create_nfs_public_ip                  = true
 nfs_vm_admin                          = "nfsuser"
 nfs_vm_type                           = "m5.xlarge"
