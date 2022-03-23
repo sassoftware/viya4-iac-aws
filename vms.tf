@@ -72,7 +72,7 @@ module "jump" {
   tags               = var.tags
   subnet_id          = local.jump_vm_subnet
   security_group_ids = [local.security_group_id, local.workers_security_group_id]
-  create_public_ip   = local.create_jump_public_ip
+  create_public_ip   = var.create_jump_public_ip
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
@@ -122,7 +122,7 @@ module "nfs" {
   tags               = var.tags
   subnet_id          = local.nfs_vm_subnet
   security_group_ids = [local.security_group_id, local.workers_security_group_id]
-  create_public_ip   = local.create_nfs_public_ip
+  create_public_ip   = var.create_nfs_public_ip
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size

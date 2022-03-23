@@ -60,21 +60,24 @@ You can use either static credentials or the name of an AWS profile. If both are
 
 ## Admin Access
 
-By default, the API of the AWS resources that are being created is only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
-To enable access for other administrative client applications (for example `kubectl`, `psql`, etc.), you must open the AWS firewall to allow access from your source IP addresses.
-To do this, specify ranges of IP addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
-Contact your Network Administrator to find the public CIDR range of your network.
+By default, the pubic endpoints of the AWS resources that are being created are only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
+To enable access for other administrative client applications (for example `kubectl`, `psql`, etc.), you can set Security Group rules to control access from your source IP addresses.
 
-Please note that these values are used to add Ingress rules into to an AWS Security Group that by default gets created by terraform. If you specify a pre-existing  [Security Group](#use_existing), you need to add your access CIDRs to that Security Group yourself. The values in this section will not be applied.
+To set these permissions as part of this Terraform script, specify ranges of IP addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing). Contact your Network Administrator to find the public CIDR range of your network.
 
-You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list `[]` to disallow access explicitly.
+NOTE: When deploying infrastructure into a private network (e.g. a VPN), with no public endpoints, the options documented in this block are not applicable.
+
+NOTE: The script will either create a new Security Group, or use an existing Security Group, if specified in the `security_group_id` variable.
+
+You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Used to to set a default for all resources. |
-| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | Used to enable client admin access to the cluster, with `kubectl` for example. |
-| vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump VM and/or NFS VM. |
-| postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings |||
+| default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Set a default for all resources. |
+| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
+| vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Security Group. Only used with `create_jump_public_ip=true` or `create_nfs_public_ip=true`. |
+| postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+
 ## Networking
  | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
@@ -202,6 +205,7 @@ Custom policy:
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
+| cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 
 ## Node Pools
 
@@ -305,6 +309,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
 | parameters | additional parameters for PostgreSQL server | list(map(string)) | [] | More details can be found [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.Parameters) |
 | options | additional options for PostgreSQL server | any | [] | |
+
 
 Here is a sample of the `postgres_servers` variable with the `default` entry only overriding the `administrator_password` parameter and the `cps` entry overriding all of the parameters:
 

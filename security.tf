@@ -20,10 +20,12 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "vms" {
-  count             =  ( ( (var.storage_type == "standard" && local.create_nfs_public_ip) || var.create_jump_vm ) 
-                         && length(local.vm_public_access_cidrs) > 0
-                         && var.security_group_id == null
-                       )  ? 1 : 0
+  count                       = ( length(local.vm_public_access_cidrs) > 0
+                                  && (   (var.create_jump_public_ip && var.create_jump_vm )
+                                      || (var.create_nfs_public_ip && var.storage_type == "standard")
+                                     )
+                                  ? 1 : 0
+                                )
   type              = "ingress"
   description       = "Allow SSH from source"
   from_port         = 22
@@ -56,7 +58,12 @@ resource "aws_security_group_rule" "postgres_internal" {
 }
 
 resource "aws_security_group_rule" "postgres_external" {
-  for_each          = length(local.postgres_public_access_cidrs) > 0 ? local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([]) : toset([])
+  for_each          = ( length(local.postgres_public_access_cidrs) > 0
+                        ? local.postgres_sgr_ports != null
+                          ? toset(local.postgres_sgr_ports)
+                          : toset([])
+                        : toset([])
+                      )
   type              = "ingress"
   description       = "Allow Postgres from source"
   from_port         = each.key

@@ -48,7 +48,10 @@ runcmd:
   - update-initramfs -u
   # Update /etc/fstab
   #
-  - echo "/dev/md0       /export        ext4        defaults,nofail,x-systemd.requires=cloud-init.service,barrier=0,discard        0  2" >>/etc/fstab
+  - device=`lsblk -r | grep raid0 | cut -d " " -f1`
+  - mntDir='/export'
+  - deviceUUID=`sudo blkid /dev/$device | sed -r 's/.*UUID="([^"]*).*"/\1/g'`
+  - echo "UUID=$deviceUUID $mntDir auto defaults,acl,nofail 0 2" | sudo tee -a /etc/fstab > /dev/null
   - mount -a
   #
   # Update /etc/exports

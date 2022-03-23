@@ -68,7 +68,6 @@ module "vpc" {
   security_group_id   = local.security_group_id
   cidr                = var.vpc_cidr
   azs                 = data.aws_availability_zones.available.names
-  vpc_private_enabled = local.is_private
   existing_subnet_ids = var.subnet_ids
   subnets             = var.subnets
   existing_nat_id     = var.nat_id
@@ -87,7 +86,7 @@ module "eks" {
   cluster_enabled_log_types                      = [] # disable cluster control plan logging
   create_cloudwatch_log_group                    = false
   cluster_endpoint_private_access                = true
-  cluster_endpoint_public_access                 = local.is_standard # true
+  cluster_endpoint_public_access                 = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
   
   subnet_ids                                     = module.vpc.private_subnets
