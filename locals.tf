@@ -40,7 +40,7 @@ locals {
   # Mapping node_pools to worker_groups
   default_node_pool = {
     default = {
-      name                              = "defaultIAC"
+      name                              = "default"
       instance_types                     = [var.default_nodepool_vm_type]
       block_device_mappings           = {
         xvda = {
@@ -55,8 +55,12 @@ locals {
       desired_size                      = var.default_nodepool_node_count
       min_size                          = var.default_nodepool_min_nodes
       max_size                          = var.default_nodepool_max_nodes
-      ## TODO: handle default_nodepool_taints
-      # taints                            = var.default_nodepool_taints
+      taints                            = { for i, taint in var.default_nodepool_taints : "default-${i}"=> { 
+                                              "key" = split("=", taint)[0], 
+                                              "value"= split(":", split("=", taint)[1])[0], 
+                                              "effect"=length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
+                                            } 
+                                          }
       labels                            = var.default_nodepool_labels
       bootstrap_extra_args              = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
       post_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
@@ -89,9 +93,13 @@ locals {
         desired_size                    = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
         min_size                        = np_value.min_nodes
         max_size                        = np_value.max_nodes
-        
-        # TODO: handle Prefer_No_Schedule - https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html
-        taints                          ={ for taint in np_value.node_taints: key=> { "key" = split("=", taint)[0], "value"= split(":", split("=", taint)[1])[0], "effect"=upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) } }
+        # AWS EKS Taints - https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html
+        taints                          ={ for i, taint in np_value.node_taints: "${key}-${i}"=> {   # to handle multiple taints, add index i to key for uniqueness
+                                              "key" = split("=", taint)[0], 
+                                              "value"= split(":", split("=", taint)[1])[0], 
+                                              "effect"=length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
+                                            } 
+                                          }
         labels                          = np_value.node_labels
         bootstrap_extra_args            = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
         post_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
