@@ -153,24 +153,7 @@ module "eks" {
   
   ## Any individual Node Group customizations should go here
   eks_managed_node_groups = local.worker_groups  
-      }
-
-# resource "aws_security_group" "additional" {
-#   name_prefix = "${local.cluster_name}-additional-sg"
-#   vpc_id      = module.vpc.vpc_id
-
-#   ingress {
-#     from_port = 22
-#     to_port   = 22
-#     protocol  = "tcp"
-#     cidr_blocks = [
-#       "10.0.0.0/8",
-#       "172.16.0.0/12",
-#       "192.168.0.0/16",
-#     ]
-#   }
-#   tags = var.tags
-# }
+}
 
 module "autoscaling" {
   source       = "./modules/aws_autoscaling"
