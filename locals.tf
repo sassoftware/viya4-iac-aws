@@ -30,7 +30,7 @@ locals {
   kubeconfig_path                       = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
   kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority.0.data
 
-  # Mapping node_pools to worker_groups
+  # Mapping node_pools to node_groups
   default_node_pool = {
     default = {
       name                              = "default"
@@ -116,7 +116,7 @@ locals {
   }
 
   # Merging the default_node_pool into the work_groups node pools
-  worker_groups = merge(local.default_node_pool, local.user_node_pool)
+  node_groups = merge(local.default_node_pool, local.user_node_pool)
 
   # PostgreSQL
   postgres_servers    = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge( var.postgres_server_defaults, v, )}

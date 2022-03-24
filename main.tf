@@ -152,7 +152,7 @@ module "eks" {
   }
   
   ## Any individual Node Group customizations should go here
-  eks_managed_node_groups = local.worker_groups  
+  eks_managed_node_groups = local.node_groups  
 }
 
 module "autoscaling" {
