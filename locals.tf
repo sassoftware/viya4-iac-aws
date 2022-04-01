@@ -70,7 +70,6 @@ locals {
       tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true}) : var.tags
     }
   }
-  default_node_group = {}
 
   user_node_pool = {
     for key, np_value in var.node_pools :
