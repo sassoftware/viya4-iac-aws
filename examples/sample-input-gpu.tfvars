@@ -38,26 +38,43 @@ storage_type                            = "standard"
 
 ## Cluster Node Pools config
 node_pools = {
-  cas = { 
-    "vm_type" = "i3.8xlarge"
-    "cpu_type" = "AL2_x86_64"
+  cas = {
+    "vm_type" = "m5.2xlarge"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "cas" 
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
     }
-    "custom_data" = "./files/custom-data/additional_userdata.sh"
+    "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  compute = { 
+  gpu_cas = {
+    "vm_type" = "m5.2xlarge"
+    "cpu_type"     = "AL2_x86_64_GPU"
+    "os_disk_type" = "gp2"
+    "os_disk_size" = 200
+    "os_disk_iops" = 0
+    "min_nodes" = 1
+    "max_nodes" = 5
+    "node_taints" = ["nvidia.com/gpu=present:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
+    }
+    "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
+  },
+  compute = {
     "vm_type" = "m5.8xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -73,9 +90,9 @@ node_pools = {
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  connect = { 
+  connect = {
     "vm_type" = "m5.8xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -91,34 +108,34 @@ node_pools = {
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  stateless = { 
+  stateless = {
     "vm_type" = "m5.4xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "stateless" 
+    "node_labels" = {
+      "workload.sas.com/class" = "stateless"
     }
     "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
-  },   
-  stateful = { 
+  },
+  stateful = {
     "vm_type" = "m5.4xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes" = 1
     "max_nodes" = 3
     "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "stateful" 
+    "node_labels" = {
+      "workload.sas.com/class" = "stateful"
     }
     "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"
