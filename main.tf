@@ -5,12 +5,12 @@
 #
 
 provider "aws" {
-  region                  = var.location
-  profile                 = var.aws_profile
-  shared_credentials_file = var.aws_shared_credentials_file
-  access_key              = var.aws_access_key_id
-  secret_key              = var.aws_secret_access_key
-  token                   = var.aws_session_token
+  region                   = var.location
+  profile                  = var.aws_profile
+  shared_credentials_file  = var.aws_shared_credentials_file
+  access_key               = var.aws_access_key_id
+  secret_key               = var.aws_secret_access_key
+  token                    = var.aws_session_token
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -80,37 +80,79 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                         = "terraform-aws-modules/eks/aws"
-  version                                        = "17.1.0"
+  version                                        = "18.7.1"
   cluster_name                                   = local.cluster_name
   cluster_version                                = var.kubernetes_version
+  cluster_enabled_log_types                      = [] # disable cluster control plan logging
+  create_cloudwatch_log_group                    = false
   cluster_endpoint_private_access                = true
-  cluster_create_endpoint_private_access_sg_rule = true # NOTE: If true cluster_endpoint_private_access_cidrs must always be set
-  cluster_endpoint_private_access_sg             = [local.security_group_id]
-  cluster_endpoint_private_access_cidrs          = local.cluster_endpoint_private_access_cidrs
   cluster_endpoint_public_access                 = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
-  write_kubeconfig                               = false
-  subnets                                        = module.vpc.private_subnets
+  
+  subnet_ids                                     = module.vpc.private_subnets
   vpc_id                                         = module.vpc.vpc_id
   tags                                           = var.tags
   enable_irsa                                    = var.autoscaling_enabled
-  
-  manage_worker_iam_resources                    = var.workers_iam_role_name == null ? true : false
-  workers_role_name                              = var.workers_iam_role_name
-  manage_cluster_iam_resources                   = var.cluster_iam_role_name == null ? true : false
-  cluster_iam_role_name                          = var.cluster_iam_role_name
-  worker_create_security_group                   = false
-  worker_security_group_id                       = local.workers_security_group_id
-  cluster_create_security_group                  = false
+  ################################################################################
+  # Cluster Security Group
+  ################################################################################
+  create_cluster_security_group                  = false  # v17: cluster_create_security_group
   cluster_security_group_id                      = local.cluster_security_group_id
-
-  workers_group_defaults = {
-    tags                                 = var.autoscaling_enabled ? [ { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true} ] : null
-    metadata_http_tokens                 = "required"
-    metadata_http_put_response_hop_limit = 1
-    iam_instance_profile_name            = var.workers_iam_role_name
+  # Extend cluster security group rules
+  cluster_security_group_additional_rules = {
+    egress_nodes_ephemeral_ports_tcp = {
+      description                = "To node 1025-65535"
+      protocol                   = "tcp"
+      from_port                  = 1025
+      to_port                    = 65535
+      type                       = "egress"
+      source_node_security_group = true
+    }
   }
-  worker_groups = local.worker_groups
+  
+  ################################################################################
+  # Node Security Group
+  ################################################################################
+  create_node_security_group                     = false                            #v17: worker_create_security_group             
+  node_security_group_id                         = local.workers_security_group_id  #v17: worker_security_group_id  
+  # Extend node-to-node security group rules
+  node_security_group_additional_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+  }
+
+  ################################################################################
+  # Handle BYO IAM policy
+  ################################################################################
+  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # v17: manage_cluster_iam_resources
+  iam_role_name                                  = var.cluster_iam_role_name                          # v17: cluster_iam_role_name
+  iam_role_additional_policies = [
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  ]
+
+  ## Use this to define any values that are common and applicable to all Node Groups 
+  eks_managed_node_group_defaults = {
+    create_security_group   = false
+    vpc_security_group_ids  = [local.workers_security_group_id]
+  }
+  
+  ## Any individual Node Group customizations should go here
+  eks_managed_node_groups = local.node_groups  
 }
 
 module "autoscaling" {

@@ -5,7 +5,6 @@ locals {
   security_group_id                     = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id             = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group.0.id : var.cluster_security_group_id
   workers_security_group_id             = var.workers_security_group_id == null ? aws_security_group.workers_security_group.0.id : var.workers_security_group_id
-
   cluster_name                          = "${var.prefix}-eks"
 
   # CIDRs
@@ -31,47 +30,92 @@ locals {
   kubeconfig_path                       = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
   kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority.0.data
 
-  # Mapping node_pools to worker_groups
-  default_node_pool = [
-    {
-      name                                 = "default"
-      instance_type                        = var.default_nodepool_vm_type
-      root_volume_size                     = var.default_nodepool_os_disk_size
-      root_volume_type                     = var.default_nodepool_os_disk_type
-      root_iops                            = var.default_nodepool_os_disk_iops
-      asg_desired_capacity                 = var.default_nodepool_node_count
-      asg_min_size                         = var.default_nodepool_min_nodes
-      asg_max_size                         = var.default_nodepool_max_nodes
-      kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)}"
-      additional_userdata                  = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
-      metadata_http_endpoint               = var.default_nodepool_metadata_http_endpoint
-      metadata_http_tokens                 = var.default_nodepool_metadata_http_tokens
-      metadata_http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
-
-    }
-  ]
-
-  user_node_pool = [
-    for np_key, np_value in var.node_pools :
-      {
-        name                                 = np_key
-        instance_type                        = np_value.vm_type
-        root_volume_size                     = np_value.os_disk_size
-        root_volume_type                     = np_value.os_disk_type
-        root_iops                            = np_value.os_disk_iops
-        asg_desired_capacity                 = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
-        asg_min_size                         = np_value.min_nodes
-        asg_max_size                         = np_value.max_nodes
-        kubelet_extra_args                   = "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}"
-        additional_userdata                  = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
-        metadata_http_endpoint               = np_value.metadata_http_endpoint
-        metadata_http_tokens                 = np_value.metadata_http_tokens
-        metadata_http_put_response_hop_limit = np_value.metadata_http_put_response_hop_limit
+  # Mapping node_pools to node_groups
+  default_node_pool = {
+    default = {
+      name                              = "default"
+      instance_types                     = [var.default_nodepool_vm_type]
+      block_device_mappings           = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_type                     = var.default_nodepool_os_disk_type
+            volume_size                     = var.default_nodepool_os_disk_size
+            iops                            = var.default_nodepool_os_disk_iops
+          }
+        }
       }
-  ]
+      desired_size                      = var.default_nodepool_node_count
+      min_size                          = var.default_nodepool_min_nodes
+      max_size                          = var.default_nodepool_max_nodes
+      taints                            = { for i, taint in var.default_nodepool_taints : "default-${i}"=> { 
+                                              "key" = split("=", taint)[0], 
+                                              "value"= split(":", split("=", taint)[1])[0], 
+                                              "effect"=length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
+                                            } 
+                                          }
+      labels                            = var.default_nodepool_labels
+      # User data
+      bootstrap_extra_args              = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
+      post_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      metadata_options                  = { 
+          http_endpoint                 = var.default_nodepool_metadata_http_endpoint
+          http_tokens                   = var.default_nodepool_metadata_http_tokens
+          http_put_response_hop_limit   = var.default_nodepool_metadata_http_put_response_hop_limit
+      }
+      # Launch Template
+      create_launch_template          = true
+      launch_template_name            = "${local.cluster_name}-default-lt"
+      launch_template_use_name_prefix = true
+      tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true}) : var.tags
+    }
+  }
+
+  user_node_pool = {
+    for key, np_value in var.node_pools :
+      key => {
+        name                            = key
+        instance_types                   = [np_value.vm_type]
+        disk_size                       = np_value.os_disk_size
+        block_device_mappings           = {
+          xvda = {
+            device_name = "/dev/xvda"
+            ebs = {
+              volume_type                   = np_value.os_disk_type
+              volume_size                   = np_value.os_disk_size
+              iops                          = np_value.os_disk_iops
+            }
+          }
+        }
+        desired_size                    = var.autoscaling_enabled ? np_value.min_nodes == 0 ? 1 : np_value.min_nodes : np_value.min_nodes # TODO - Remove when moving to managed nodes
+        min_size                        = np_value.min_nodes
+        max_size                        = np_value.max_nodes
+        # AWS EKS Taints - https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html
+        taints                          ={ for i, taint in np_value.node_taints: "${key}-${i}"=> {   # to handle multiple taints, add index i to key for uniqueness
+                                              "key" = split("=", taint)[0], 
+                                              "value"= split(":", split("=", taint)[1])[0], 
+                                              "effect"=length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
+                                            } 
+                                          }
+        labels                          = np_value.node_labels
+        # User data
+        bootstrap_extra_args            = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
+        post_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+        metadata_options                = { 
+            http_endpoint               = var.default_nodepool_metadata_http_endpoint
+            http_tokens                 = var.default_nodepool_metadata_http_tokens
+            http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
+        }
+        # Launch Template
+        create_launch_template          = true
+        launch_template_name            = "${local.cluster_name}-${key}-lt"
+        launch_template_use_name_prefix = true
+        tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true}) : var.tags
+      }
+  }
 
   # Merging the default_node_pool into the work_groups node pools
-  worker_groups = concat(local.default_node_pool, local.user_node_pool)
+  node_groups = merge(local.default_node_pool, local.user_node_pool)
 
   # PostgreSQL
   postgres_servers    = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge( var.postgres_server_defaults, v, )}
