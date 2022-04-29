@@ -56,7 +56,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   gpu_cas = {
-    "vm_type" = "m5.2xlarge"
+    "vm_type" = "p2.8xlarge"
     "cpu_type"     = "AL2_x86_64_GPU"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
