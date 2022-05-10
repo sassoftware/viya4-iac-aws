@@ -1,5 +1,5 @@
 # !NOTE! - These are only a subset of the variables in CONFIG-VARS.md provided
-# as examples. Customize this file to add any variables from CONFIG-VARS.md whose 
+# as examples. Customize this file to add any variables from CONFIG-VARS.md whose
 # default values you want to change.
 
 # ****************  REQUIRED VARIABLES  ****************
@@ -7,16 +7,6 @@
 prefix                                  = "<prefix-value>"
 location                                = "<aws-location-value>" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
-
-# Bring your own existing resources
-vpc_id  = "<existing-vpc-id>" # only needed if using pre-existing VPC
-subnet_ids = {  # only needed if using pre-existing subnets
-  "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
-  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
-  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
-}
-nat_id = "<existing-NAT-gateway-id>"
-security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
@@ -50,7 +40,7 @@ storage_type                            = "standard"
 node_pools = {
   cas = {
     "vm_type" = "m5.2xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -65,9 +55,26 @@ node_pools = {
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
+  gpu_cas = {
+    "vm_type" = "p2.8xlarge"
+    "cpu_type"     = "AL2_x86_64_GPU"
+    "os_disk_type" = "gp2"
+    "os_disk_size" = 200
+    "os_disk_iops" = 0
+    "min_nodes" = 1
+    "max_nodes" = 5
+    "node_taints" = ["nvidia.com/gpu=present:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
+    }
+    "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
+  },
   compute = {
     "vm_type" = "m5.8xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -85,7 +92,7 @@ node_pools = {
   },
   stateless = {
     "vm_type" = "m5.4xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -102,7 +109,7 @@ node_pools = {
   },
   stateful = {
     "vm_type" = "m5.4xlarge"
-    "cpu_type" = "AL2_x86_64"
+    "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
