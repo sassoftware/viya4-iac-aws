@@ -73,7 +73,7 @@ output "nfs_admin_username" {
   value = var.storage_type == "standard" ? module.nfs.0.admin_username : null
 }
 
-output "nsf_private_dns" {
+output "nfs_private_dns" {
   value = var.storage_type == "standard" ? module.nfs.0.private_dns : null
 }
 
