@@ -41,7 +41,7 @@ Terraform input variables can be set in the following ways:
 
 The Terraform process manages AWS resources on your behalf. In order to do so, it needs the credentials for an AWS identity with the required permissons.
 
-You can use either static credentials or the name of an AWS profile. If both are specified, the static credentials take precedence. For recommendations on how to set these variables in your environment, see [Authenticating Terraform to Access AWS](./user/TerraformAWSAuthentication).
+You can use either static credentials or the name of an AWS profile. If both are specified, the static credentials take precedence. For recommendations on how to set these variables in your environment, see [Authenticating Terraform to Access AWS](./user/TerraformAWSAuthentication.md).
 
 #### Using Static Credentials
 
@@ -95,9 +95,9 @@ The default values for the subnets variable are as follows:
 ```
 
 ### Use Existing
-If desired, you can deploy into an existing VPC, subnet and NAT gateway, and Security Group. 
+If desired, you can deploy into an existing VPC, subnet and NAT gateway, and Security Group.
 
-**Note**: All existing VPC/subnet resources must be in the same AWS region as the [location](./CONFIG-VARS.md#required-variables) you specify. 
+**Note**: All existing VPC/subnet resources must be in the same AWS region as the [location](./CONFIG-VARS.md#required-variables) you specify.
 
 The variables in the table below can be used to define the existing resources. Refer to the [Bring Your Own Network](./user/BYOnetwork.md) page for information about all supported scenarios for using existing network resources, with additional details and requirements.
 
@@ -106,7 +106,7 @@ The variables in the table below can be used to define the existing resources. R
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of existing VPC | string | null | Only required if deploying into existing VPC. |
  | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. |
- | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. | 
+ | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. |
  | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
 | cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
 | workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sourcess (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
