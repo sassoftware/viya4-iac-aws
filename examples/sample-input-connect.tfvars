@@ -1,5 +1,5 @@
 # !NOTE! - These are only a subset of the variables in CONFIG-VARS.md provided
-# as examples. Customize this file to add any variables from CONFIG-VARS.md whose 
+# as examples. Customize this file to add any variables from CONFIG-VARS.md whose
 # default values you want to change.
 
 # ****************  REQUIRED VARIABLES  ****************
@@ -7,16 +7,6 @@
 prefix                                  = "<prefix-value>"
 location                                = "<aws-location-value>" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
-
-# Bring your own existing resources
-vpc_id  = "<existing-vpc-id>" # only needed if using pre-existing VPC
-subnet_ids = {  # only needed if using pre-existing subnets
-  "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
-  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
-  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
-}
-nat_id = "<existing-NAT-gateway-id>"
-security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
@@ -76,6 +66,24 @@ node_pools = {
     "node_taints" = ["workload.sas.com/class=compute:NoSchedule"]
     "node_labels" = {
       "workload.sas.com/class"        = "compute"
+      "launcher.sas.com/prepullImage" = "sas-programming-environment"
+    }
+    "custom_data" = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
+  },
+  connect = {
+    "vm_type" = "m5.8xlarge"
+    "cpu_type" = "AL2_x86_64"
+    "os_disk_type" = "gp2"
+    "os_disk_size" = 200
+    "os_disk_iops" = 0
+    "min_nodes" = 1
+    "max_nodes" = 5
+    "node_taints" = ["workload.sas.com/class=connect:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class"        = "connect"
       "launcher.sas.com/prepullImage" = "sas-programming-environment"
     }
     "custom_data" = ""

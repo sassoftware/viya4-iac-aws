@@ -183,6 +183,7 @@ variable node_pools {
   description = "Node pool definitions"
   type = map(object({
     vm_type                              = string
+    cpu_type                             = string
     os_disk_type                         = string
     os_disk_size                         = number
     os_disk_iops                         = number
@@ -199,6 +200,7 @@ variable node_pools {
   default = {
     cas = {
       "vm_type"      = "m5.2xlarge"
+      "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -215,6 +217,7 @@ variable node_pools {
     },
     compute = {
       "vm_type"      = "m5.8xlarge"
+      "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -230,25 +233,9 @@ variable node_pools {
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
     },
-    connect = {
-      "vm_type"      = "m5.8xlarge"
-      "os_disk_type" = "gp2"
-      "os_disk_size" = 200
-      "os_disk_iops" = 0
-      "min_nodes"    = 1
-      "max_nodes"    = 5
-      "node_taints"  = ["workload.sas.com/class=connect:NoSchedule"]
-      "node_labels" = {
-        "workload.sas.com/class"        = "connect"
-        "launcher.sas.com/prepullImage" = "sas-programming-environment"
-      }
-      "custom_data" = ""
-      "metadata_http_endpoint"               = "enabled"
-      "metadata_http_tokens"                 = "required"
-      "metadata_http_put_response_hop_limit" = 1
-    },
     stateless = {
       "vm_type"      = "m5.4xlarge"
+      "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -265,6 +252,7 @@ variable node_pools {
     },
     stateful = {
       "vm_type"      = "m5.4xlarge"
+      "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
