@@ -199,6 +199,9 @@ Custom policy:
 | create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | false | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
 | kubernetes_version | The EKS cluster Kubernetes version | string | "1.21" | |
 | create_jump_vm | Create bastion host (jump VM) | bool | true| |
+| instance_profile_jump_vm | Attach instance profile to manage EKS cluster (jump VM) | bool | true| |
+| jump_vm_type | Jump VM instance type | string | "m5.4xlarge" | |
+| jump_vm_ebs_optimized | Description: If true, the launched EC2 instance will be EBS-optimized | bool | false | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html |
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
@@ -214,9 +217,12 @@ Custom policy:
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_nodepool_vm_type | Type of the default node pool VMs | string | "m5.2xlarge" | |
+| default_nodepool_ebs_optimized | Description: If true, the launched EC2 instance will be EBS-optimized | bool | false | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html |
+| default_nodepool_os_disk_delete_on_termination | Determines whether to preserve or delete the volume for default node pool VMs | bool | true | |
 | default_nodepool_os_disk_type | Disk type for default node pool VMs | string | gp2 | |
 | default_nodepool_os_disk_size | Disk size for default node pool VMs in GB | number | 200 ||
-| default_nodepool_os_disk_iops | Disk IOPS for default node pool VMs | number | | For `io1`, you MUST set the value to your desired IOPS value. Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
+| default_nodepool_os_disk_iops | Disk IOPS for default node pool VMs | number | | For `io1` and `io2`, you MUST set the value to your desired IOPS value. Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
+| default_nodepool_os_disk_throughput | Target Throughput for default node pool VMs | number | | For `gp3`, you MUST set the value to your desired Throughput value (125 MiB/s - 1,000 MiB/s). Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
 | default_nodepool_node_count | Initial number of nodes in the default node pool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`. |
 | default_nodepool_max_nodes | Maximum number of nodes in the default node pool | number | 5 | |
 | default_nodepool_min_nodes | Minimum and initial number of nodes for the node pool | number | 1 | |
@@ -234,10 +240,13 @@ Additional node pools can be created separately from the default node pool. This
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | vm_type | Type of the node pool VMs | string | | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html |
+| ebs_optimized | Description: If true, the launched EC2 instance will be EBS-optimized | bool | false | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html |
 | cpu_type | Processor type CPU/GPU | string | AL2_x86_64| [AMI type](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) – Choose Amazon Linux 2 (AL2_x86_64) for Linux non-GPU instances, Amazon Linux 2 GPU Enabled (AL2_x86_64_GPU) for Linux GPU instances|
-| os_disk_type | Disk type for node pool VMs | string | | `gp2` or `io1` |
+| os_disk_delete_on_termination | Determines whether to preserve or delete the volume for default node pool VMs | bool | true | |
+| os_disk_type | Disk type for node pool VMs | string | | `gp2`, `gp3`, `io1`, or `io2` |
 | os_disk_size | Disk size for node pool VMs in GB | number | | |
-| os_disk_iops | Amount of provisioned [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html) | number | | For `io1`, you MUST set the value to your desired IOPS value. Reference [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
+| os_disk_iops | Amount of provisioned [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html) | number | | For `io1` and `io2`, you MUST set the value to your desired IOPS value. Reference [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
+| os_disk_throughput | Target Throughput | number | | For `gp3`, you MUST set the value to your desired Throughput value (125 MiB/s - 1,000 MiB/s). Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
 | min_nodes | Minimum number of nodes in the node pool | number | | The value must be between `min_nodes` and `max_nodes`. |
 | max_nodes | Maximum number of nodes in the node pool | number | | The value must be between `min_nodes` and `max_nodes`. |
 | node_taints | Taints for the node pool VMs | list of strings | | |
@@ -253,6 +262,21 @@ Additional node pools can be created separately from the default node pool. This
 | :--- | :--- | :--- | :--- | :--- |
 | storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates NFS server VM; a value of "ha" creates an AWS EFS mountpoint. |
 
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| fsx_storage_capacity | (Optional) The storage capacity (GiB) of the file system. Minimum of 1200. See more details at Allowed values for Fsx storage capacity. Update is allowed only for SCRATCH_2, PERSISTENT_1 and PERSISTENT_2 deployment types, See more details at Fsx Storage Capacity Update. Required when not creating filesystem for a backup.  | string | 1200 | For Lustre file systems, the storage capacity target value can be the following:<br>
+- For SCRATCH_2, PERSISTENT_1, and PERSISTENT_2 SSD deployment types, valid values are in multiples of 2400 GiB. The value must be greater than the current storage capacity.
+- For PERSISTENT HDD file systems, valid values are multiples of 6000 GiB for 12-MBps throughput per TiB file systems and multiples of 1800 GiB for 40-MBps throughput per TiB file systems. The values must be greater than the current storage capacity.
+- For SCRATCH_1 file systems, you can't increase the storage capacity. |
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| fsx_deployment_type | The filesystem deployment type. One of: "SCRATCH_1", "SCRATCH_2", "PERSISTENT_1", "PERSISTENT_2".  | string | "PERSISTENT_2" | Persistent_2 is the latest generation of Persistent deployment type, and is best-suited for use cases that require longer-term storage, and have latency-sensitive workloads that require the highest levels of IOPS and throughput. |
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| fsx_per_unit_storage_throughput | Describes the amount of read and write throughput for each 1 tebibyte of storage, in MB/s/TiB, required for the PERSISTENT_1 and PERSISTENT_2 deployment_type. Valid values for PERSISTENT_1 deployment_type and SSD storage_type are 50, 100, 200. Valid values for PERSISTENT_1 deployment_type and HDD storage_type are 12, 40. Valid values for PERSISTENT_2 deployment_type and SSD storage_type are 125, 250, 500, 1000.  | string | "125" | 125 is the base throughput values for the PERSISTENT_2 deployment type |
+
 ### NFS Server
 
 When `storage_type=standard`, an NFS server VM is created, and the following variables are applicable:
@@ -261,10 +285,14 @@ When `storage_type=standard`, an NFS server VM is created, and the following var
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | create_nfs_public_ip | Add public IP address to the NFS server VM | bool | false |  |
+| nfs_vm_type | NFS VM instance type | string | "m5.4xlarge" | |
+| nfs_vm_ebs_optimized | Description: If true, the launched EC2 instance will be EBS-optimized | bool | false | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html |
 | nfs_vm_admin | Admin user account for the NFS server VM | string | "nfsuser" | |
 | nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | |
-| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: "standard", "gp2", "io1", "io2", "sc1" or "st1". |
-| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io1" or "io2". |
+| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: "standard", "gp2", "gp3", "io1", "io2", "sc1" or "st1". |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "gp3", "io1" or "io2". |
+| nfs_raid_disk_throughput | Target Throughput | number | 250 | For `gp3`, you MUST set the value to your desired Throughput value (125 MiB/s - 1,000 MiB/s). Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected. |
+
 
 ### AWS Elastic File System (EFS)
 

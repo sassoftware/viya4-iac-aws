@@ -12,6 +12,11 @@ variable "vm_type" {
   default = "m5.4xlarge"
 }
 
+variable "ebs_optimized" {
+  type    = bool
+  default = false
+}
+
 variable "cloud_init" {
   default = ""
 }
@@ -56,11 +61,21 @@ variable "data_disk_availability_zone" {
 }
 
 variable "data_disk_iops" {
-  default = 0
+  type     = number
+  nullable = true
+  default = null
+}
+
+variable "data_disk_throughput" {
+  type     = number
+  nullable = true
+  default = null
 }
 
 variable "os_disk_size" {
-  default = 64
+  type     = number
+  nullable = true
+  default = null
 }
 
 variable "os_disk_type" {
@@ -72,9 +87,22 @@ variable "os_disk_delete_on_termination" {
 }
 
 variable "os_disk_iops" {
-  default = 0
+  type     = number
+  nullable = true
+  default = null
+}
+
+variable "os_disk_throughput" {
+  type     = number
+  nullable = true
+  default = null
 }
 
 variable "subnet_id" {
   type = string
+}
+
+variable "iam_instance_profile" {
+  type = string
+  default = null
 }

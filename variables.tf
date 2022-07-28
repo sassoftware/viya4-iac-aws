@@ -120,13 +120,23 @@ variable "default_nodepool_vm_type" {
   default = "m5.2xlarge"
 }
 
+variable "default_nodepool_ebs_optimized" {
+  type    = bool
+  default = false
+}
+
+variable "default_nodepool_os_disk_delete_on_termination" {
+  type    = bool
+  default = true
+}
+
 variable "default_nodepool_os_disk_type" {
   type    = string
   default = "gp2"
 
   validation {
-    condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
-    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, io1."
+    condition     = contains(["gp2", "gp3", "io1", "io2"], lower(var.default_nodepool_os_disk_type))
+    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, gp3, io1, and io2."
   }
 }
 
@@ -135,7 +145,15 @@ variable "default_nodepool_os_disk_size" {
 }
 
 variable "default_nodepool_os_disk_iops" {
-  default = 0
+  type     = number
+  nullable = true
+  default = null
+}
+
+variable "default_nodepool_os_disk_throughput" {
+  type     = number
+  nullable = true
+  default = null
 }
 
 variable "default_nodepool_node_count" {
@@ -183,10 +201,13 @@ variable node_pools {
   description = "Node pool definitions"
   type = map(object({
     vm_type                              = string
+    ebs_optimized                        = optional(bool)
     cpu_type                             = string
+    os_disk_delete_on_termination        = bool
     os_disk_type                         = string
     os_disk_size                         = number
-    os_disk_iops                         = number
+    os_disk_iops                         = optional(number)
+    os_disk_throughput                   = optional(number)
     min_nodes                            = number
     max_nodes                            = number
     node_taints                          = list(string)
@@ -201,9 +222,9 @@ variable node_pools {
     cas = {
       "vm_type"      = "m5.2xlarge"
       "cpu_type"     = "AL2_x86_64"
+      "os_disk_delete_on_termination" = true
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
-      "os_disk_iops" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=cas:NoSchedule"]
@@ -218,9 +239,9 @@ variable node_pools {
     compute = {
       "vm_type"      = "m5.8xlarge"
       "cpu_type"     = "AL2_x86_64"
+      "os_disk_delete_on_termination" = true
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
-      "os_disk_iops" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=compute:NoSchedule"]
@@ -236,9 +257,9 @@ variable node_pools {
     stateless = {
       "vm_type"      = "m5.4xlarge"
       "cpu_type"     = "AL2_x86_64"
+      "os_disk_delete_on_termination" = true
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
-      "os_disk_iops" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=stateless:NoSchedule"]
@@ -253,9 +274,9 @@ variable node_pools {
     stateful = {
       "vm_type"      = "m5.4xlarge"
       "cpu_type"     = "AL2_x86_64"
+      "os_disk_delete_on_termination" = true
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
-      "os_disk_iops" = 0
       "min_nodes"    = 1
       "max_nodes"    = 3
       "node_taints"  = ["workload.sas.com/class=stateful:NoSchedule"]
@@ -347,6 +368,11 @@ variable "create_jump_vm" {
   default = true
 }
 
+variable "instance_profile_jump_vm" {
+  description = "Attach instance profile to manage EKS cluster to jump VM"
+  default = false
+}
+
 variable "create_jump_public_ip" {
   type    = bool
   default = true
@@ -360,6 +386,11 @@ variable "jump_vm_admin" {
 variable "jump_vm_type" {
   description = "Jump VM type"
   default     = "m5.4xlarge"
+}
+
+variable "jump_vm_ebs_optimized" {
+  type    = bool
+  default = false
 }
 
 variable "jump_rwx_filestore_path" {
@@ -377,7 +408,15 @@ variable "nfs_raid_disk_type" {
 }
 
 variable "nfs_raid_disk_iops" {
-  default = 0
+  type     = number
+  nullable = true
+  default = null
+}
+
+variable "nfs_raid_disk_throughput" {
+  type     = number
+  nullable = true
+  default = null
 }
 
 variable "create_nfs_public_ip" {
@@ -395,6 +434,11 @@ variable "nfs_vm_type" {
   default    = "m5.4xlarge"
 }
 
+variable "nfs_vm_ebs_optimized" {
+  type    = bool
+  default = false
+}
+
 variable "os_disk_size" {
   default = 64
 }
@@ -408,7 +452,15 @@ variable "os_disk_delete_on_termination" {
 }
 
 variable "os_disk_iops" {
-  default = 0
+  type     = number
+  nullable = true
+  default = null
+}
+
+variable "os_disk_throughput" {
+  type     = number
+  nullable = true
+  default = null
 }
 
 ## PostgresSQL
@@ -488,8 +540,35 @@ variable "storage_type" {
   default = "standard"
   # NOTE: storage_type=none is for internal use only
   validation {
-    condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
+    condition     = contains(["standard", "ha", "fsx", "none"], lower(var.storage_type))
     error_message = "ERROR: Supported values for `storage_type` are standard, ha."
+  }
+}
+
+variable "fsx_storage_capacity" {
+  description = "The storage capacity (GiB) of the file system. Minimum of 1200."
+  type        = number
+  default     = 1200
+}
+
+variable "fsx_deployment_type" {
+  type    = string
+  default = "PERSISTENT_2"
+  # NOTE: storage_type=none is for internal use only
+  validation {
+    condition     = contains(["SCRATCH_1", "SCRATCH_2", "PERSISTENT_1", "PERSISTENT_2"], upper(var.fsx_deployment_type))
+    error_message = "ERROR: The filesystem deployment type. One of: SCRATCH_1, SCRATCH_2, PERSISTENT_1, PERSISTENT_2."
+  }
+}
+
+variable "fsx_per_unit_storage_throughput" {
+  type        = number
+  default     = 125
+  description = "Describes the amount of read and write throughput for each 1 tebibyte of storage, in MB/s/TiB, required for the PERSISTENT_1 deployment_type."
+  # NOTE: storage_type=none is for internal use only
+  validation {
+    condition     = contains([50, 100, 200, 12, 40, 125, 250, 500, 1000], var.fsx_per_unit_storage_throughput)
+    error_message = "ERROR: Valid values for PERSISTENT_1 deployment_type and SSD storage_type are 50, 100, 200. Valid values for PERSISTENT_1 deployment_type and HDD storage_type are 12, 40.  Valid values for PERSISTENT_1 deployment_type and HDD storage_type are 12, 40. Valid values for PERSISTENT_2 deployment_type and SSD storage_type are 125, 250, 500, 1000."
   }
 }
 

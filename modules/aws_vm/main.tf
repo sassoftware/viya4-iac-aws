@@ -64,9 +64,11 @@ resource "aws_key_pair" "admin" {
 resource "aws_instance" "vm" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.vm_type
+  ebs_optimized = var.ebs_optimized
   user_data     = (var.cloud_init != "" ? var.cloud_init : null)
   key_name      = aws_key_pair.admin.key_name
   availability_zone = var.data_disk_availability_zone
+  iam_instance_profile = var.iam_instance_profile
   
   vpc_security_group_ids      = var.security_group_ids
   subnet_id                   = var.subnet_id
@@ -76,7 +78,8 @@ resource "aws_instance" "vm" {
     volume_type           = var.os_disk_type
     volume_size           = var.os_disk_size
     delete_on_termination = var.os_disk_delete_on_termination
-    iops                  = var.os_disk_iops
+    iops                  = contains(["gp2", "gp3", "io1", "io2"], var.os_disk_type) ? var.os_disk_iops : null
+    throughput            = var.os_disk_type == "gp3" ? var.os_disk_throughput : null
   }
 
   tags = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
@@ -102,6 +105,7 @@ resource "aws_ebs_volume" "raid_disk" {
   availability_zone = var.data_disk_availability_zone
   size              = var.data_disk_size
   type              = var.data_disk_type
-  iops              = var.data_disk_iops
+  iops              = contains(["gp2", "gp3", "io1", "io2"], var.data_disk_type) ? var.data_disk_iops : null
+  throughput        = var.data_disk_type == "gp3" ? var.data_disk_throughput : null
   tags              = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
 }

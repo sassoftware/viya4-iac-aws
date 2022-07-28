@@ -35,13 +35,16 @@ locals {
     default = {
       name                              = "default"
       instance_types                     = [var.default_nodepool_vm_type]
+      ebs_optimized                      = var.default_nodepool_ebs_optimized
       block_device_mappings           = {
         xvda = {
           device_name = "/dev/xvda"
           ebs = {
+            delete_on_termination           = var.default_nodepool_os_disk_delete_on_termination
             volume_type                     = var.default_nodepool_os_disk_type
             volume_size                     = var.default_nodepool_os_disk_size
-            iops                            = var.default_nodepool_os_disk_iops
+            iops                            = contains(["gp2", "gp3", "io1", "io2"], var.default_nodepool_os_disk_type) ? var.default_nodepool_os_disk_iops : null
+            throughput                      = var.default_nodepool_os_disk_type == "gp3" ? var.default_nodepool_os_disk_throughput : null
           }
         }
       }
@@ -76,15 +79,18 @@ locals {
       key => {
         name                            = key
         instance_types                  = [np_value.vm_type]
+        ebs_optimized                   = np_value.ebs_optimized
         ami_type                        = np_value.cpu_type
         disk_size                       = np_value.os_disk_size
         block_device_mappings           = {
           xvda = {
             device_name = "/dev/xvda"
             ebs = {
+              delete_on_termination         = np_value.os_disk_delete_on_termination
               volume_type                   = np_value.os_disk_type
               volume_size                   = np_value.os_disk_size
-              iops                          = np_value.os_disk_iops
+              iops                          = contains(["gp2", "gp3", "io1", "io2"], np_value.os_disk_type) ? np_value.os_disk_iops : null
+              throughput                    = np_value.os_disk_type == "gp3" ? var.os_disk_throughput : null
             }
           }
         }

@@ -8,30 +8,39 @@ output "kube_config" {
   sensitive = true
 }
 
+
 output "cluster_iam_role_arn" {
   value = module.eks.cluster_iam_role_arn
 }
 
 output "rwx_filestore_id" {
-  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id : null
+  value = ( var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id
+  : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.id
+  : null
+  )
 }
 
 output "rwx_filestore_endpoint" {
-  value = ( var.storage_type == "none"
-            ? null
-            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_dns
+  value = ( var.storage_type == "none" ? null
+            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name 
+            : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.dns_name
+            : module.nfs.0.private_dns
           )
 }
 
 output "rwx_filestore_path" {
   value = ( var.storage_type == "none"
             ? null
-            : var.storage_type == "ha" ? "/" : "/export"
+            : var.storage_type == "ha" || var.storage_type == "fsx"? "/" : "/export"
           )
 }
 
 output "efs_arn" {
   value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.arn : null
+}
+
+output "fsx_arn" {
+  value = var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.arn : null
 }
 
 output "jump_private_ip" {
@@ -56,8 +65,8 @@ output "jump_public_dns" {
 
 output jump_rwx_filestore_path {
   value = ( var.storage_type != "none"
-            ? var.create_jump_vm ? var.jump_rwx_filestore_path : null
-            : null
+            ? var.create_jump_vm ? var.jump_rwx_filestore_path : null 
+            : null 
           )
 }
 
@@ -122,4 +131,12 @@ output "autoscaler_account" {
 
 output "cluster_api_mode" {
   value = var.cluster_api_mode
+}
+
+output "ebs_csi_driver_controller_role_arn" {
+  value = module.ebs_csi_driver_controller.role_arn
+}
+
+output "fsx_csi_driver_controller_role_arn" {
+  value = module.ebs_csi_driver_controller.role_arn
 }

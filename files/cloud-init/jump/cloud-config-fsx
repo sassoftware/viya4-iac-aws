@@ -1,0 +1,68 @@
+#cloud-config
+users:
+  - default
+
+system_info:
+  default_user:
+    name: ${vm_admin}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+# Update the repo and then update the OS.
+package_update: true
+package_upgrade: true
+
+# Install Packages
+packages:
+  - git
+  - unzip
+  - docker.io
+  - jq
+
+runcmd:
+  # Install Lustre client
+  - wget -O - https://fsx-lustre-client-repo-public-keys.s3.amazonaws.com/fsx-ubuntu-public-key.asc | apt-key add -
+  - bash -c 'echo "deb https://fsx-lustre-client-repo.s3.amazonaws.com/ubuntu xenial main" > /etc/apt/sources.list.d/fsxlustreclientrepo.list && apt-get update'
+  - apt install -y linux-aws lustre-client-modules-aws
+  # Install Kubectl
+  - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+  - bash -c 'echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list && apt-get update'
+  - apt-get install -y kubectl
+  # Install Kustomize
+  - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+  - mv ./kustomize /usr/local/bin
+  # Install AWS CLI
+  - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  - unzip awscliv2.zip
+  - ./aws/install
+  - rm -rf ./aws*
+  # Install Eksctl
+  - curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C ./
+  - mv ./eksctl /usr/local/bin
+  # Install Helm
+  - wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz
+  - tar xvf helm-v3.4.1-linux-amd64.tar.gz
+  - mv linux-amd64/helm /usr/local/bin
+  - rm -rf helm-v3.4.1-linux-amd64.tar.gz
+  - rm -rf linux-amd64
+  # Create FSx directory and set permissions
+  - mkdir -p ${jump_rwx_filestore_path}
+  - chmod 777 ${jump_rwx_filestore_path} -R
+  - chown -R nobody:nogroup ${jump_rwx_filestore_path}
+  # Set KUBECONFIG variable
+  - echo 'export KUBECONFIG="/home/${vm_admin}/${kubeconfig_filename}"' >> /etc/profile
+  # Reboot
+  - reboot
+
+# Update /etc/fstab
+mounts:
+  - ${mounts}
+  
+# Write files
+write_files:
+  - path: /home/${vm_admin}/${kubeconfig_filename}
+    owner: ${vm_admin}:${vm_admin}
+    permissions: '0440'
+    defer: true
+    content: ${kubeconfig_file_content}

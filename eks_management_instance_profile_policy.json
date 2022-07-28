@@ -1,0 +1,159 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole",
+                "logs:CreateLogStream",
+                "ec2:DeleteTags",
+                "cloudformation:CreateStack",
+                "ec2:CreateTags",
+                "logs:DescribeLogStreams",
+                "cloudformation:ListStacks",
+                "cloudformation:DeleteStack",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DescribeStacks",
+                "iam:ListOpenIDConnectProviders",
+                "iam:GetOpenIDConnectProvider"
+            ],
+            "Resource": [
+                "arn:aws:ec2:*:*:subnet/*",
+                "arn:aws:ec2:*:*:vpc/*",
+                "arn:aws:cloudformation:*:*:stack/*/*",
+                "arn:aws:iam::*:role/*",
+                "arn:aws:logs:*:*:log-group:/aws/eks/*:*",
+                "arn:aws:iam::*:oidc-provider/*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "elasticloadbalancing.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "eks.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": [
+                "elasticloadbalancing:ModifyListener",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DescribeInstances",
+                "elasticloadbalancing:RegisterTargets",
+                "ec2:CreateKeyPair",
+                "ec2:DescribeVolumesModifications",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "ec2:DeleteVolume",
+                "ec2:CreateNetworkInterfacePermission",
+                "autoscaling:DescribeAutoScalingGroups",
+                "ec2:CreateRoute",
+                "iam:ListAttachedRolePolicies",
+                "ec2:DescribeVolumes",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "autoscaling:UpdateAutoScalingGroup",
+                "ec2:DescribeKeyPairs",
+                "elasticloadbalancing:ModifyTargetGroupAttributes",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "ec2:DescribeRouteTables",
+                "ec2:DetachVolume",
+                "ec2:ModifyVolume",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
+                "ec2:CreateTags",
+                "elasticloadbalancing:CreateTargetGroup",
+                "ec2:ModifyNetworkInterfaceAttribute",
+                "ec2:DeleteNetworkInterface",
+                "elasticloadbalancing:DeregisterTargets",
+                "logs:CreateLogGroup",
+                "ec2:CreateVolume",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "ec2:CreateNetworkInterface",
+                "ec2:RevokeSecurityGroupIngress",
+                "elasticloadbalancing:DescribeTargetGroupAttributes",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "ec2:DescribeSubnets",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "cloudformation:ValidateTemplate",
+                "ec2:AttachVolume",
+                "eks:UpdateClusterVersion",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "ec2:DescribeDhcpOptions",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:DescribeListeners",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:CreateSecurityGroup",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "kms:DescribeKey",
+                "ec2:ModifyInstanceAttribute",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "ec2:DeleteRoute",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "ec2:DescribeSecurityGroups",
+                "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
+                "ec2:DescribeVpcs",
+                "ec2:DeleteSecurityGroup",
+                "elasticloadbalancing:DescribeTargetHealth",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "route53:AssociateVPCWithHostedZone",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:DeleteListener"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParameters",
+                "logs:PutLogEvents",
+                "ssm:GetParameter"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:log-group:/aws/eks/*:*:*",
+                "arn:aws:ssm:*:*:parameter/*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": "eks:*",
+            "Resource": [
+                "arn:aws:eks:*:*:cluster/*",
+                "arn:aws:eks:*:*:nodegroup/*/*/*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor6",
+            "Effect": "Allow",
+            "Action": [
+                "eks:ListClusters",
+                "eks:DescribeCluster"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

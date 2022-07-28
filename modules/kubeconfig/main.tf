@@ -4,19 +4,6 @@ locals {
   service_account_secret_name = "${var.prefix}-sa-secret"
 }
 
-# Provider based kube config data/template/resources
-data "template_file" "kubeconfig_provider" {
-  count = var.create_static_kubeconfig ? 0 : 1
-  template = file("${path.module}/templates/kubeconfig-provider.tmpl")
-
-  vars = {
-    cluster_name = var.cluster_name
-    endpoint     = var.endpoint
-    ca_crt       = var.ca_crt
-    region       = var.region
-  }
-}
-
 # Service Account based kube config data/template/resources
 data "kubernetes_secret" "sa_secret" {
   count = var.create_static_kubeconfig ? 1 : 0
@@ -26,19 +13,6 @@ data "kubernetes_secret" "sa_secret" {
   }
 }
 
-data "template_file" "kubeconfig_sa" {
-  count = var.create_static_kubeconfig ? 1 : 0
-  template = file("${path.module}/templates/kubeconfig-sa.tmpl")
-
-  vars = {
-    cluster_name = var.cluster_name
-    endpoint     = var.endpoint
-    name         = local.service_account_name
-    ca_crt       = base64encode(lookup(data.kubernetes_secret.sa_secret.0.data,"ca.crt", ""))
-    token        = lookup(data.kubernetes_secret.sa_secret.0.data,"token", "")
-    namespace    = var.namespace
-  }
-}
 
 resource "kubernetes_service_account" "kubernetes_sa" {
   count = var.create_static_kubeconfig ? 1 : 0
@@ -67,7 +41,28 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
 
 # kube config file generation
 resource "local_file" "kubeconfig" {
-  content              = var.create_static_kubeconfig ? data.template_file.kubeconfig_sa.0.rendered : data.template_file.kubeconfig_provider.0.rendered
+  content              = (var.create_static_kubeconfig
+    ? templatefile(
+        "${path.module}/templates/kubeconfig-sa.tmpl",
+        {
+          cluster_name = var.cluster_name
+          endpoint     = var.endpoint
+          name         = local.service_account_name
+          ca_crt       = base64encode(lookup(data.kubernetes_secret.sa_secret.0.data,"ca.crt", ""))
+          token        = lookup(data.kubernetes_secret.sa_secret.0.data,"token", "")
+          namespace    = var.namespace
+        }
+      )
+    : templatefile(
+        "${path.module}/templates/kubeconfig-provider.tmpl",
+        {
+          cluster_name = var.cluster_name
+          endpoint     = var.endpoint
+          ca_crt       = var.ca_crt
+          region       = var.region
+        }
+      )
+  )
   filename             = var.path
   file_permission      = "0644"
   directory_permission = "0755"

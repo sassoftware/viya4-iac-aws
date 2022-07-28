@@ -1,12 +1,14 @@
 locals {
-  rwx_filestore_endpoint  = ( var.storage_type == "none"
-                              ? "" 
-                              : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
+  rwx_filestore_endpoint = (var.storage_type == "none" ? ""
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name
+    : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.dns_name
+    : module.nfs.0.private_ip_address
+  )
+  rwx_filestore_path      = ( var.storage_type == "none" ? ""
+                              : var.storage_type == "ha" || var.storage_type == "fsx" ? "/"
+                              : "/export"
                             )
-  rwx_filestore_path      = ( var.storage_type == "none"
-                              ? ""
-                              : var.storage_type == "ha" ? "/" : "/export"
-                            )
+  cloud_init      = var.storage_type == "fsx" ? "cloud-config-fsx" : "cloud-config"
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
@@ -26,32 +28,19 @@ resource "aws_efs_mount_target" "efs-mt" {
   security_groups = [local.workers_security_group_id]
 }
 
-
-# Processing the cloud-init/jump/cloud-config template file
-data "template_file" "jump-cloudconfig" {
-  count    = var.create_jump_vm ? 1 : 0
-  template = file("${path.module}/files/cloud-init/jump/cloud-config")
-  vars     = {
-    mounts = ( var.storage_type == "none"
-               ? "[]"
-               : jsonencode(
-                  [ "${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
-                    "${var.jump_rwx_filestore_path}",
-                    "nfs",
-                    "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
-                    "0",
-                    "0"
-                  ])
-              )
-
-    rwx_filestore_endpoint  = local.rwx_filestore_endpoint
-    rwx_filestore_path      = local.rwx_filestore_path
-    jump_rwx_filestore_path = var.jump_rwx_filestore_path
-    vm_admin                = var.jump_vm_admin
-  }
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
+# FSx File System https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fsx_lustre_file_system
+resource "aws_fsx_lustre_file_system" "fsx-fs" {
+  count            = var.storage_type == "fsx" ? 1 : 0
+  storage_capacity            = var.fsx_storage_capacity
+  deployment_type             = var.fsx_deployment_type
+  per_unit_storage_throughput = var.fsx_per_unit_storage_throughput
+  # import_path      = "s3://${aws_s3_bucket.example.bucket}"
+  subnet_ids = [module.vpc.private_subnets[0]]
+  tags       = merge(var.tags, { "Name" : "${var.prefix}-fsx" })
 }
 
+# The template provider is deprecated
+# https://registry.terraform.io/providers/hashicorp/template/latest/docs#deprecation
 # Defining the cloud-config to use
 data "template_cloudinit_config" "jump" {
   count         = var.create_jump_vm ? 1 : 0
@@ -60,8 +49,43 @@ data "template_cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.jump-cloudconfig.0.rendered
+    content      = templatefile(
+      "${path.module}/files/cloud-init/jump/${local.cloud_init}",
+      {
+        mounts = ( var.storage_type == "none"
+                  ? "[]"
+                  : var.storage_type == "fsx"
+                  ? jsonencode(
+                      ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+                        "${var.jump_rwx_filestore_path}",
+                        "lustre",
+                        "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,noatime,flock,_netdev",
+                        "0",
+                        "0"
+                    ])
+                  : jsonencode(
+                    [ "${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+                      "${var.jump_rwx_filestore_path}",
+                      "nfs",
+                      "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
+                      "0",
+                      "0"
+                    ])
+                  )
+
+        rwx_filestore_endpoint  = local.rwx_filestore_endpoint
+        rwx_filestore_path      = local.rwx_filestore_path
+        jump_rwx_filestore_path = var.jump_rwx_filestore_path
+        vm_admin                = var.jump_vm_admin
+        kubeconfig_file_content = ( var.storage_type == "fsx"
+                                   ? jsonencode(module.kubeconfig.kube_config)
+                                   : null
+                                  )
+        kubeconfig_filename     = var.storage_type == "fsx" ? local.kubeconfig_filename : null
+      }
+    )
   }
+  depends_on = [module.kubeconfig, aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs, aws_fsx_lustre_file_system.fsx-fs]
 }
 
 # Jump BOX
@@ -73,32 +97,22 @@ module "jump" {
   subnet_id          = local.jump_vm_subnet
   security_group_ids = [local.security_group_id, local.workers_security_group_id]
   create_public_ip   = var.create_jump_public_ip
+  iam_instance_profile = var.instance_profile_jump_vm ? aws_iam_instance_profile.jump_vm_profile.0.name : null
 
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
   os_disk_delete_on_termination = var.os_disk_delete_on_termination
-  os_disk_iops                  = var.os_disk_iops
+  os_disk_iops                  = contains(["gp2", "gp3", "io1", "io2"], var.os_disk_type) ? var.os_disk_iops : null
+  os_disk_throughput            = var.os_disk_type == "gp3" ? var.os_disk_throughput : null
 
   vm_type        = var.jump_vm_type
+  ebs_optimized  = var.jump_vm_ebs_optimized
   vm_admin       = var.jump_vm_admin
   ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.jump.0.rendered
 
-  depends_on = [module.nfs]
-
-}
-
-data "template_file" "nfs-cloudconfig" {
-  template = file("${path.module}/files/cloud-init/nfs/cloud-config")
-  count    = var.storage_type == "standard" ? 1 : 0
-
-  vars = {
-    vm_admin        = var.nfs_vm_admin
-    public_subnet_cidrs  = join(" ", module.vpc.public_subnet_cidrs)
-    private_subnet_cidrs = join(" ", module.vpc.private_subnet_cidrs)
-  }
-
+  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, aws_fsx_lustre_file_system.fsx-fs, module.nfs]
 }
 
 # Defining the cloud-config to use
@@ -110,8 +124,18 @@ data "template_cloudinit_config" "nfs" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.nfs-cloudconfig.0.rendered
+    content      = templatefile(
+      "${path.module}/files/cloud-init/nfs/cloud-config",
+      {
+        vm_admin        = var.nfs_vm_admin
+        public_subnet_cidrs  = join(" ", module.vpc.public_subnet_cidrs)
+        private_subnet_cidrs = join(" ", module.vpc.private_subnet_cidrs)
+      }
+    )
   }
+  depends_on = [
+    module.vpc
+  ]
 }
 
 # NFS Server VM
@@ -127,18 +151,68 @@ module "nfs" {
   os_disk_type                  = var.os_disk_type
   os_disk_size                  = var.os_disk_size
   os_disk_delete_on_termination = var.os_disk_delete_on_termination
-  os_disk_iops                  = var.os_disk_iops
+  os_disk_iops                  = contains(["gp2","gp3", "io1", "io2"], var.os_disk_type) ? var.os_disk_iops : null
+  os_disk_throughput            = var.os_disk_type == "gp3" ? var.os_disk_throughput : null
 
   data_disk_count             = 4
   data_disk_type              = var.nfs_raid_disk_type
   data_disk_size              = var.nfs_raid_disk_size
-  data_disk_iops              = var.nfs_raid_disk_iops
+  data_disk_iops              = contains(["gp2", "gp3", "io1", "io2"], var.nfs_raid_disk_type) ? var.nfs_raid_disk_iops : null
+  data_disk_throughput        = var.nfs_raid_disk_type == "gp3" ? var.nfs_raid_disk_throughput : null
   data_disk_availability_zone = local.nfs_vm_subnet_az
 
   vm_type        = var.nfs_vm_type
+  ebs_optimized  = var.nfs_vm_ebs_optimized
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = local.ssh_public_key
 
   cloud_init = data.template_cloudinit_config.nfs.0.rendered
 }
 
+resource "aws_iam_policy" "eks_management_instance_profile_policy" {
+  count       = var.create_jump_vm && var.instance_profile_jump_vm ? 1 : 0
+  name        = "eks_management_instance_profile_policy"
+  description = format("Instance profile policy to manage EKS cluster")
+  path        = "/"
+
+  #tfsec:ignore:AWS099
+  policy = file("${path.module}/eks_management_instance_profile_policy.json")
+  tags       = merge(var.tags, { "Name" : "${var.prefix}-jump-instance-profile-policy" })
+}
+
+resource "aws_iam_role" "jump_vm_instance_profile_role" {
+  count       = var.create_jump_vm && var.instance_profile_jump_vm ? 1 : 0
+  name = "jump_vm_instance_profile_role"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags       = merge(var.tags, { "Name" : "${var.prefix}-jump-instance-profile-role" })
+}
+
+
+resource "aws_iam_policy_attachment" "jump_vm_policy_attachment" {
+  count       = var.create_jump_vm && var.instance_profile_jump_vm ? 1 : 0
+  name       = "jump_vm_policy_attachment"
+  roles      = [aws_iam_role.jump_vm_instance_profile_role.0.name]
+  policy_arn = aws_iam_policy.eks_management_instance_profile_policy.0.arn
+}
+
+resource "aws_iam_instance_profile" "jump_vm_profile" {
+  count       = var.create_jump_vm && var.instance_profile_jump_vm ? 1 : 0
+  name = "jump_vm_profile"
+  role = aws_iam_role.jump_vm_instance_profile_role.0.name
+}

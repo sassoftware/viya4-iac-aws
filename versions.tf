@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.0.0"
+  experiments      = [module_variable_optional_attrs]
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -8,7 +9,7 @@ terraform {
     random = {
       source  = "hashicorp/random"
       version = "3.1.0"
-    }
+    }  
     local = {
       source  = "hashicorp/local"
       version = "2.1.0"
@@ -26,8 +27,8 @@ terraform {
       version = "2.1.0"
     }
     kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "2.2.0"
+      source = "hashicorp/kubernetes"
+      version = "2.11.0"
     }
     tls = {
       source  = "hashicorp/tls"

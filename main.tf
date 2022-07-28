@@ -80,10 +80,10 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                                         = "terraform-aws-modules/eks/aws"
-  version                                        = "18.7.1"
+  version                                        = "~> 18.26.6"
   cluster_name                                   = local.cluster_name
   cluster_version                                = var.kubernetes_version
-  cluster_enabled_log_types                      = [] # disable cluster control plan logging
+  cluster_enabled_log_types                      = ["api", "audit", "authenticator", "controllerManager", "scheduler"] # disable cluster control plan logging
   create_cloudwatch_log_group                    = false
   cluster_endpoint_private_access                = true
   cluster_endpoint_public_access                 = var.cluster_api_mode == "public" ? true : false
@@ -149,10 +149,33 @@ module "eks" {
   eks_managed_node_group_defaults = {
     create_security_group   = false
     vpc_security_group_ids  = [local.workers_security_group_id]
+    placement = {
+      availability_zone = data.aws_availability_zones.available.names[0]
+      group_name        = aws_placement_group.eks.name
+    }
+    launch_template_tags = {
+      placementGroup = "true"
+    }
+
+    # Tag the LT itself
+    tags       = merge(var.tags, { placementGroup = "true" })
+    subnet_ids = [module.vpc.private_subnets[0]]
   }
   
   ## Any individual Node Group customizations should go here
-  eks_managed_node_groups = local.node_groups  
+  eks_managed_node_groups = local.node_groups
+  
+  ################################################################################
+  # Use Jump VM Instance Profile Role to Manage Cluster
+  ################################################################################
+  manage_aws_auth_configmap = true
+  aws_auth_roles = var.instance_profile_jump_vm ? [
+    {
+      rolearn = aws_iam_role.jump_vm_instance_profile_role.0.arn
+      username = "jump_vm_instance_profile_role"
+      groups = ["system:masters"]
+    }
+  ] : null
 }
 
 module "autoscaling" {
@@ -256,4 +279,27 @@ resource "aws_resourcegroups_group" "aws_rg" {
 }
 JSON
 }
+}
+
+module "ebs_csi_driver_controller" {
+  #source  = "nlamirault/eks-csi-driver/aws//modules/ebs"
+  source       = "./modules/ebs"
+  cluster_name = local.cluster_name
+  depends_on   = [module.eks]
+}
+
+module "fsx_csi_driver_controller" {
+  #source  = "nlamirault/eks-csi-driver/aws//modules/fsx"
+  source       = "./modules/fsx"
+  cluster_name = local.cluster_name
+  depends_on   = [module.eks]
+}
+
+resource "aws_placement_group" "eks" {
+  name     = "eks-placement-group"
+  strategy = "cluster"
+  tags = {
+    placementGroup  = "true",
+    applicationType = "eks"
+  }
 }
