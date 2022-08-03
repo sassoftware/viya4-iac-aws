@@ -74,7 +74,7 @@ locals {
   user_node_pool = {
     for key, np_value in var.node_pools :
       key => {
-        name                            = key
+        name                            = "${local.cluster_name}-${key}"
         instance_types                  = [np_value.vm_type]
         ami_type                        = np_value.cpu_type
         disk_size                       = np_value.os_disk_size
