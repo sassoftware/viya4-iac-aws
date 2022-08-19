@@ -3,7 +3,7 @@ ARG AWS_CLI_VERSION=2.1.29
 FROM hashicorp/terraform:$TERRAFORM_VERSION as terraform
 
 FROM amazon/aws-cli:$AWS_CLI_VERSION
-ARG KUBECTL_VERSION=1.21.7
+ARG KUBECTL_VERSION=1.22.10
 
 WORKDIR /viya4-iac-aws
 
@@ -17,7 +17,7 @@ RUN yum -y install git openssh jq which \
   && chmod g=u -R /etc/passwd /etc/group /viya4-iac-aws \
   && git config --system --add safe.directory /viya4-iac-aws \
   && terraform init
-  
+
 ENV TF_VAR_iac_tooling=docker
 ENTRYPOINT ["/viya4-iac-aws/docker-entrypoint.sh"]
 VOLUME ["/workspace"]

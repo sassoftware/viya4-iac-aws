@@ -27,12 +27,12 @@ tags                                    = { } # e.g., { "key1" = "value1", "key2
 # }
 
 ## Cluster config
-kubernetes_version                      = "1.21"
+kubernetes_version                      = "1.22.10"
 default_nodepool_node_count             = 1
 default_nodepool_vm_type                = "m5.large"
 default_nodepool_custom_data            = ""
 
-## General 
+## General
 efs_performance_mode                    = "maxIO"
 storage_type                            = "standard"
 
@@ -48,8 +48,8 @@ node_pools = {
     "min_nodes"          = 0
     "max_nodes"          = 5
     "node_taints"        = ["workload.sas.com/class=cas:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "cas" 
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
     }
     "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"
