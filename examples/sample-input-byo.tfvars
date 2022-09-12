@@ -1,5 +1,5 @@
 # !NOTE! - These are only a subset of the variables in CONFIG-VARS.md provided
-# as examples. Customize this file to add any variables from CONFIG-VARS.md whose 
+# as examples. Customize this file to add any variables from CONFIG-VARS.md whose
 # default values you want to change.
 
 # ****************  REQUIRED VARIABLES  ****************
@@ -13,7 +13,7 @@ vpc_id  = "<existing-vpc-id>" # only needed if using pre-existing VPC
 subnet_ids = {  # only needed if using pre-existing subnets
   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
-  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
+  "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true'
 }
 nat_id = "<existing-NAT-gateway-id>"
 security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
@@ -37,12 +37,12 @@ postgres_servers = {
 }
 
 ## Cluster config
-kubernetes_version                      = "1.21"
+kubernetes_version                      = "1.22"
 default_nodepool_node_count             = 2
 default_nodepool_vm_type                = "m5.2xlarge"
 default_nodepool_custom_data            = ""
 
-## General 
+## General
 efs_performance_mode                    = "maxIO"
 storage_type                            = "standard"
 
