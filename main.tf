@@ -70,13 +70,6 @@ provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
-
-  # This keeps the token up-to-date during subsequent applies, even if they run longer than the token TTL.
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
-    command     = "aws"
-  }
 }
 
 module "vpc" {
