@@ -21,18 +21,6 @@ data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
 }
 
-output "k8s_version" {
-  value = data.aws_eks_cluster.cluster.version
-}
-
-output "endpoint_public_access" {
-  value = data.aws_eks_cluster.cluster.vpc_config[0].endpoint_public_access
-}
-
-output "cluster_status" {
-  value = data.aws_eks_cluster.cluster.status
-}
-
 data "aws_availability_zones" "available" {}
 
 data "aws_caller_identity" "terraform" {}
