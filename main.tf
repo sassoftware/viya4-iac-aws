@@ -21,6 +21,18 @@ data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
 }
 
+output "k8s_version" {
+  value = data.aws_eks_cluster.cluster.version
+}
+
+output "endpoint_public_access" {
+  value = data.aws_eks_cluster.cluster.vpc_config[0].endpoint_public_access
+}
+
+output "cluster_status" {
+  value = data.aws_eks_cluster.cluster.status
+}
+
 data "aws_availability_zones" "available" {}
 
 data "aws_caller_identity" "terraform" {}
@@ -54,9 +66,17 @@ EOT
 
 # EKS Provider
 provider "kubernetes" {
+  # This defers provider initialization until the cluster is ready
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
+
+  # This keeps the token up-to-date during subsequent applies, even if they run longer than the token TTL.
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
+    command     = "aws"
+  }
 }
 
 module "vpc" {
@@ -158,6 +178,15 @@ module "eks" {
 module "autoscaling" {
   source       = "./modules/aws_autoscaling"
   count        = var.autoscaling_enabled ? 1 : 0
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = var.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
+}
+
+module "ebs" {
+  source       = "./modules/aws_ebs_csi"
 
   prefix       = var.prefix
   cluster_name = local.cluster_name
