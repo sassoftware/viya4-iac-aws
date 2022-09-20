@@ -54,7 +54,10 @@ EOT
 
 # EKS Provider
 provider "kubernetes" {
-  # This defers provider initialization until the cluster is ready
+  # The endpoint attribute reference from the aws_eks_cluster data source in the line below will
+  # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
+  # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to 
+  # the kubernetes provider.
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
