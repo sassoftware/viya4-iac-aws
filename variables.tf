@@ -426,7 +426,7 @@ variable "postgres_server_defaults" {
     deletion_protection          = false
     administrator_login          = "pgadmin"
     administrator_password       = "my$up3rS3cretPassw0rd"
-    server_version               = "11"
+    server_version               = "13"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
     parameters                   = []
