@@ -131,11 +131,3 @@ output "ebs_csi_account" {
 output "k8s_version" {
   value = data.aws_eks_cluster.cluster.version
 }
-
-output "endpoint_public_access" {
-  value = data.aws_eks_cluster.cluster.vpc_config[0].endpoint_public_access
-}
-
-output "cluster_status" {
-  value = data.aws_eks_cluster.cluster.status
-}
