@@ -54,6 +54,10 @@ EOT
 
 # EKS Provider
 provider "kubernetes" {
+  # The endpoint attribute reference from the aws_eks_cluster data source in the line below will
+  # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
+  # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to 
+  # the kubernetes provider.
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
@@ -158,6 +162,15 @@ module "eks" {
 module "autoscaling" {
   source       = "./modules/aws_autoscaling"
   count        = var.autoscaling_enabled ? 1 : 0
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = var.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
+}
+
+module "ebs" {
+  source       = "./modules/aws_ebs_csi"
 
   prefix       = var.prefix
   cluster_name = local.cluster_name

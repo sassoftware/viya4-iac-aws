@@ -123,3 +123,11 @@ output "autoscaler_account" {
 output "cluster_api_mode" {
   value = var.cluster_api_mode
 }
+
+output "ebs_csi_account" {
+  value = module.ebs.ebs_csi_account
+}
+
+output "k8s_version" {
+  value = data.aws_eks_cluster.cluster.version
+}
