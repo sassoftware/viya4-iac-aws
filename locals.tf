@@ -33,7 +33,7 @@ locals {
   # Mapping node_pools to node_groups
   default_node_pool = {
     default = {
-      name                              = "default"
+      name                              = "${local.cluster_name}-default"
       instance_types                     = [var.default_nodepool_vm_type]
       block_device_mappings           = {
         xvda = {
