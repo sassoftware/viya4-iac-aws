@@ -33,7 +33,7 @@ locals {
   # Mapping node_pools to node_groups
   default_node_pool = {
     default = {
-      name                              = "default"
+      name                              = "${local.cluster_name}-default"
       instance_types                     = [var.default_nodepool_vm_type]
       block_device_mappings           = {
         xvda = {
@@ -74,7 +74,7 @@ locals {
   user_node_pool = {
     for key, np_value in var.node_pools :
       key => {
-        name                            = key
+        name                            = "${local.cluster_name}-${key}"
         instance_types                  = [np_value.vm_type]
         ami_type                        = np_value.cpu_type
         disk_size                       = np_value.os_disk_size
