@@ -33,7 +33,7 @@ locals {
   # Mapping node_pools to node_groups
   default_node_pool = {
     default = {
-      name                              = "default"
+      name                              = "${local.cluster_name}-default"
       instance_types                     = [var.default_nodepool_vm_type]
       block_device_mappings           = {
         xvda = {
@@ -57,7 +57,7 @@ locals {
       labels                            = var.default_nodepool_labels
       # User data
       bootstrap_extra_args              = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      post_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      pre_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
       metadata_options                  = { 
           http_endpoint                 = var.default_nodepool_metadata_http_endpoint
           http_tokens                   = var.default_nodepool_metadata_http_tokens
@@ -74,7 +74,7 @@ locals {
   user_node_pool = {
     for key, np_value in var.node_pools :
       key => {
-        name                            = key
+        name                            = "${local.cluster_name}-${key}"
         instance_types                  = [np_value.vm_type]
         ami_type                        = np_value.cpu_type
         disk_size                       = np_value.os_disk_size
@@ -101,7 +101,7 @@ locals {
         labels                          = np_value.node_labels
         # User data
         bootstrap_extra_args            = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-        post_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+        pre_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
         metadata_options                = { 
             http_endpoint               = var.default_nodepool_metadata_http_endpoint
             http_tokens                 = var.default_nodepool_metadata_http_tokens

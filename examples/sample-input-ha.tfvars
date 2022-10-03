@@ -30,18 +30,18 @@ postgres_servers = {
 ssh_public_key                          = "~/.ssh/id_rsa.pub"
 
 ## Cluster config
-kubernetes_version                      = "1.21"
+kubernetes_version                      = "1.22"
 default_nodepool_node_count             = 2
 default_nodepool_vm_type                = "m5.2xlarge"
 default_nodepool_custom_data            = ""
 
-## General 
+## General
 efs_performance_mode                    = "maxIO"
 storage_type                            = "ha"
 
 ## Cluster Node Pools config
 node_pools = {
-  cas = { 
+  cas = {
     "vm_type" = "i3.8xlarge"
     "cpu_type" = "AL2_x86_64"
     "os_disk_type" = "gp2"
@@ -50,15 +50,15 @@ node_pools = {
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=cas:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "cas" 
+    "node_labels" = {
+      "workload.sas.com/class" = "cas"
     }
     "custom_data" = "./files/custom-data/additional_userdata.sh"
     "metadata_http_endpoint"               = "enabled"
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  compute = { 
+  compute = {
     "vm_type" = "m5.8xlarge"
     "cpu_type" = "AL2_x86_64"
     "os_disk_type" = "gp2"
@@ -76,7 +76,7 @@ node_pools = {
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  stateless = { 
+  stateless = {
     "vm_type" = "m5.4xlarge"
     "cpu_type" = "AL2_x86_64"
     "os_disk_type" = "gp2"
@@ -85,15 +85,15 @@ node_pools = {
     "min_nodes" = 1
     "max_nodes" = 5
     "node_taints" = ["workload.sas.com/class=stateless:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "stateless" 
+    "node_labels" = {
+      "workload.sas.com/class" = "stateless"
     }
     "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
-  },   
-  stateful = { 
+  },
+  stateful = {
     "vm_type" = "m5.4xlarge"
     "cpu_type" = "AL2_x86_64"
     "os_disk_type" = "gp2"
@@ -102,8 +102,8 @@ node_pools = {
     "min_nodes" = 1
     "max_nodes" = 3
     "node_taints" = ["workload.sas.com/class=stateful:NoSchedule"]
-    "node_labels" = { 
-      "workload.sas.com/class" = "stateful" 
+    "node_labels" = {
+      "workload.sas.com/class" = "stateful"
     }
     "custom_data" = ""
     "metadata_http_endpoint"               = "enabled"

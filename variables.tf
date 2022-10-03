@@ -82,7 +82,7 @@ variable "postgres_public_access_cidrs" {
   default     = null
 }
 
-## Provider Specific 
+## Provider Specific
 variable "ssh_public_key" {
   description = "SSH public key used to access VMs"
   default = "~/.ssh/id_rsa.pub"
@@ -95,7 +95,7 @@ variable efs_performance_mode {
 ## Kubernetes
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version"
-  default     = "1.21"
+  default     = "1.22"
 }
 
 variable "tags" {
@@ -285,7 +285,7 @@ variable "subnet_ids" {
   # subnet_ids = {  # only needed if using pre-existing subnets
   #   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
   #   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
-  #   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true' 
+  #   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true'
   # }
 }
 
@@ -302,13 +302,13 @@ variable subnets {
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
     }
-} 
+}
 
 variable "security_group_id" {
   type    = string
   default = null
   description = "Pre-existing Security Group id. Leave blank to have one created"
-  
+
 }
 
 variable "cluster_security_group_id" {
@@ -426,7 +426,7 @@ variable "postgres_server_defaults" {
     deletion_protection          = false
     administrator_login          = "pgadmin"
     administrator_password       = "my$up3rS3cretPassw0rd"
-    server_version               = "11"
+    server_version               = "13"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
     parameters                   = []
@@ -477,7 +477,7 @@ variable "postgres_servers" {
       for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
         length(v.administrator_password) > 7,
         can(regex("^[^/'\"@]+$", v.administrator_password)),
-      ]) : true 
+      ]) : true
     ]) : false : true
     error_message = "ERROR: The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters."
   }

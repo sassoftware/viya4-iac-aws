@@ -17,7 +17,7 @@ This project contains Terraform scripts to provision the AWS cloud infrastructur
 This project helps you to automate the cluster-provisioning phase of SAS Viya deployment. To learn about all phases and options of the
 SAS Viya deployment process, see [Getting Started with SAS Viya and Azure Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/n1d7qc4nfr3s5zn103a1qy0kj4l1.htm) in _SAS&reg; Viya&reg; Operations_.
 
-Once the cloud resources are provisioned, use the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) project to deploy 
+Once the cloud resources are provisioned, use the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) project to deploy
 SAS Viya 4 in your cloud environment. For more information about SAS Viya 4 requirements and documentation for the deployment
 process, refer to the [SAS Viya 4 Operations Guide](https://go.documentation.sas.com/doc/en/itopscdc/default/itopswlcm/home.htm).
 
@@ -35,22 +35,22 @@ Use of these tools requires operational knowledge of the following technologies:
 This project supports two options for running Terraform scripts:
 - Terraform installed on your local machine
 - Using a Docker container to run Terraform (Docker is required)
-  
+
   For more information, see [Docker Usage](./docs/user/DockerUsage.md). Using Docker to run the Terraform scripts is recommended.
-  
+
 The following are also required:
 - Access to an **AWS account** with a user that is associated with the applied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
 - Subscription to [Ubuntu 20.04 LTS - Focal](https://aws.amazon.com/marketplace/pp/prodview-iftkyuwv2sjxi)
-  
+
 #### Terraform Requirements:
 
 - [Terraform](https://www.terraform.io/downloads.html) v1.0.0
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.21.7
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.22.10
 - [jq](https://stedolan.github.io/jq/) v1.6
 - [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.1.29
-  
+
 #### Docker Requirements:
-  
+
 - [Docker](https://docs.docker.com/get-docker/)
 
 ## Getting Started
@@ -75,12 +75,12 @@ In order to create and destroy AWS resources on your behalf, Terraform needs an 
 ### Customize Input Values
 
 Terraform scripts require variable definitions as input. Review and modify default values to meet your requirements. Create a file named
-`terraform.tfvars` to customize any input variable value documented in the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file. 
+`terraform.tfvars` to customize any input variable value documented in the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file.
 
 To get started, you can copy one of the example variable definition files provided in the [examples](./examples) folder. For more information about the
 variables that are declared in each file, refer to the [CONFIG-VARS.md](docs/CONFIG-VARS.md) file.
 
-**NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules, 
+**NOTE:** You will need to update the `cidr_blocks` in the [variables.tf](variables.tf) file to allow traffic from your current network. Without these rules,
 access to the cluster will only be allowed via the AWS Console.
 
 You have the option to specify variable definitions that are not included in `terraform.tfvars` or to use a variable definition file other than
@@ -88,7 +88,7 @@ You have the option to specify variable definitions that are not included in `te
 
 ## Create and Manage Cloud Resources
 
-Create and manage the required cloud resources. Perform one of the following steps, based on whether you are using Docker: 
+Create and manage the required cloud resources. Perform one of the following steps, based on whether you are using Docker:
 
 - run [Terraform](docs/user/TerraformUsage.md) directly on your workstation
 - run the [Docker container](docs/user/DockerUsage.md) (recommended)
