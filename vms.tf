@@ -1,14 +1,14 @@
 locals {
-  rwx_filestore_endpoint = (var.storage_type == "none" ? ""
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name
-    : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.dns_name
-    : module.nfs.0.private_ip_address
-  )
-  rwx_filestore_path      = ( var.storage_type == "none" ? ""
-                              : var.storage_type == "ha" || var.storage_type == "fsx" ? "/"
-                              : "/export"
-                            )
-  cloud_init      = var.storage_type == "fsx" ? "cloud-config-fsx" : "cloud-config"
+  rwx_filestore_endpoint = ( var.storage_type == "none"
+                            ? null
+                            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
+                           )
+  rwx_filestore_path = ( var.storage_type == "none"
+                         ? null
+                         : var.storage_type == "ha" ? "/" : "/export"
+                       )
+  fsx_filestore_endpoint = ( var.create_fsx_filestore ? aws_fsx_lustre_file_system.fsx-fs.0.dns_name : null )
+  fsx_filestore_path = ( var.create_fsx_filestore ? "/" : null )
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
@@ -30,7 +30,7 @@ resource "aws_efs_mount_target" "efs-mt" {
 
 # FSx File System https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fsx_lustre_file_system
 resource "aws_fsx_lustre_file_system" "fsx-fs" {
-  count            = var.storage_type == "fsx" ? 1 : 0
+  count            = var.create_fsx_filestore ? 1 : 0
   storage_capacity            = var.fsx_storage_capacity
   deployment_type             = var.fsx_deployment_type
   per_unit_storage_throughput = var.fsx_per_unit_storage_throughput
@@ -50,38 +50,40 @@ data "template_cloudinit_config" "jump" {
   part {
     content_type = "text/cloud-config"
     content      = templatefile(
-      "${path.module}/files/cloud-init/jump/${local.cloud_init}",
+      "${path.module}/files/cloud-init/jump/cloud-config",
       {
-        mounts = ( var.storage_type == "none"
-                  ? "[]"
-                  : var.storage_type == "fsx"
-                  ? jsonencode(
-                      ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+        mount_nfs = ( var.storage_type == "none"
+                    ? "[]"
+                    : jsonencode(
+                      [ "${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
                         "${var.jump_rwx_filestore_path}",
-                        "lustre",
-                        "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,noatime,flock,_netdev",
+                        "nfs",
+                        "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
                         "0",
                         "0"
-                    ])
-                  : jsonencode(
-                    [ "${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
-                      "${var.jump_rwx_filestore_path}",
-                      "nfs",
-                      "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
-                      "0",
-                      "0"
-                    ])
-                  )
+                      ])
+                    )
+        mount_fsx = ( var.create_fsx_filestore
+                    ? jsonencode(
+                        ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+                          "${var.jump_fsx_filestore_path}",
+                          "lustre",
+                          "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,noatime,flock,_netdev",
+                          "0",
+                          "0"
+                      ])
+                    : null
+                    )
 
         rwx_filestore_endpoint  = local.rwx_filestore_endpoint
         rwx_filestore_path      = local.rwx_filestore_path
         jump_rwx_filestore_path = var.jump_rwx_filestore_path
+        fsx_filestore_endpoint  = local.fsx_filestore_endpoint
+        fsx_filestore_path      = local.fsx_filestore_path
+        jump_fsx_filestore_path = var.jump_fsx_filestore_path
         vm_admin                = var.jump_vm_admin
-        kubeconfig_file_content = ( var.storage_type == "fsx"
-                                   ? jsonencode(module.kubeconfig.kube_config)
-                                   : null
-                                  )
-        kubeconfig_filename     = var.storage_type == "fsx" ? local.kubeconfig_filename : null
+        kubeconfig_file_content = jsonencode(module.kubeconfig.kube_config)
+        kubeconfig_filename     = local.kubeconfig_filename
       }
     )
   }

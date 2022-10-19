@@ -398,6 +398,16 @@ variable "jump_rwx_filestore_path" {
   default     = "/viya-share"
 }
 
+
+variable "create_fsx_filestore" {
+  description = "Create FSx file store"
+  default = false
+}
+variable "jump_fsx_filestore_path" {
+  description = "OS path used in cloud-init for FSx integration"
+  default     = "/fsx-share"
+}
+
 variable "nfs_raid_disk_size" {
   description = "Size in GB for each disk of the RAID0 cluster, when storage_type=standard"
   default     = 128

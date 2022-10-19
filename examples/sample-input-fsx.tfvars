@@ -27,7 +27,8 @@ postgres_servers = {
 }
 
 ## General
-storage_type                            = "fsx"
+storage_type                            = "ha"
+create_fsx_filestore                    = true
 fsx_storage_capacity                    = 1200
 fsx_deployment_type                     = "PERSISTENT_2"
 fsx_per_unit_storage_throughput         = 125

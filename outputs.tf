@@ -14,33 +14,35 @@ output "cluster_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
-  value = ( var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id
-  : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.id
-  : null
-  )
+  value = ( var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.id : null )
 }
 
 output "rwx_filestore_endpoint" {
-  value = ( var.storage_type == "none" ? null
-            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name 
-            : var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.dns_name
-            : module.nfs.0.private_dns
-          )
+  value = local.rwx_filestore_endpoint
 }
 
 output "rwx_filestore_path" {
-  value = ( var.storage_type == "none"
-            ? null
-            : var.storage_type == "ha" || var.storage_type == "fsx"? "/" : "/export"
-          )
+  value = local.rwx_filestore_path
 }
 
 output "efs_arn" {
   value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.arn : null
 }
 
+output "fsx_filestore_id" {
+  value = ( var.create_fsx_filestore ? aws_fsx_lustre_file_system.fsx-fs.0.id : null )
+}
+
+output "fsx_filestore_endpoint" {
+  value = local.fsx_filestore_endpoint
+}
+
+output "fsx_filestore_path" {
+  value = local.fsx_filestore_path
+}
+
 output "fsx_arn" {
-  value = var.storage_type == "fsx" ? aws_fsx_lustre_file_system.fsx-fs.0.arn : null
+  value = var.create_fsx_filestore ? aws_fsx_lustre_file_system.fsx-fs.0.arn : null
 }
 
 output "jump_private_ip" {
@@ -66,6 +68,13 @@ output "jump_public_dns" {
 output jump_rwx_filestore_path {
   value = ( var.storage_type != "none"
             ? var.create_jump_vm ? var.jump_rwx_filestore_path : null 
+            : null 
+          )
+}
+
+output jump_fsx_filestore_path {
+  value = ( var.create_fsx_filestore
+            ? var.jump_fsx_filestore_path
             : null 
           )
 }
