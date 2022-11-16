@@ -57,7 +57,7 @@ locals {
       labels                            = var.default_nodepool_labels
       # User data
       bootstrap_extra_args              = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      post_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      pre_bootstrap_user_data          = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
       metadata_options                  = { 
           http_endpoint                 = var.default_nodepool_metadata_http_endpoint
           http_tokens                   = var.default_nodepool_metadata_http_tokens
@@ -67,6 +67,7 @@ locals {
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
+      launch_template_tags            = { Name = "${local.cluster_name}-default" }
       tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true}) : var.tags
     }
   }
@@ -101,7 +102,7 @@ locals {
         labels                          = np_value.node_labels
         # User data
         bootstrap_extra_args            = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-        post_bootstrap_user_data        = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+        pre_bootstrap_user_data         = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
         metadata_options                = { 
             http_endpoint               = var.default_nodepool_metadata_http_endpoint
             http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -111,6 +112,7 @@ locals {
         create_launch_template          = true
         launch_template_name            = "${local.cluster_name}-${key}-lt"
         launch_template_use_name_prefix = true
+        launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
         tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true}) : var.tags
       }
   }
