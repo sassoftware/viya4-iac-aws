@@ -47,7 +47,7 @@ The following are also required:
 - [Terraform](https://www.terraform.io/downloads.html) v1.0.0
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.22.10
 - [jq](https://stedolan.github.io/jq/) v1.6
-- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.1.29
+- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.7.22
 
 #### Docker Requirements:
 
