@@ -30,7 +30,7 @@ postgres_servers = {
 ssh_public_key                          = "~/.ssh/id_rsa.pub"
 
 ## Cluster config
-kubernetes_version                      = "1.22"
+kubernetes_version                      = "1.23"
 default_nodepool_node_count             = 2
 default_nodepool_vm_type                = "m5.2xlarge"
 default_nodepool_custom_data            = ""
