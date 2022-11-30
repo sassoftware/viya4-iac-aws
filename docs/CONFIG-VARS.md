@@ -196,7 +196,7 @@ Custom policy:
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | false | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
+| create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | true | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
 | kubernetes_version | The EKS cluster Kubernetes version | string | "1.23" | |
 | create_jump_vm | Create bastion host (jump VM) | bool | true| |
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
