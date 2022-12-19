@@ -190,7 +190,7 @@ module "kubeconfig" {
   endpoint                 = module.eks.cluster_endpoint
   ca_crt                   = local.kubeconfig_ca_cert
 
-  depends_on = [ module.eks ]
+  depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/3.3.0
