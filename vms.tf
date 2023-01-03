@@ -1,12 +1,12 @@
 locals {
-  rwx_filestore_endpoint  = ( var.storage_type == "none"
-                              ? "" 
-                              : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
-                            )
-  rwx_filestore_path      = ( var.storage_type == "none"
-                              ? ""
-                              : var.storage_type == "ha" ? "/" : "/export"
-                            )
+  rwx_filestore_endpoint = (var.storage_type == "none"
+    ? ""
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
+  )
+  rwx_filestore_path = (var.storage_type == "none"
+    ? ""
+    : var.storage_type == "ha" ? "/" : "/export"
+  )
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
@@ -14,7 +14,7 @@ resource "aws_efs_file_system" "efs-fs" {
   count            = var.storage_type == "ha" ? 1 : 0
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
-  tags             = merge(var.tags, { "Name": "${var.prefix}-efs" })
+  tags             = merge(var.tags, { "Name" : "${var.prefix}-efs" })
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
@@ -31,18 +31,18 @@ resource "aws_efs_mount_target" "efs-mt" {
 data "template_file" "jump-cloudconfig" {
   count    = var.create_jump_vm ? 1 : 0
   template = file("${path.module}/files/cloud-init/jump/cloud-config")
-  vars     = {
-    mounts = ( var.storage_type == "none"
-               ? "[]"
-               : jsonencode(
-                  [ "${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
-                    "${var.jump_rwx_filestore_path}",
-                    "nfs",
-                    "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
-                    "0",
-                    "0"
-                  ])
-              )
+  vars = {
+    mounts = (var.storage_type == "none"
+      ? "[]"
+      : jsonencode(
+        ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+          "${var.jump_rwx_filestore_path}",
+          "nfs",
+          "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
+          "0",
+          "0"
+      ])
+    )
 
     rwx_filestore_endpoint  = local.rwx_filestore_endpoint
     rwx_filestore_path      = local.rwx_filestore_path
@@ -94,7 +94,7 @@ data "template_file" "nfs-cloudconfig" {
   count    = var.storage_type == "standard" ? 1 : 0
 
   vars = {
-    vm_admin        = var.nfs_vm_admin
+    vm_admin             = var.nfs_vm_admin
     public_subnet_cidrs  = join(" ", module.vpc.public_subnet_cidrs)
     private_subnet_cidrs = join(" ", module.vpc.private_subnet_cidrs)
   }
