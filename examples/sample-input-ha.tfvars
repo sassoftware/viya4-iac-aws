@@ -12,12 +12,12 @@ location                                = "<aws-location-value>" # e.g., "us-eas
 #          to your cluster will be blocked by default.
 
 # **************  RECOMMENDED  VARIABLES  ***************
-default_public_access_cidrs = []  # e.g., ["123.45.6.89/32"]
-ssh_public_key              = "~/.ssh/id_rsa.pub"
+default_public_access_cidrs = []                  # e.g., ["123.45.6.89/32"]
+ssh_public_key              = "~/.ssh/id_rsa.pub" # SSH public key for VMs
 # **************  RECOMMENDED  VARIABLES  ***************
 
 # Tags for all tagable items in your cluster.
-tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
+tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 
 # Postgres config - By having this entry a database server is created. If you do not
 #                   need an external database server remove the 'postgres_servers'
@@ -25,9 +25,6 @@ tags                                    = { } # e.g., { "key1" = "value1", "key2
 postgres_servers = {
   default = {},
 }
-
-# SSH public key for VMs
-ssh_public_key                          = "~/.ssh/id_rsa.pub"
 
 ## Cluster config
 kubernetes_version                      = "1.23"
