@@ -62,8 +62,11 @@ jobs:
     - name: Show Version
       run: tflint --version
 
-    - name: Init & Run TFLint
+    - name: Init TFLint
       run: tflint --init --config=linting-configs/.tflint.hcl
+
+    - name: Run TFLint
+      run: tflint --config=linting-configs/.tflint.hcl
         
   # Checkov
   Checkov:
