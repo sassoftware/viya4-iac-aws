@@ -21,7 +21,7 @@ jobs:
       - uses: hadolint/hadolint-action@v3.0.0
         with:
           dockerfile: Dockerfile
-          config: linting-configs/.hadolint.yaml
+          config: .hadolint.yaml
 
   # ShellCheck
   ShellCheck:
@@ -57,7 +57,6 @@ jobs:
     - uses: terraform-linters/setup-tflint@v3.0.0
       name: Setup TFLint
       with:
-        # github_token: ${{ github.token }} default token used
         tflint_version: latest
 
     - name: Show Version
@@ -67,7 +66,7 @@ jobs:
       run: tflint --init
 
     - name: Run TFLint
-      run: tflint --config=linting-configs/.tflint.hcl
+      run: tflint
         
   # Checkov
   Checkov:
@@ -85,7 +84,7 @@ jobs:
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
-          config_file: linting-configs/.checkov.yaml
+          config_file: .checkov.yaml
 
   # Terraform Formatting
   Terraform-Formatting:
