@@ -4,7 +4,7 @@ on:
   push:
     branches: [ iac-811-gh-actions ]
   pull_request:
-  #   branches: [ main ]
+    branches: [ staging ]
 
 jobs:
 
@@ -22,6 +22,7 @@ jobs:
         with:
           dockerfile: ./Dockerfile
           config_file: linting-configs/.hadolint.yaml
+          error_level: 1 # Fail CI based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
 
   # ShellCheck
   ShellCheck:
