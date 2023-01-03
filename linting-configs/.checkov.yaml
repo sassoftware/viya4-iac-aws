@@ -1,0 +1,15 @@
+skip-check: 
+  # - CKV_DOCKER_3 
+  # - CKV_DOCKER_2
+  
+  # - CKV_AWS_8
+  # - CKV_AWS_23
+  # - CKV_AWS_79
+  # - CKV_AWS_126
+  # - CKV_AWS_130
+  # - CKV_AWS_135
+  # - CKV2_AWS_11
+  # - CKV2_AWS_12
+  # - CKV2_AWS_41
+
+  # - CKV2_GHA_1

@@ -1,0 +1,7 @@
+# For long form descriptions for each error/warning; see - https://github.com/koalaman/shellcheck/wiki/Checks
+# For ignoring error/warning via environmental variable, command line, individually or globally within a file; see - https://github.com/koalaman/shellcheck/wiki/Ignore
+# For a description of any error/warning code, e.g. DL3033, DL3032, DL3018, etc; see: - https://github.com/hadolint/hadolint/wiki/<error/warning code here>
+
+# ignored:
+#   # Specify version with yum install -y <package>-<version> - https://github.com/hadolint/hadolint/wiki/DL3033
+#   - DL3033

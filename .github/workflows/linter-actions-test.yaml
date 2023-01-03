@@ -1,0 +1,113 @@
+name: Linter Actions - Security and Compliance Analysis
+
+on:
+  push:
+    branches: [ iac-811-gh-actions ]
+  pull_request:
+  #   branches: [ main ]
+
+jobs:
+
+  # Hadolint
+  Hadolint:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hadolint/hadolint-action@v3.0.0
+        with:
+          dockerfile: Dockerfile
+          config: linting-configs/.hadolint.yaml
+
+  # ShellCheck
+  ShellCheck:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+
+  # TFLint
+  TFLint:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout Source Code
+
+    - uses: actions/cache@v3
+      name: Cache Plugin Dir
+      with:
+        path: ~/.tflint.d/plugins
+        key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+
+    - uses: terraform-linters/setup-tflint@v3.0.0
+      name: Setup TFLint
+      with:
+        # github_token: ${{ github.token }}
+        tflint_version: latest
+
+    - name: Show Version
+      run: tflint --version
+
+    - name: Init TFLint
+      run: tflint --init
+
+    - name: Run TFLint
+      run: tflint --config=linting-configs/.tflint.hcl
+        
+  # Checkov
+  Checkov:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+
+      - name: Run Checkov Action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          config_file: linting-configs/.checkov.yaml
+
+  # Terraform Formatting
+  Terraform-Formatting:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: terraform fmt
+        uses: dflook/terraform-fmt@v1.29.1
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.2.3
+        with:
+          commit-message: terraform fmt
+          title: Reformated Terraform Files
+          body: Updated terraform files to canonical format using `terraform fmt`.
+          branch: automated-terraform-fmt
+          delete-branch: false
+          draft: true
