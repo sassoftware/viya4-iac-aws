@@ -8,13 +8,13 @@ skip-check:
   - CKV_AWS_126
   - CKV_AWS_130
   - CKV_AWS_135
+  - CKV_AWS_184
   - CKV_AWS_189
   - CKV2_AWS_2
   - CKV2_AWS_5
   - CKV2_AWS_11
   - CKV2_AWS_12
   - CKV2_AWS_41
-  - CKV2_AWS_184
 
   # DOCKER SCANS to IGNORE - see scan information at https://www.checkov.io/5.Policy%20Index/dockerfile.html
   - CKV_DOCKER_3 
