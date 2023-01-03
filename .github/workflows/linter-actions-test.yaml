@@ -63,10 +63,10 @@ jobs:
       run: tflint --version
 
     - name: Init TFLint
-      run: tflint --init --config=linting-configs/.tflint.hcl
+      run: tflint --init --config linting-configs/.tflint.hcl
 
     - name: Run TFLint
-      run: tflint --config=linting-configs/.tflint.hcl
+      run: tflint
         
   # Checkov
   Checkov:

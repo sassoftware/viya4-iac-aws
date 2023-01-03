@@ -10,7 +10,7 @@
 config {
   # Enables module inspection.
   module = true
-  varfile = ["terraform.tfvars"]
+  # varfile = ["terraform.tfvars"]
 }
 
 plugin "aws" {
