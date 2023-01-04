@@ -1,24 +1,26 @@
-name: Linter Actions - Security and Compliance Analysis
+name: Linter Actions
 
 on:
   push:
-    branches: [ iac-811-gh-actions ]
-  pull_request:
-    branches: [ staging ]
+    branches: [ iac-811-gh-actions ] # leave push: blank to run jobs on all branches
+  # pull_request:
+  #   branches: [ main, staging ]
 
 jobs:
-
   # Hadolint
   Hadolint:
-    runs-on: ${{ matrix.os }}
-
+    name: Hadolint
     strategy:
       matrix:
         os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: jbergstroem/hadolint-gh-action@v1.11.0
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Run Hadolint Action
+        uses: jbergstroem/hadolint-gh-action@v1.11.0
         with:
           dockerfile: ./Dockerfile
           config_file: linting-configs/.hadolint.yaml
@@ -26,15 +28,17 @@ jobs:
 
   # ShellCheck
   ShellCheck:
-    runs-on: ${{ matrix.os }}
-
+    name: ShellCheck
     strategy:
       matrix:
         os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Run ShellCheck
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Run ShellCheck Action
         uses: ludeeus/action-shellcheck@master
         with:
           severity: error
@@ -42,43 +46,68 @@ jobs:
 
   # TFLint
   TFLint:
-    runs-on: ${{ matrix.os }}
-
+    name: TFLint
     strategy:
       matrix:
         os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
-      name: Checkout Source Code
+    - name: Checkout Repo
+      uses: actions/checkout@v3
 
-    - uses: actions/cache@v3
-      name: Cache Plugin Dir
+    - name: Cache Plugin Dir
+      uses: actions/cache@v3
       with:
         path: ~/.tflint.d/plugins
         key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
 
-    - uses: terraform-linters/setup-tflint@v3.0.0
-      name: Setup TFLint
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v3.0.0
       with:
         tflint_version: latest
 
     - name: Show Version
       run: tflint --version
 
-    - name: Init TFLint
+    - name: Initializing TFLint
       run: tflint --init --config linting-configs/.tflint.hcl
 
-    - name: Run TFLint
+    - name: Run TFLint Action
       run: tflint
-        
-  # Checkov
-  Checkov:
-    runs-on: ${{ matrix.os }}
 
+  # Terraform Formatting
+  Terraform-Formatting:
+    name: Auto Terraform Formatting
     strategy:
       matrix:
         os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Run Terraform-Fmt Action
+        uses: dflook/terraform-fmt@v1.29.1
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.2.3
+        with:
+          commit-message: updated terraform formatting
+          title: Reformated Terraform Files
+          body: Updated terraform files to canonical format using `terraform fmt`.
+          branch: automated-terraform-fmt
+          delete-branch: false
+          draft: true 
+
+  # Checkov
+  Checkov:
+    name: Checkov
+    strategy:
+      matrix:
+        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Repo
@@ -89,28 +118,3 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           config_file: linting-configs/.checkov.yaml
-
-  # Terraform Formatting
-  Terraform-Formatting:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest] # [ubuntu-latest, macos-latest, windows-latest]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: terraform-fmt
-        uses: dflook/terraform-fmt@v1.29.1
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4.2.3
-        with:
-          commit-message: terraform fmt
-          title: Reformated Terraform Files
-          body: Updated terraform files to canonical format using `terraform fmt`.
-          branch: automated-terraform-fmt
-          delete-branch: false
-          draft: true
