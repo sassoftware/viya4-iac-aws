@@ -156,12 +156,12 @@ module "iam_assumable_role_with_oidc" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version = "4.12.0"
 
-  create_role = true
-  role_name = "${var.prefix}-ebs-csi-role"
-  provider_url = replace(var.oidc_url, "https://", "")
-  role_policy_arns = [aws_iam_policy.ebs_csi.arn]
+  create_role                    = true
+  role_name                      = "${var.prefix}-ebs-csi-role"
+  provider_url                   = replace(var.oidc_url, "https://", "")
+  role_policy_arns               = [aws_iam_policy.ebs_csi.arn]
   oidc_fully_qualified_audiences = ["sts.amazonaws.com"]
-  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+  oidc_fully_qualified_subjects  = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 
   tags = {
     Role = "${var.prefix}-ebs-csi-role"

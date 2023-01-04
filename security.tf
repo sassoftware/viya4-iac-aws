@@ -1,11 +1,11 @@
-data "aws_security_group" sg {
+data "aws_security_group" "sg" {
   count = var.security_group_id == null ? 0 : 1
-  id = var.security_group_id
+  id    = var.security_group_id
 }
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
 resource "aws_security_group" "sg" {
-  count = var.security_group_id == null ? 1 : 0
+  count  = var.security_group_id == null ? 1 : 0
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
@@ -16,17 +16,17 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = merge(var.tags, { "Name": "${var.prefix}-sg" })
+  tags = merge(var.tags, { "Name" : "${var.prefix}-sg" })
 }
 
 resource "aws_security_group_rule" "vms" {
-  count                       = ( length(local.vm_public_access_cidrs) > 0
-                                  && var.security_group_id == null
-                                  && (   (var.create_jump_public_ip && var.create_jump_vm )
-                                      || (var.create_nfs_public_ip && var.storage_type == "standard")
-                                     )
-                                  ? 1 : 0
-                                )
+  count = (length(local.vm_public_access_cidrs) > 0
+    && var.security_group_id == null
+    && ((var.create_jump_public_ip && var.create_jump_vm)
+      || (var.create_nfs_public_ip && var.storage_type == "standard")
+    )
+    ? 1 : 0
+  )
   type              = "ingress"
   description       = "Allow SSH from source"
   from_port         = 22
@@ -59,12 +59,12 @@ resource "aws_security_group_rule" "postgres_internal" {
 }
 
 resource "aws_security_group_rule" "postgres_external" {
-  for_each          = ( length(local.postgres_public_access_cidrs) > 0
-                        ? local.postgres_sgr_ports != null
-                          ? toset(local.postgres_sgr_ports)
-                          : toset([])
-                        : toset([])
-                      )
+  for_each = (length(local.postgres_public_access_cidrs) > 0
+    ? local.postgres_sgr_ports != null
+    ? toset(local.postgres_sgr_ports)
+    : toset([])
+    : toset([])
+  )
   type              = "ingress"
   description       = "Allow Postgres from source"
   from_port         = each.key
@@ -80,7 +80,7 @@ resource "aws_security_group" "cluster_security_group" {
   vpc_id = module.vpc.vpc_id
   tags   = merge(var.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
 
-  count  = var.cluster_security_group_id == null ? 1 : 0
+  count = var.cluster_security_group_id == null ? 1 : 0
 
   description = "EKS cluster security group."
   egress {
@@ -95,27 +95,27 @@ resource "aws_security_group" "cluster_security_group" {
 
 resource "aws_security_group_rule" "cluster_ingress" {
 
-    count                    = var.cluster_security_group_id == null ? 1 : 0
+  count = var.cluster_security_group_id == null ? 1 : 0
 
-    type                     = "ingress"
-    description              = "Allow pods to communicate with the EKS cluster API."
-    from_port                = 443
-    to_port                  = 443
-    protocol                 = "tcp"
-    source_security_group_id = aws_security_group.workers_security_group.0.id
-    security_group_id        = local.cluster_security_group_id
-  }
+  type                     = "ingress"
+  description              = "Allow pods to communicate with the EKS cluster API."
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.workers_security_group.0.id
+  security_group_id        = local.cluster_security_group_id
+}
 
 
 resource "aws_security_group" "workers_security_group" {
   name   = "${var.prefix}-eks_worker_sg"
   vpc_id = module.vpc.vpc_id
-  tags   = merge(var.tags,
-                 { "Name" : "${var.prefix}-eks_worker_sg" },
-                 { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
-                 )
+  tags = merge(var.tags,
+    { "Name" : "${var.prefix}-eks_worker_sg" },
+    { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
+  )
 
-  count  = var.workers_security_group_id == null ? 1 : 0
+  count = var.workers_security_group_id == null ? 1 : 0
 
   description = "Security group for all nodes in the cluster."
   egress = [
@@ -135,10 +135,10 @@ resource "aws_security_group" "workers_security_group" {
   ]
 
 }
-  
+
 resource "aws_security_group_rule" "worker_self" {
 
-  count  = var.workers_security_group_id == null ? 1 : 0
+  count = var.workers_security_group_id == null ? 1 : 0
 
   type              = "ingress"
   description       = "Allow node to comunicate with each other."
@@ -151,7 +151,7 @@ resource "aws_security_group_rule" "worker_self" {
 
 resource "aws_security_group_rule" "worker_cluster_api" {
 
-  count  = var.workers_security_group_id == null ? 1 : 0
+  count = var.workers_security_group_id == null ? 1 : 0
 
   type                     = "ingress"
   description              = "Allow workers pods to receive communication from the cluster control plane."
@@ -164,7 +164,7 @@ resource "aws_security_group_rule" "worker_cluster_api" {
 
 resource "aws_security_group_rule" "worker_cluster_api_443" {
 
-  count  = var.workers_security_group_id == null ? 1 : 0
+  count = var.workers_security_group_id == null ? 1 : 0
 
   type                     = "ingress"
   description              = "Allow pods running extension API servers on port 443 to receive communication from cluster control plane."
@@ -173,7 +173,7 @@ resource "aws_security_group_rule" "worker_cluster_api_443" {
   source_security_group_id = local.cluster_security_group_id
   to_port                  = 443
   security_group_id        = aws_security_group.workers_security_group.0.id
-}  
+}
 
 
 
