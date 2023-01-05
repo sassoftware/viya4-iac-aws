@@ -17,17 +17,17 @@ output "rwx_filestore_id" {
 }
 
 output "rwx_filestore_endpoint" {
-  value = ( var.storage_type == "none"
-            ? null
-            : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_dns
-          )
+  value = (var.storage_type == "none"
+    ? null
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_dns
+  )
 }
 
 output "rwx_filestore_path" {
-  value = ( var.storage_type == "none"
-            ? null
-            : var.storage_type == "ha" ? "/" : "/export"
-          )
+  value = (var.storage_type == "none"
+    ? null
+    : var.storage_type == "ha" ? "/" : "/export"
+  )
 }
 
 output "efs_arn" {
@@ -42,7 +42,7 @@ output "jump_public_ip" {
   value = var.create_jump_vm ? module.jump[0].public_ip_address : null
 }
 
-output jump_admin_username {
+output "jump_admin_username" {
   value = var.create_jump_vm ? module.jump[0].admin_username : null
 }
 
@@ -54,11 +54,11 @@ output "jump_public_dns" {
   value = var.create_jump_vm ? module.jump[0].public_dns : null
 }
 
-output jump_rwx_filestore_path {
-  value = ( var.storage_type != "none"
-            ? var.create_jump_vm ? var.jump_rwx_filestore_path : null
-            : null
-          )
+output "jump_rwx_filestore_path" {
+  value = (var.storage_type != "none"
+    ? var.create_jump_vm ? var.jump_rwx_filestore_path : null
+    : null
+  )
 }
 
 output "nfs_private_ip" {
@@ -83,7 +83,7 @@ output "nfs_public_dns" {
 
 #postgres
 output "postgres_servers" {
-  value = length(module.postgresql) != 0 ? local.postgres_outputs : null
+  value     = length(module.postgresql) != 0 ? local.postgres_outputs : null
   sensitive = true
 }
 
