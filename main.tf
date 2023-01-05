@@ -5,12 +5,12 @@
 #
 
 provider "aws" {
-  region                   = var.location
-  profile                  = var.aws_profile
-  shared_credentials_file  = var.aws_shared_credentials_file
-  access_key               = var.aws_access_key_id
-  secret_key               = var.aws_secret_access_key
-  token                    = var.aws_session_token
+  region                  = var.location
+  profile                 = var.aws_profile
+  shared_credentials_file = var.aws_shared_credentials_file
+  access_key              = var.aws_access_key_id
+  secret_key              = var.aws_secret_access_key
+  token                   = var.aws_session_token
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -76,32 +76,32 @@ module "vpc" {
   subnets             = var.subnets
   existing_nat_id     = var.nat_id
 
-  tags = var.tags
+  tags                = var.tags
   public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
   private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
-  source                                         = "terraform-aws-modules/eks/aws"
-  version                                        = "18.7.1"
-  cluster_name                                   = local.cluster_name
-  cluster_version                                = var.kubernetes_version
-  cluster_enabled_log_types                      = [] # disable cluster control plan logging
-  create_cloudwatch_log_group                    = false
-  cluster_endpoint_private_access                = true
-  cluster_endpoint_public_access                 = var.cluster_api_mode == "public" ? true : false
-  cluster_endpoint_public_access_cidrs           = local.cluster_endpoint_public_access_cidrs
-  
-  subnet_ids                                     = module.vpc.private_subnets
-  vpc_id                                         = module.vpc.vpc_id
-  tags                                           = var.tags
-  enable_irsa                                    = var.autoscaling_enabled
+  source                               = "terraform-aws-modules/eks/aws"
+  version                              = "18.7.1"
+  cluster_name                         = local.cluster_name
+  cluster_version                      = var.kubernetes_version
+  cluster_enabled_log_types            = [] # disable cluster control plan logging
+  create_cloudwatch_log_group          = false
+  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
+  cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
+
+  subnet_ids  = module.vpc.private_subnets
+  vpc_id      = module.vpc.vpc_id
+  tags        = var.tags
+  enable_irsa = var.autoscaling_enabled
   ################################################################################
   # Cluster Security Group
   ################################################################################
-  create_cluster_security_group                  = false  # v17: cluster_create_security_group
-  cluster_security_group_id                      = local.cluster_security_group_id
+  create_cluster_security_group = false # v17: cluster_create_security_group
+  cluster_security_group_id     = local.cluster_security_group_id
   # Extend cluster security group rules
   cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
@@ -113,12 +113,12 @@ module "eks" {
       source_node_security_group = true
     }
   }
-  
+
   ################################################################################
   # Node Security Group
   ################################################################################
-  create_node_security_group                     = false                            #v17: worker_create_security_group             
-  node_security_group_id                         = local.workers_security_group_id  #v17: worker_security_group_id  
+  create_node_security_group = false                           #v17: worker_create_security_group             
+  node_security_group_id     = local.workers_security_group_id #v17: worker_security_group_id  
   # Extend node-to-node security group rules
   node_security_group_additional_rules = {
     ingress_self_all = {
@@ -143,25 +143,25 @@ module "eks" {
   ################################################################################
   # Handle BYO IAM policy
   ################################################################################
-  create_iam_role                                = var.cluster_iam_role_name == null ? true : false   # v17: manage_cluster_iam_resources
-  iam_role_name                                  = var.cluster_iam_role_name                          # v17: cluster_iam_role_name
+  create_iam_role = var.cluster_iam_role_name == null ? true : false # v17: manage_cluster_iam_resources
+  iam_role_name   = var.cluster_iam_role_name                        # v17: cluster_iam_role_name
   iam_role_additional_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   ]
 
   ## Use this to define any values that are common and applicable to all Node Groups 
   eks_managed_node_group_defaults = {
-    create_security_group   = false
-    vpc_security_group_ids  = [local.workers_security_group_id]
+    create_security_group  = false
+    vpc_security_group_ids = [local.workers_security_group_id]
   }
-  
+
   ## Any individual Node Group customizations should go here
-  eks_managed_node_groups = local.node_groups  
+  eks_managed_node_groups = local.node_groups
 }
 
 module "autoscaling" {
-  source       = "./modules/aws_autoscaling"
-  count        = var.autoscaling_enabled ? 1 : 0
+  source = "./modules/aws_autoscaling"
+  count  = var.autoscaling_enabled ? 1 : 0
 
   prefix       = var.prefix
   cluster_name = local.cluster_name
@@ -170,7 +170,7 @@ module "autoscaling" {
 }
 
 module "ebs" {
-  source       = "./modules/aws_ebs_csi"
+  source = "./modules/aws_ebs_csi"
 
   prefix       = var.prefix
   cluster_name = local.cluster_name
@@ -185,10 +185,10 @@ module "kubeconfig" {
   path                     = local.kubeconfig_path
   namespace                = "kube-system"
 
-  cluster_name             = local.cluster_name
-  region                   = var.location
-  endpoint                 = module.eks.cluster_endpoint
-  ca_crt                   = local.kubeconfig_ca_cert
+  cluster_name = local.cluster_name
+  region       = var.location
+  endpoint     = module.eks.cluster_endpoint
+  ca_crt       = local.kubeconfig_ca_cert
 
   depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
@@ -198,7 +198,7 @@ module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
   version = "3.3.0"
 
-  for_each   = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
+  for_each = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
 
   identifier = lower("${var.prefix}-${each.key}-pgsql")
 
@@ -240,7 +240,7 @@ module "postgresql" {
 
   multi_az = each.value.multi_az
 
-  parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "1" }]) : concat(each.value.parameters, [{ "apply_method": "immediate", "name": "rds.force_ssl", "value": "0" }])
+  parameters = each.value.ssl_enforcement_enabled ? concat(each.value.parameters, [{ "apply_method" : "immediate", "name" : "rds.force_ssl", "value" : "1" }]) : concat(each.value.parameters, [{ "apply_method" : "immediate", "name" : "rds.force_ssl", "value" : "0" }])
   options    = each.value.options
 
   # Flags for module to flag if postgres should be created or not.
