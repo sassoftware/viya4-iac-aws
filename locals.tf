@@ -3,15 +3,15 @@ locals {
 
   # General
   security_group_id                     = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
-  cluster_security_group_id             = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group.0.id : var.cluster_security_group_id
-  workers_security_group_id             = var.workers_security_group_id == null ? aws_security_group.workers_security_group.0.id : var.workers_security_group_id
+  cluster_security_group_id             = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
+  workers_security_group_id             = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   cluster_name                          = "${var.prefix}-eks"
 
   # CIDRs
   default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
   vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
   cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs # tflint-ignore: terraform_unused_declarations
   postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
   # Subnets
@@ -28,7 +28,7 @@ locals {
   # Kubernetes
   kubeconfig_filename                   = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path                       = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority.0.data
+  kubeconfig_ca_cert                    = data.aws_eks_cluster.cluster.certificate_authority[0].data
 
   # Mapping node_pools to node_groups
   default_node_pool = {

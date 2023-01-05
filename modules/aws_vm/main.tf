@@ -94,7 +94,7 @@ resource "aws_volume_attachment" "data-volume-attachment" {
   count       = var.data_disk_count
   device_name = element(local.device_name, count.index)
   instance_id = aws_instance.vm.id
-  volume_id   = element(aws_ebs_volume.raid_disk.*.id, count.index)
+  volume_id   = element(aws_ebs_volume.raid_disk[*].id, count.index)
 }
 
 resource "aws_ebs_volume" "raid_disk" {

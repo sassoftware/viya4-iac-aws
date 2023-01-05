@@ -102,7 +102,7 @@ resource "aws_security_group_rule" "cluster_ingress" {
     from_port                = 443
     to_port                  = 443
     protocol                 = "tcp"
-    source_security_group_id = aws_security_group.workers_security_group.0.id
+    source_security_group_id = aws_security_group.workers_security_group[0].id
     security_group_id        = local.cluster_security_group_id
   }
 
@@ -146,7 +146,7 @@ resource "aws_security_group_rule" "worker_self" {
   protocol          = "-1"
   self              = true
   to_port           = 0
-  security_group_id = aws_security_group.workers_security_group.0.id
+  security_group_id = aws_security_group.workers_security_group[0].id
 }
 
 resource "aws_security_group_rule" "worker_cluster_api" {
@@ -159,7 +159,7 @@ resource "aws_security_group_rule" "worker_cluster_api" {
   protocol                 = "tcp"
   source_security_group_id = local.cluster_security_group_id
   to_port                  = 65535
-  security_group_id        = aws_security_group.workers_security_group.0.id
+  security_group_id        = aws_security_group.workers_security_group[0].id
 }
 
 resource "aws_security_group_rule" "worker_cluster_api_443" {
@@ -172,8 +172,5 @@ resource "aws_security_group_rule" "worker_cluster_api_443" {
   protocol                 = "tcp"
   source_security_group_id = local.cluster_security_group_id
   to_port                  = 443
-  security_group_id        = aws_security_group.workers_security_group.0.id
+  security_group_id        = aws_security_group.workers_security_group[0].id
 }  
-
-
-
