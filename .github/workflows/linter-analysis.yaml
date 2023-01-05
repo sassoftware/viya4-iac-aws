@@ -2,7 +2,7 @@ name: Linter Analysis
 
 on:
   push:
-    branches: [ IAC-811-github-actions ] # leave push: blank to run jobs on all branches
+    branches: [ IAC-811-github-actions ] # leave "push:" blank to run linters on all branches
 
 jobs:
   # Hadolint
@@ -85,12 +85,14 @@ jobs:
       - name: Run Terraform-Fmt Action
         uses: dflook/terraform-fmt@v1.29.1
 
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v4.2.3
-      #   with:
-      #     commit-message: updated terraform formatting
-      #     title: Reformated Terraform Files
-      #     body: Updated terraform files to canonical format using `terraform fmt`.
-      #     branch: automated-terraform-fmt
-      #     delete-branch: false
-      #     draft: true 
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.2.3
+        with:
+          commit-message: updated terraform formatting
+          title: Reformated Terraform Files
+          body: Updated terraform files to canonical format using `terraform fmt`.
+          branch: automated-terraform-fmt
+          delete-branch: false
+          draft: true
+          labels: automated pr 
+          reviewers: thpang, riragh, jarpat, dhoucgitter, sayeun
