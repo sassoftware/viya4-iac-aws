@@ -1,0 +1,24 @@
+skip-check: 
+  # TERRAFORM SCANS to IGNORE - see scan information at https://www.checkov.io/5.Policy%20Index/terraform.html
+  - CKV_AWS_3
+  - CKV_AWS_8
+  - CKV_AWS_42
+  - CKV_AWS_79
+  - CKV_AWS_111
+  - CKV_AWS_126
+  - CKV_AWS_130
+  - CKV_AWS_135
+  - CKV_AWS_184
+  - CKV_AWS_189
+  - CKV2_AWS_2
+  - CKV2_AWS_5
+  - CKV2_AWS_11
+  - CKV2_AWS_12
+  - CKV2_AWS_41
+
+  # DOCKER SCANS to IGNORE - see scan information at https://www.checkov.io/5.Policy%20Index/dockerfile.html
+  - CKV_DOCKER_3 
+  - CKV_DOCKER_2
+  
+  # GITHUB ACTION SCANS to IGNORE - see scan information at https://www.checkov.io/5.Policy%20Index/github_actions.html
+  - CKV2_GHA_1
