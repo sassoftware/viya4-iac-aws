@@ -2,7 +2,7 @@ name: Linter Analysis
 
 on:
   push:
-    branches: [ iac-811-github-actions ] # leave push: blank to run jobs on all branches
+    branches: [ IAC-811-github-actions ] # leave push: blank to run jobs on all branches
 
 jobs:
   # Hadolint
