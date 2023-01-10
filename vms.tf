@@ -142,5 +142,5 @@ module "nfs" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.template_cloudinit_config.nfs.0.rendered
+  cloud_init = data.template_cloudinit_config.nfs[0].rendered
 }
