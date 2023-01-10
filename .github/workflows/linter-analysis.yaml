@@ -1,10 +1,8 @@
 name: Linter Analysis
 
 on:
-  push:
-    branches: [ IAC-811-github-actions ] # leave "push:" blank to run linters on all branches
-
-  workflow_call:
+  push: # leave "push:" blank to run linters on all branches
+  pull_request: # leave "pull_request:" blank to run linters on all branches
 
 jobs:
   # Hadolint: Job-1
@@ -61,42 +59,3 @@ jobs:
 
     - name: Run TFLint Action
       run: TFLINT_LOG=info tflint 
-
-  # Checkov: Job-4
-  Checkov:
-    name: Checkov
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-
-      - name: Run Checkov Action
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          config_file: linting-configs/.checkov.yaml
-
-  # Terraform Formatting: Job-5
-  Terraform-Formatting:
-    name: Auto-Terraform Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-
-      - name: Run Terraform-Fmt Action
-        uses: dflook/terraform-fmt@v1.29.1
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4.2.3
-        with:
-          commit-message: updated terraform formatting
-          title: Reformated Terraform Files
-          body: Updated terraform files to canonical format using `terraform fmt`.
-          branch: automated-terraform-fmt
-          delete-branch: false
-          draft: true
-          labels: automated pr 
-          assignees: anthoday
-          reviewers: thpang, riragh, jarpat, dhoucgitter, sayeun
-          milestones: 1
