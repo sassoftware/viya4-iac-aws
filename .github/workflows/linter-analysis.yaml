@@ -3,8 +3,9 @@ name: Linter Analysis
 on:
   push: 
     branches: [IAC-811-github-actions] # leave "push:" blank to run linters on all branches
-  # pull_request: # leave "pull_request:" blank to run linters on all branches
-
+  pull_request: # leave "pull_request:" blank to run linters on all branches
+    branches: [IAC-811-github-actions]
+    
 jobs:
   # Hadolint: Job-1
   Hadolint:
