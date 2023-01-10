@@ -139,5 +139,5 @@ module "nfs" {
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = local.ssh_public_key
 
-  cloud_init = data.template_cloudinit_config.nfs.0.rendered
+  cloud_init = data.template_cloudinit_config.nfs[0].rendered
 }
