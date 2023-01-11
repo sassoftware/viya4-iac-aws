@@ -53,7 +53,7 @@ jobs:
         github_token: ${{ secrets.LINTER_TEST_TOKEN }}
 
     - name: Initializing TFLint
-      run: TFLINT_LOG=info tflint --init --config .tflint.hcl
+      run: tflint --init
 
     - name: Run TFLint Action
-      run: TFLINT_LOG=info tflint --config .tflint.hcl
+      run: tflint
