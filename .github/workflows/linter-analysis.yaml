@@ -1,10 +1,6 @@
 name: Linter Analysis
 
-on:
-  push: 
-    branches: [IAC-811-github-actions] # leave "push:" blank to run linters on all branches
-  # pull_request: # leave "pull_request:" blank to run linters on all branches
-  #   branches: [IAC-811-github-actions]
+on: [push, pull_request]
 
 jobs:
   # Hadolint: Job-1
@@ -19,7 +15,7 @@ jobs:
         uses: jbergstroem/hadolint-gh-action@v1.11.0
         with:
           dockerfile: ./Dockerfile
-          config_file: linting-configs/.hadolint.yaml
+          config_file: .hadolint.yaml
           error_level: 1 # Fail CI based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
 
   # ShellCheck: Job-2
@@ -57,7 +53,7 @@ jobs:
         github_token: ${{ secrets.LINTER_TEST_TOKEN }}
 
     - name: Initializing TFLint
-      run: TFLINT_LOG=info tflint --init --config linting-configs/.tflint.hcl
+      run: TFLINT_LOG=info tflint --init --config .tflint.hcl
 
     - name: Run TFLint Action
       run: TFLINT_LOG=info tflint 
