@@ -56,4 +56,4 @@ jobs:
       run: tflint --init --config .tflint.hcl
 
     - name: Run TFLint Action
-      run: tflint --config .tflint.hcl
+      run: TFLINT_LOG=info tflint
