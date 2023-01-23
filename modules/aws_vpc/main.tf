@@ -53,7 +53,7 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   ]
 }
 
-resource "aws_vpc_endpoint" "private_endpoints" {
+resource "aws_vpc_endpoint" "s3_private_endpoint" {
   vpc_id             = local.vpc_id
   service_name       = "com.amazonaws.${var.region}.${vpc_s3_private_endpoint}"
   vpc_endpoint_type  = "Gateway"
