@@ -372,7 +372,7 @@ variable "workers_iam_role_name" {
 variable "iam_role_arn" {
   description = "The ARN of the IAM role that will be used for the EKS cluster. Required if `create_iam_role` is set to `false`"
   type        = string
-  default = null
+  default     = null
 }
 
 variable "create_jump_vm" {

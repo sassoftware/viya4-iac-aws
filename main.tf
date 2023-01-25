@@ -146,7 +146,7 @@ module "eks" {
   # EKS Cluster IAM Role
   create_iam_role = var.cluster_iam_role_name == null ? true : false # v17: manage_cluster_iam_resources
   iam_role_name   = var.cluster_iam_role_name                        # v17: cluster_iam_role_name
-  iam_role_arn = var.cluster_iam_role_name # var.iam_role_arn # -- testing for BYO iam_role_arn
+  iam_role_arn    = var.cluster_iam_role_name
 
   iam_role_additional_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
@@ -155,9 +155,9 @@ module "eks" {
   ## Use this to define any values that are common and applicable to all Node Groups 
   eks_managed_node_group_defaults = {
     # EKS Workers IAM Role
-    create_iam_role = var.workers_iam_role_name == null ? true : false
-    iam_role_name = var.workers_iam_role_name
-    iam_role_arn = var.workers_iam_role_name
+    create_iam_role        = var.workers_iam_role_name == null ? true : false
+    iam_role_name          = var.workers_iam_role_name
+    iam_role_arn           = var.workers_iam_role_name
     create_security_group  = false
     vpc_security_group_ids = [local.workers_security_group_id]
 
