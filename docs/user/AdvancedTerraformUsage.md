@@ -38,7 +38,7 @@ After the resources have been created, use ```terraform state list``` to list al
     # to get more details on a particular resource 
     terraform state show <resource-name-from-state-list>
 
-If you decide to use the [viya4-deployment project](https://github.com/sassoftware/viya4-deployment), which uses Ansible to complete the configuration of your cluster to meet SAS Viya requirements, you can provide the tfstate file to enable auto-discovery of the kubeconfig file and other settings.
+If you decide to use the [viya4-deployment project](https://github.com/sassoftware/viya4-deployment), which uses Ansible to complete the configuration of your cluster to meet SAS Viya platform requirements, you can provide the tfstate file to enable auto-discovery of the kubeconfig file and other settings.
 
 ## Terraform - Output
 

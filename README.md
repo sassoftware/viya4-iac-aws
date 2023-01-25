@@ -2,24 +2,24 @@
 
 ## Overview
 
-This project contains Terraform scripts to provision the AWS cloud infrastructure resources that are required to deploy SAS Viya 4 product offerings. Here is a list of resources that this project can create:
+This project contains Terraform scripts to provision the AWS cloud infrastructure resources that are required to deploy SAS Viya platform product offerings. Here is a list of resources that this project can create:
 
   >- Amazon VPC and Security Group
   >- Managed Amazon Elastic Kubernetes Service (EKS)
   >- Amazon EKS managed node groups with required labels and taints
-  >- Infrastructure to deploy the SAS Viya CAS server in SMP or MPP mode
+  >- Infrastructure to deploy the SAS Viya platform CAS server in SMP or MPP mode
   >- Amazon Elastic Block Storage (EBS) for NFS
   >- Amazon Elastic File System (EFS)
   >- Amazon Relational Database Service (RDS)
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 
-This project helps you to automate the cluster-provisioning phase of SAS Viya deployment. To learn about all phases and options of the
-SAS Viya deployment process, see [Getting Started with SAS Viya and Azure Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/n1d7qc4nfr3s5zn103a1qy0kj4l1.htm) in _SAS&reg; Viya&reg; Operations_.
+This project helps you to automate the cluster-provisioning phase of SAS Viya platform deployment. To learn about all phases and options of the
+SAS Viya platform deployment process, see [Getting Started with SAS Viya and Azure Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/n1d7qc4nfr3s5zn103a1qy0kj4l1.htm) in _SAS&reg; Viya&reg; Platform Operations_.
 
 Once the cloud resources are provisioned, use the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) project to deploy
-SAS Viya 4 in your cloud environment. For more information about SAS Viya 4 requirements and documentation for the deployment
-process, refer to the [SAS Viya 4 Operations Guide](https://go.documentation.sas.com/doc/en/itopscdc/default/itopswlcm/home.htm).
+the SAS Viya platform in your cloud environment. For more information about SAS Viya platform requirements and documentation for the deployment
+process, refer to the [SAS Viya platform Operations Guide](https://go.documentation.sas.com/doc/en/itopscdc/default/itopswlcm/home.htm).
 
 ## Prerequisites
 
