@@ -154,16 +154,15 @@ module "eks" {
 
   ## Use this to define any values that are common and applicable to all Node Groups 
   eks_managed_node_group_defaults = {
+    create_security_group  = false
+    vpc_security_group_ids = [local.workers_security_group_id]
+
     # EKS Workers IAM Role
     create_iam_role        = var.workers_iam_role_name == null ? true : false
     iam_role_name          = var.workers_iam_role_name
     iam_role_arn           = var.workers_iam_role_name
-    create_security_group  = false
-    vpc_security_group_ids = [local.workers_security_group_id]
 
-    iam_role_additional_policies = [
-      "arm:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-    ]
+    iam_role_additional_policies = []
   }
 
   ## Any individual Node Group customizations should go here
