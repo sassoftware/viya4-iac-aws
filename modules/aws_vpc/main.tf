@@ -55,20 +55,17 @@ resource "aws_vpc_endpoint" "private_endpoints" {
 
 resource "aws_vpc_endpoint" "s3_private_endpoint" {
   vpc_id             = local.vpc_id
-  service_name       = "com.amazonaws.${var.region}.${vpc_s3_private_endpoint}"
+  service_name       = "com.amazonaws.${var.region}.${var.vpc_s3_private_endpoint}"
   vpc_endpoint_type  = "Gateway"
-  security_group_ids = [ var.security_group_id ]
 
   tags = merge(
     {
-      "Name" = format("%s", "${var.name}-private-endpoint-${vpc_s3_private_endpoint}")
+      "Name" = format("%s", "${var.name}-private-endpoint-${var.vpc_s3_private_endpoint}")
     },
     var.tags,
   )
 
-  subnet_ids = [ 
-    for subnet in local.private_subnets : subnet.id
-  ]
+  route_table_ids = aws_route_table.private.*.id
 }
 
 data "aws_subnet" "public" {
