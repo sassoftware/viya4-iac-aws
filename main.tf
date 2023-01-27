@@ -156,11 +156,11 @@ module "eks" {
   eks_managed_node_group_defaults = {
     create_security_group  = false
     vpc_security_group_ids = [local.workers_security_group_id]
-    node_groups_arn = var.workers_iam_role_name
+    node_groups_arn        = var.workers_iam_role_name
     # EKS Workers IAM Role
-    create_iam_role        = var.workers_iam_role_name == null ? true : false # manage_workers_iam_resources
-    iam_role_name          = var.workers_iam_role_name                        # workers_iam_role_name
-    iam_role_arn           = var.workers_iam_role_name                        # workers_iam_role_arn
+    create_iam_role = var.workers_iam_role_name == null ? true : false # manage_workers_iam_resources
+    iam_role_name   = var.workers_iam_role_name                        # workers_iam_role_name
+    iam_role_arn    = var.workers_iam_role_name                        # workers_iam_role_arn
 
     iam_role_additional_policies = []
   }
