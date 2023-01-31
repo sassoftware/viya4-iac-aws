@@ -357,20 +357,14 @@ variable "nat_id" {
   default     = null
 }
 
-variable "cluster_iam_role_name" {
-  description = "Pre-existing IAM Role for the EKS cluster."
+variable "cluster_iam_role_arn" {
+  description = "ARN of the pre-existing IAM Role for the EKS cluster."
   type        = string
   default     = null
 }
 
-variable "workers_iam_role_name" {
-  description = "Pre-existing IAM Role for the Node VMs."
-  type        = string
-  default     = null
-}
-
-variable "iam_role_arn" {
-  description = "The ARN of the IAM role that will be used for the EKS cluster. Required if `create_iam_role` is set to `false`."
+variable "workers_iam_role_arn" {
+  description = "ARN of the pre-existing IAM Role for the cluster node VMs."
   type        = string
   default     = null
 }

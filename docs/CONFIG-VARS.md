@@ -127,8 +127,8 @@ By default, two custom IAM policies and two custom IAM roles (with instance prof
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| cluster_iam_role_name | Name of existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
-| workers_iam_role_name | Name of existing IAM role for the cluster node VMs | string | null | If an existing EKS node IAM role is being used, the IAM role's 'ARN' is required. |
+| cluster_iam_role_arn | ARN of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
+| workers_iam_role_arn | ARN of the pre-existing IAM role for the cluster node VMs | string | null | If an existing EKS node IAM role is being used, the IAM role's 'ARN' is required. |
 
 The cluster IAM role must include three AWS-managed policies and one custom policy.
 
