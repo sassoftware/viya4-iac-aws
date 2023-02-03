@@ -144,8 +144,8 @@ module "eks" {
   # Handle BYO IAM Roles & Policies
   ################################################################################
   # BYO - EKS Cluster IAM Role
-  create_iam_role = var.cluster_iam_role_arn == null ? true : false # v17: manage_cluster_iam_resources
-  iam_role_arn    = var.cluster_iam_role_arn                        # v17: cluster_iam_role_arn
+  create_iam_role = var.cluster_iam_role_arn == null ? true : false
+  iam_role_arn    = var.cluster_iam_role_arn
 
   iam_role_additional_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
@@ -157,8 +157,8 @@ module "eks" {
     vpc_security_group_ids = [local.workers_security_group_id]
 
     # BYO - EKS Workers IAM Role
-    create_iam_role = var.workers_iam_role_arn == null ? true : false # v17: manage_workers_iam_resources
-    iam_role_arn    = var.workers_iam_role_arn                        # v17: worker_iam_role_arn
+    create_iam_role = var.workers_iam_role_arn == null ? true : false
+    iam_role_arn    = var.workers_iam_role_arn
   }
 
   ## Any individual Node Group customizations should go here
