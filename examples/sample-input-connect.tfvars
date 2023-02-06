@@ -35,6 +35,10 @@ default_nodepool_custom_data            = ""
 ## General
 efs_performance_mode                    = "maxIO"
 storage_type                            = "standard"
+# To enable EBS encyption - set to 'true'. Variable is set to 'false' by default.
+enable_ebs_encryption = false
+# To enable EFS encyption - set to 'true'. Variable is set to 'false' by default.
+enable_efs_encryption = false
 
 ## Cluster Node Pools config
 node_pools = {

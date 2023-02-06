@@ -18,3 +18,9 @@ ssh_public_key              = "~/.ssh/id_rsa.pub"
 
 # Tags for all tagable items in your cluster.
 tags                                    = { } # e.g., { "key1" = "value1", "key2" = "value2" }
+
+## General
+# To enable EBS encyption - set to 'true'. Variable is set to 'false' by default.
+enable_ebs_encryption = false
+# To enable EFS encyption - set to 'true'. Variable is set to 'false' by default.
+enable_efs_encryption = false
