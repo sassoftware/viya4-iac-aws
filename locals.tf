@@ -39,9 +39,10 @@ locals {
         xvda = {
           device_name = "/dev/xvda"
           ebs = {
-            volume_type = var.default_nodepool_os_disk_type
-            volume_size = var.default_nodepool_os_disk_size
-            iops        = var.default_nodepool_os_disk_iops
+            volume_type                     = var.default_nodepool_os_disk_type
+            volume_size                     = var.default_nodepool_os_disk_size
+            iops                            = var.default_nodepool_os_disk_iops
+            encrypted   = var.enable_ebs_encryption
           }
         }
       }
@@ -74,18 +75,20 @@ locals {
 
   user_node_pool = {
     for key, np_value in var.node_pools :
-    key => {
-      name           = key
-      instance_types = [np_value.vm_type]
-      ami_type       = np_value.cpu_type
-      disk_size      = np_value.os_disk_size
-      block_device_mappings = {
-        xvda = {
-          device_name = "/dev/xvda"
-          ebs = {
-            volume_type = np_value.os_disk_type
-            volume_size = np_value.os_disk_size
-            iops        = np_value.os_disk_iops
+      key => {
+        name                            = key
+        instance_types                  = [np_value.vm_type]
+        ami_type                        = np_value.cpu_type
+        disk_size                       = np_value.os_disk_size
+        block_device_mappings           = {
+          xvda = {
+            device_name = "/dev/xvda"
+            ebs = {
+              volume_type                   = np_value.os_disk_type
+              volume_size                   = np_value.os_disk_size
+              iops                          = np_value.os_disk_iops
+              encrypted   = var.enable_ebs_encryption
+            }
           }
         }
       }
@@ -115,7 +118,6 @@ locals {
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
       tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : var.tags
     }
-  }
 
   # Merging the default_node_pool into the work_groups node pools
   node_groups = merge(local.default_node_pool, local.user_node_pool)
