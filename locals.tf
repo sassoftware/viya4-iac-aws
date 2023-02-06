@@ -42,6 +42,7 @@ locals {
             volume_type                     = var.default_nodepool_os_disk_type
             volume_size                     = var.default_nodepool_os_disk_size
             iops                            = var.default_nodepool_os_disk_iops
+            encrypted   = var.enable_ebs_encryption
           }
         }
       }
@@ -86,6 +87,7 @@ locals {
               volume_type                   = np_value.os_disk_type
               volume_size                   = np_value.os_disk_size
               iops                          = np_value.os_disk_iops
+              encrypted   = var.enable_ebs_encryption
             }
           }
         }

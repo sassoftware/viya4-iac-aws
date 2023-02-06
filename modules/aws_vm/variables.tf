@@ -78,3 +78,7 @@ variable "os_disk_iops" {
 variable "subnet_id" {
   type = string
 }
+
+variable "enable_ebs_encryption" {
+  default = false
+}

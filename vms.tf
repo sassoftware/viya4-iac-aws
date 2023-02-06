@@ -15,6 +15,7 @@ resource "aws_efs_file_system" "efs-fs" {
   creation_token   = "${var.prefix}-efs"
   performance_mode = var.efs_performance_mode
   tags             = merge(var.tags, { "Name": "${var.prefix}-efs" })
+  encrypted = var.enable_efs_encryption
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
@@ -82,6 +83,7 @@ module "jump" {
   vm_type        = var.jump_vm_type
   vm_admin       = var.jump_vm_admin
   ssh_public_key = local.ssh_public_key
+  enable_ebs_encryption = var.enable_ebs_encryption
 
   cloud_init = data.template_cloudinit_config.jump.0.rendered
 
@@ -138,6 +140,7 @@ module "nfs" {
   vm_type        = var.nfs_vm_type
   vm_admin       = var.nfs_vm_admin
   ssh_public_key = local.ssh_public_key
+  enable_ebs_encryption = var.enable_ebs_encryption
 
   cloud_init = data.template_cloudinit_config.nfs.0.rendered
 }
