@@ -100,7 +100,7 @@ module "eks" {
   ################################################################################
   # Cluster Security Group
   ################################################################################
-  create_cluster_security_group = false # v17: cluster_create_security_group
+  create_cluster_security_group = false
   cluster_security_group_id     = local.cluster_security_group_id
   # Extend cluster security group rules
   cluster_security_group_additional_rules = {
@@ -117,8 +117,8 @@ module "eks" {
   ################################################################################
   # Node Security Group
   ################################################################################
-  create_node_security_group = false                           #v17: worker_create_security_group             
-  node_security_group_id     = local.workers_security_group_id #v17: worker_security_group_id  
+  create_node_security_group = false
+  node_security_group_id     = local.workers_security_group_id
   # Extend node-to-node security group rules
   node_security_group_additional_rules = {
     ingress_self_all = {
