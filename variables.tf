@@ -357,14 +357,20 @@ variable "nat_id" {
   default     = null
 }
 
-variable "cluster_iam_role_arn" {
-  description = "ARN of the pre-existing IAM Role for the EKS cluster."
+variable "cluster_iam_role_name" {
+  description = "Pre-existing IAM Role for the EKS cluster."
   type        = string
   default     = null
 }
 
-variable "workers_iam_role_arn" {
-  description = "ARN of the pre-existing IAM Role for the cluster node VMs."
+variable "workers_iam_role_name" {
+  description = "Pre-existing IAM Role for the Node VMs."
+  type        = string
+  default     = null
+}
+
+variable "iam_role_arn" {
+  description = "The ARN of the IAM role that will be used for the EKS cluster. Required if `create_iam_role` is set to `false`"
   type        = string
   default     = null
 }
@@ -576,16 +582,4 @@ variable "autoscaling_enabled" {
   description = "Enable autoscaling for your AWS cluster."
   type        = bool
   default     = true
-}
-
-variable "enable_ebs_encryption" {
-  description = "Enable encryption on EBS volumes."
-  type        = bool
-  default     = false
-}
-
-variable "enable_efs_encryption" {
-  description = "Enable encryption on EFS file systems."
-  type        = bool
-  default     = false
 }

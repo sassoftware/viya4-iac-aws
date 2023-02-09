@@ -100,7 +100,7 @@ module "eks" {
   ################################################################################
   # Cluster Security Group
   ################################################################################
-  create_cluster_security_group = false
+  create_cluster_security_group = false # v17: cluster_create_security_group
   cluster_security_group_id     = local.cluster_security_group_id
   # Extend cluster security group rules
   cluster_security_group_additional_rules = {
@@ -117,8 +117,8 @@ module "eks" {
   ################################################################################
   # Node Security Group
   ################################################################################
-  create_node_security_group = false
-  node_security_group_id     = local.workers_security_group_id
+  create_node_security_group = false                           #v17: worker_create_security_group             
+  node_security_group_id     = local.workers_security_group_id #v17: worker_security_group_id  
   # Extend node-to-node security group rules
   node_security_group_additional_rules = {
     ingress_self_all = {
@@ -141,11 +141,12 @@ module "eks" {
   }
 
   ################################################################################
-  # Handle BYO IAM Roles & Policies
+  # Handle BYO IAM policy
   ################################################################################
-  # BYO - EKS Cluster IAM Role
-  create_iam_role = var.cluster_iam_role_arn == null ? true : false
-  iam_role_arn    = var.cluster_iam_role_arn
+  # EKS Cluster IAM Role
+  create_iam_role = var.cluster_iam_role_name == null ? true : false # v17: manage_cluster_iam_resources
+  iam_role_name   = var.cluster_iam_role_name                        # v17: cluster_iam_role_name
+  iam_role_arn    = var.cluster_iam_role_name
 
   iam_role_additional_policies = [
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
@@ -156,9 +157,12 @@ module "eks" {
     create_security_group  = false
     vpc_security_group_ids = [local.workers_security_group_id]
 
-    # BYO - EKS Workers IAM Role
-    create_iam_role = var.workers_iam_role_arn == null ? true : false
-    iam_role_arn    = var.workers_iam_role_arn
+    # EKS Workers IAM Role
+    create_iam_role        = var.workers_iam_role_name == null ? true : false
+    iam_role_name          = var.workers_iam_role_name
+    iam_role_arn           = var.workers_iam_role_name
+
+    iam_role_additional_policies = []
   }
 
   ## Any individual Node Group customizations should go here

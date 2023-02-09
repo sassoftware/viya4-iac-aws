@@ -77,7 +77,6 @@ resource "aws_instance" "vm" {
     volume_size           = var.os_disk_size
     delete_on_termination = var.os_disk_delete_on_termination
     iops                  = var.os_disk_iops
-    encrypted             = var.enable_ebs_encryption
   }
 
   tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
@@ -105,5 +104,4 @@ resource "aws_ebs_volume" "raid_disk" {
   type              = var.data_disk_type
   iops              = var.data_disk_iops
   tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
-  encrypted         = var.enable_ebs_encryption
 }
