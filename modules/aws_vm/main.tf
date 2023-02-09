@@ -104,6 +104,6 @@ resource "aws_ebs_volume" "raid_disk" {
   size              = var.data_disk_size
   type              = var.data_disk_type
   iops              = var.data_disk_iops
-  tags              = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
+  tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   encrypted         = var.enable_ebs_encryption
 }

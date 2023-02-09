@@ -579,13 +579,13 @@ variable "autoscaling_enabled" {
 }
 
 variable "enable_ebs_encryption" {
-  description = "Enable EBS encryption on EC2 instances."
+  description = "Enable encryption on EBS volumes."
   type        = bool
   default     = false
 }
 
 variable "enable_efs_encryption" {
-  description = "Enable EFS encryption on EFS file systems."
+  description = "Enable encryption on EFS file systems."
   type        = bool
   default     = false
 }

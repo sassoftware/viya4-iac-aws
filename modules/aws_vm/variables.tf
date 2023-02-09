@@ -80,6 +80,6 @@ variable "subnet_id" {
 }
 
 variable "enable_ebs_encryption" {
-  description = "Enable EBS encryption on EC2 instances."
-  default = false
+  description = "Enable encryption on EBS volumes."
+  default     = false
 }
