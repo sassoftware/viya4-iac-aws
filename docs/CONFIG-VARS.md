@@ -274,14 +274,18 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
-| enable_efs_encryption | Enable encryption on EFS file systems | bool | false | |
+| enable_efs_encryption | Enable encryption on EFS file systems | bool | false | When set to 'true', the EFS file systems will be encrypted. |
 
-## AWS Elastic Block Store (EBS)
+### AWS Elastic Block Store (EBS)
+
+[AWS Elastic Block Store](https://aws.amazon.com/ebs/) is a block-level storage service provided by AWS for use with EC2 instances. EBS provides persistent storage for EC2 instances, allowing data to persist even after an EC2 instance is stopped or terminated. EBS volumes can be used as the root device for an EC2 instance, or as additional storage volumes. They can be attached and detached from instances as needed and can also be encrypted for increased security.
+
+To encrypt EBS volumes the following variable is applicable:
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| enable_ebs_encryption | Enable encryption on EBS volumes | bool | false | |
+| enable_ebs_encryption | Enable encryption on EBS volumes | bool | false |  When set to 'true', the EBS volumes will be encrypted. |
 
 ## PostgreSQL Server
 
