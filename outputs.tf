@@ -10,15 +10,15 @@ output "kube_config" {
 
 output "cluster_iam_role_arn" {
   description = "The ARN of the IAM role for the EKS cluster."
-  value = (module.eks.cluster_iam_role_arn == var.cluster_iam_role_arn
+  value = (module.eks.cluster_iam_role_arn == var.iam_role_arn
     ? false
-    : var.cluster_iam_role_arn
+    : var.cluster_iam_role_name
   )
 }
 
 output "workers_iam_role_arn" {
   description = "The ARN of the IAM role for the Node VMs."
-  value       = var.workers_iam_role_arn
+  value       = var.workers_iam_role_name
 }
 
 output "rwx_filestore_id" {

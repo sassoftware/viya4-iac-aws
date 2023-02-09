@@ -78,8 +78,3 @@ variable "os_disk_iops" {
 variable "subnet_id" {
   type = string
 }
-
-variable "enable_ebs_encryption" {
-  description = "Enable encryption on EBS volumes."
-  default     = false
-}
