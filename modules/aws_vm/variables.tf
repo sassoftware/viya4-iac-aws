@@ -4,7 +4,7 @@ variable "name" {
 
 variable "tags" {
   description = "Map of common tags to be placed on the Resources"
-  type        = map
+  type        = map(any)
   default     = { project_name = "viya401", cost_center = "rnd", environment = "dev" }
 }
 
@@ -80,6 +80,6 @@ variable "subnet_id" {
 }
 
 variable "enable_ebs_encryption" {
-  description = "Enable EBS encryption on EC2 instances."
-  default = false
+  description = "Enable encryption on EBS volumes."
+  default     = false
 }

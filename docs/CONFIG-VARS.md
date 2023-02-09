@@ -274,6 +274,14 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
+| enable_efs_encryption | Enable encryption on EFS file systems | bool | false | |
+
+## AWS Elastic Block Store (EBS)
+
+<!--| Name | Description | Type | Default | Notes | -->
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| enable_ebs_encryption | Enable encryption on EBS volumes | bool | false | |
 
 ## PostgreSQL Server
 
