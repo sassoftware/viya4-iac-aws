@@ -85,15 +85,23 @@ variable "postgres_public_access_cidrs" {
 
 ## Provider Specific
 variable "ssh_public_key" {
+<<<<<<< HEAD
   description = "SSH public key used to access VMs."
   type        = string
+=======
+  description = "SSH public key used to access VMs"
+>>>>>>> 47dd3b7 (updated formatting)
   default     = "~/.ssh/id_rsa.pub"
 }
 
 variable "efs_performance_mode" {
+<<<<<<< HEAD
   description = "EFS performance mode. Supported values are `generalPurpose` or `maxIO`."
   type        = string
   default     = "generalPurpose"
+=======
+  default = "generalPurpose"
+>>>>>>> 47dd3b7 (updated formatting)
 }
 
 ## Kubernetes
@@ -104,7 +112,11 @@ variable "kubernetes_version" {
 }
 
 variable "tags" {
+<<<<<<< HEAD
   description = "Map of common tags to be placed on the resources."
+=======
+  description = "Map of common tags to be placed on the resources"
+>>>>>>> 47dd3b7 (updated formatting)
   type        = map(any)
   default     = { project_name = "viya" }
 
@@ -169,6 +181,7 @@ variable "default_nodepool_min_nodes" {
 }
 
 variable "default_nodepool_taints" {
+<<<<<<< HEAD
   description = "Taints for the default node pool VMs."
   type        = list(any)
   default     = []
@@ -177,6 +190,14 @@ variable "default_nodepool_taints" {
 variable "default_nodepool_labels" {
   description = "Labels to add to the default node pool."
   type        = map(any)
+=======
+  type    = list(any)
+  default = []
+}
+
+variable "default_nodepool_labels" {
+  type = map(any)
+>>>>>>> 47dd3b7 (updated formatting)
   default = {
     "kubernetes.azure.com/mode" = "system"
   }
@@ -208,7 +229,11 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
 
 ## Dynamic node pool config
 variable "node_pools" {
+<<<<<<< HEAD
   description = "Node Pool Definitions."
+=======
+  description = "Node pool definitions"
+>>>>>>> 47dd3b7 (updated formatting)
   type = map(object({
     vm_type                              = string
     cpu_type                             = string
