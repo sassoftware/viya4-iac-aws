@@ -85,10 +85,10 @@ variable "postgres_public_access_cidrs" {
 ## Provider Specific
 variable "ssh_public_key" {
   description = "SSH public key used to access VMs"
-  default = "~/.ssh/id_rsa.pub"
+  default     = "~/.ssh/id_rsa.pub"
 }
 
-variable efs_performance_mode {
+variable "efs_performance_mode" {
   default = "generalPurpose"
 }
 
@@ -100,11 +100,11 @@ variable "kubernetes_version" {
 
 variable "tags" {
   description = "Map of common tags to be placed on the resources"
-  type        = map
+  type        = map(any)
   default     = { project_name = "viya" }
 
   validation {
-    condition = length(var.tags) > 0
+    condition     = length(var.tags) > 0
     error_message = "ERROR: You must provide at last one tag."
   }
 }
@@ -151,12 +151,12 @@ variable "default_nodepool_min_nodes" {
 }
 
 variable "default_nodepool_taints" {
-  type    = list
+  type    = list(any)
   default = []
 }
 
 variable "default_nodepool_labels" {
-  type    = map
+  type = map(any)
   default = {
     "kubernetes.azure.com/mode" = "system"
   }
@@ -179,7 +179,7 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
 }
 
 ## Dynamic node pool config
-variable node_pools {
+variable "node_pools" {
   description = "Node pool definitions"
   type = map(object({
     vm_type                              = string
@@ -210,7 +210,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -228,7 +228,7 @@ variable node_pools {
         "workload.sas.com/class"        = "compute"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -245,7 +245,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -262,7 +262,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -272,13 +272,13 @@ variable node_pools {
 
 # Networking
 variable "vpc_id" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-exising VPC id. Leave blank to have one created"
 }
 
 variable "subnet_ids" {
-  type = map(list(string))
+  type        = map(list(string))
   default     = {}
   description = "Map subnet usage roles to list of existing subnet ids"
   # Example:
@@ -294,57 +294,57 @@ variable "vpc_cidr" {
   default     = "192.168.0.0/16"
 }
 
-variable subnets {
-  type = map
+variable "subnets" {
+  type        = map(any)
   description = "value"
   default = {
     "private" : ["192.168.0.0/18", "192.168.64.0/18"],
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
-    }
+  }
 }
 
 variable "security_group_id" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing Security Group id. Leave blank to have one created"
 
 }
 
 variable "cluster_security_group_id" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created"
 }
 
 variable "workers_security_group_id" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created"
 }
 
 variable "nat_id" {
-  type = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing NAT Gateway id"
 }
 
 variable "cluster_iam_role_name" {
-  type = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing IAM Role for the EKS cluster"
 }
 
 variable "workers_iam_role_name" {
-  type = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing IAM Role for the Node VMs"
 }
 
 
 variable "create_jump_vm" {
   description = "Create bastion host VM"
-  default = true
+  default     = true
 }
 
 variable "create_jump_public_ip" {
@@ -392,7 +392,7 @@ variable "nfs_vm_admin" {
 
 variable "nfs_vm_type" {
   description = "NFS VM type"
-  default    = "m5.4xlarge"
+  default     = "m5.4xlarge"
 }
 
 variable "os_disk_size" {
@@ -418,19 +418,19 @@ variable "postgres_server_defaults" {
   description = ""
   type        = any
   default = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
-    storage_encrypted            = false
-    backup_retention_days        = 7
-    multi_az                     = false
-    deletion_protection          = false
-    administrator_login          = "pgadmin"
-    administrator_password       = "my$up3rS3cretPassw0rd"
-    server_version               = "13"
-    server_port                  = "5432"
-    ssl_enforcement_enabled      = true
-    parameters                   = []
-    options                      = []
+    instance_type           = "db.m5.xlarge"
+    storage_size            = 50
+    storage_encrypted       = false
+    backup_retention_days   = 7
+    multi_az                = false
+    deletion_protection     = false
+    administrator_login     = "pgadmin"
+    administrator_password  = "my$up3rS3cretPassw0rd"
+    server_version          = "13"
+    server_port             = "5432"
+    ssl_enforcement_enabled = true
+    parameters              = []
+    options                 = []
   }
 }
 
@@ -442,14 +442,14 @@ variable "postgres_servers" {
 
   # Checking for user provided "default" server
   validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
+    condition     = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
     error_message = "ERROR: The provided map of PostgreSQL server objects does not contain the required 'default' key."
   }
 
   # Checking server name
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : alltrue([
+      for k, v in var.postgres_servers : alltrue([
         length(k) > 0,
         length(k) < 61,
         can(regex("^[a-zA-Z]+[a-zA-Z0-9-]*[a-zA-Z0-9]$", k)),
@@ -461,12 +461,12 @@ variable "postgres_servers" {
   # Checking user provided login
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"administrator_login") ? alltrue([
+      for k, v in var.postgres_servers : contains(keys(v), "administrator_login") ? alltrue([
         v.administrator_login != "admin",
         length(v.administrator_login) > 0,
         length(v.administrator_login) < 17,
         can(regex("^[a-zA-Z][a-zA-Z0-9_]+$", v.administrator_login)),
-       ]) : true
+      ]) : true
     ]) : false : true
     error_message = "ERROR: The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers."
   }
@@ -474,7 +474,7 @@ variable "postgres_servers" {
   # Checking user provided password
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
+      for k, v in var.postgres_servers : contains(keys(v), "administrator_password") ? alltrue([
         length(v.administrator_password) > 7,
         can(regex("^[^/'\"@]+$", v.administrator_password)),
       ]) : true
@@ -511,9 +511,9 @@ variable "cluster_api_mode" {
 }
 
 variable "vpc_private_endpoints" {
-   description = "Endpoints needed for private cluster"
-   type        = list(string)
-   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+  description = "Endpoints needed for private cluster"
+  type        = list(string)
+  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
 }
 
 variable "cluster_node_pool_mode" {
@@ -524,9 +524,9 @@ variable "cluster_node_pool_mode" {
 }
 
 variable "autoscaling_enabled" {
-    description = "Enable autoscaling for your AWS cluster."
-    type        = bool
-    default     = true
+  description = "Enable autoscaling for your AWS cluster."
+  type        = bool
+  default     = true
 }
 
 variable "enable_ebs_encryption" {
