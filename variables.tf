@@ -11,118 +11,126 @@ variable "prefix" {
 
 ## Provider
 variable "location" {
-  description = "AWS Region to provision all resources in this script"
+  description = "AWS Region to provision all resources in this script."
+  type        = string
   default     = "us-east-1"
 }
 
 variable "aws_profile" {
-  description = "Name of Profile in the credentials file"
+  description = "Name of Profile in the credentials file."
   type        = string
   default     = ""
 }
 
 variable "aws_shared_credentials_file" {
-  description = "Name of credentials file, if using non-default location"
+  description = "Name of credentials file, if using non-default location."
   type        = string
   default     = ""
 }
 
 variable "aws_session_token" {
-  description = "Session token for temporary credentials"
+  description = "Session token for temporary credentials."
   type        = string
   default     = ""
 }
 
 variable "aws_access_key_id" {
-  description = "Static credential key"
+  description = "Static credential key."
   type        = string
   default     = ""
 }
 
 variable "aws_secret_access_key" {
-  description = "Static credential secret"
+  description = "Static credential secret."
   type        = string
   default     = ""
 }
 
 variable "iac_tooling" {
-  description = "Value used to identify the tooling used to generate this provider's infrastructure"
+  description = "Value used to identify the tooling used to generate this provider's infrastructure."
   type        = string
   default     = "terraform"
 }
 
 ## Public Access
 variable "default_public_access_cidrs" {
-  description = "List of CIDRs to access created resources"
+  description = "List of CIDRs to access created resources."
   type        = list(string)
   default     = null
 }
 
 variable "cluster_endpoint_public_access_cidrs" {
-  description = "List of CIDRs to access Kubernetes cluster - Public"
+  description = "List of CIDRs to access Kubernetes cluster - Public."
   type        = list(string)
   default     = null
 }
 
 variable "cluster_endpoint_private_access_cidrs" {
-  description = "List of CIDRs to access Kubernetes cluster - Private"
+  description = "List of CIDRs to access Kubernetes cluster - Private."
   type        = list(string)
   default     = null
 }
 
 variable "vm_public_access_cidrs" {
-  description = "List of CIDRs to access jump VM or NFS VM"
+  description = "List of CIDRs to access jump VM or NFS VM."
   type        = list(string)
   default     = null
 }
 
 variable "postgres_public_access_cidrs" {
-  description = "List of CIDRs to access PostgreSQL server"
+  description = "List of CIDRs to access PostgreSQL server."
   type        = list(string)
   default     = null
 }
 
 ## Provider Specific
 variable "ssh_public_key" {
-  description = "SSH public key used to access VMs"
-  default = "~/.ssh/id_rsa.pub"
+  description = "SSH public key used to access VMs."
+  type        = string
+  default     = "~/.ssh/id_rsa.pub"
 }
 
-variable efs_performance_mode {
-  default = "generalPurpose"
+variable "efs_performance_mode" {
+  description = "EFS performance mode. Supported values are `generalPurpose` or `maxIO`."
+  type        = string
+  default     = "generalPurpose"
 }
 
 ## Kubernetes
 variable "kubernetes_version" {
-  description = "The EKS cluster Kubernetes version"
+  description = "The EKS cluster Kubernetes version."
+  type        = string
   default     = "1.23"
 }
 
 variable "tags" {
-  description = "Map of common tags to be placed on the resources"
-  type        = map
+  description = "Map of common tags to be placed on the resources."
+  type        = map(any)
   default     = { project_name = "viya" }
 
   validation {
-    condition = length(var.tags) > 0
+    condition     = length(var.tags) > 0
     error_message = "ERROR: You must provide at last one tag."
   }
 }
 
 ## Default node pool config
-variable "create_default_nodepool" {
-  description = "Create Default Node Pool"
+variable "create_default_nodepool" { # tflint-ignore: terraform_unused_declarations
+  description = "Create Default Node Pool."
   type        = bool
   default     = true
 }
 
 variable "default_nodepool_vm_type" {
-  default = "m5.2xlarge"
+  description = "Type of the default node pool VMs."
+  type        = string
+  default     = "m5.2xlarge"
 }
 
 variable "default_nodepool_os_disk_type" {
-  type    = string
-  default = "gp3"
+  description = "Disk type for default node pool VMs."
+  type        = string
+  default     = "gp3"
 
   validation {
     condition     = contains(["gp3", "gp2", "io1"], lower(var.default_nodepool_os_disk_type))
@@ -131,56 +139,76 @@ variable "default_nodepool_os_disk_type" {
 }
 
 variable "default_nodepool_os_disk_size" {
-  default = 200
+  description = "Disk size for default node pool VMs."
+  type        = number
+  default     = 200
 }
 
 variable "default_nodepool_os_disk_iops" {
-  default = 0
+  description = "Disk IOPS for default node pool VMs."
+  type        = number
+  default     = 0
 }
 
 variable "default_nodepool_node_count" {
-  default = 1
+  description = "Initial number of nodes in the default node pool."
+  type        = number
+  default     = 1
 }
 
 variable "default_nodepool_max_nodes" {
-  default = 5
+  description = "Maximum number of nodes in the default node pool."
+  type        = number
+  default     = 5
 }
 
 variable "default_nodepool_min_nodes" {
-  default = 1
+  description = "Minimum and initial number of nodes for the node pool."
+  type        = number
+  default     = 1
 }
 
 variable "default_nodepool_taints" {
-  type    = list
-  default = []
+  description = "Taints for the default node pool VMs."
+  type        = list(any)
+  default     = []
 }
 
 variable "default_nodepool_labels" {
-  type    = map
+  description = "Labels to add to the default node pool."
+  type        = map(any)
   default = {
     "kubernetes.azure.com/mode" = "system"
   }
 }
 
 variable "default_nodepool_custom_data" {
-  default = ""
+  description = "Additional user data that will be appended to the default user data."
+  type        = string
+  default     = ""
 }
 
 variable "default_nodepool_metadata_http_endpoint" {
-  default = "enabled"
+  description = "The state of the default node pool's metadata service."
+  type        = string
+  default     = "enabled"
 }
 
 variable "default_nodepool_metadata_http_tokens" {
-  default = "required"
+  description = "The state of the session tokens for the default node pool."
+  type        = string
+  default     = "required"
 }
 
 variable "default_nodepool_metadata_http_put_response_hop_limit" {
-  default = 1
+  description = "The desired HTTP PUT response hop limit for instance metadata requests for the default node pool."
+  type        = number
+  default     = 1
 }
 
 ## Dynamic node pool config
-variable node_pools {
-  description = "Node pool definitions"
+variable "node_pools" {
+  description = "Node Pool Definitions."
   type = map(object({
     vm_type                              = string
     cpu_type                             = string
@@ -210,7 +238,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -228,7 +256,7 @@ variable node_pools {
         "workload.sas.com/class"        = "compute"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -245,7 +273,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -262,7 +290,7 @@ variable node_pools {
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
       }
-      "custom_data" = ""
+      "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
@@ -272,15 +300,15 @@ variable node_pools {
 
 # Networking
 variable "vpc_id" {
-  type    = string
-  default = null
-  description = "Pre-exising VPC id. Leave blank to have one created"
+  description = "Pre-exising VPC id. Leave blank to have one created."
+  type        = string
+  default     = null
 }
 
 variable "subnet_ids" {
-  type = map(list(string))
+  description = "Map subnet usage roles to list of existing subnet ids."
+  type        = map(list(string))
   default     = {}
-  description = "Map subnet usage roles to list of existing subnet ids"
   # Example:
   # subnet_ids = {  # only needed if using pre-existing subnets
   #   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
@@ -290,166 +318,186 @@ variable "subnet_ids" {
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR - NOTE: Subnets below must fall into this range"
+  description = "VPC CIDR - NOTE: Subnets below must fall into this range."
+  type        = string
   default     = "192.168.0.0/16"
 }
 
-variable subnets {
-  type = map
-  description = "value"
+variable "subnets" {
+  description = "Subnets to be created and their settings - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
+  type        = map(list(string))
   default = {
     "private" : ["192.168.0.0/18", "192.168.64.0/18"],
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
-    }
+  }
 }
 
 variable "security_group_id" {
-  type    = string
-  default = null
-  description = "Pre-existing Security Group id. Leave blank to have one created"
-
+  description = "Pre-existing Security Group id. Leave blank to have one created."
+  type        = string
+  default     = null
 }
 
 variable "cluster_security_group_id" {
-  type    = string
-  default = null
-  description = "Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created"
+  description = "Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created."
+  type        = string
+  default     = null
 }
 
 variable "workers_security_group_id" {
-  type    = string
-  default = null
-  description = "Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created"
+  description = "Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created."
+  type        = string
+  default     = null
 }
 
 variable "nat_id" {
-  type = string
-  default = null
-  description = "Pre-existing NAT Gateway id"
+  description = "Pre-existing NAT Gateway id."
+  type        = string
+  default     = null
 }
 
-variable "cluster_iam_role_name" {
-  type = string
-  default = null
-  description = "Pre-existing IAM Role for the EKS cluster"
+variable "cluster_iam_role_arn" {
+  description = "ARN of the pre-existing IAM Role for the EKS cluster."
+  type        = string
+  default     = null
 }
 
-variable "workers_iam_role_name" {
-  type = string
-  default = null
-  description = "Pre-existing IAM Role for the Node VMs"
+variable "workers_iam_role_arn" {
+  description = "ARN of the pre-existing IAM Role for the cluster node VMs."
+  type        = string
+  default     = null
 }
-
 
 variable "create_jump_vm" {
-  description = "Create bastion host VM"
-  default = true
+  description = "Create bastion Host VM."
+  type        = bool
+  default     = true
 }
 
 variable "create_jump_public_ip" {
-  type    = bool
-  default = true
+  description = "Add public IP address to Jump VM."
+  type        = bool
+  default     = true
 }
 
 variable "jump_vm_admin" {
-  description = "OS Admin User for Jump VM"
+  description = "OS Admin User for Jump VM."
+  type        = string
   default     = "jumpuser"
 }
 
 variable "jump_vm_type" {
-  description = "Jump VM type"
+  description = "Jump VM type."
+  type        = string
   default     = "m5.4xlarge"
 }
 
 variable "jump_rwx_filestore_path" {
-  description = "OS path used in cloud-init for NFS integration"
+  description = "OS path used in cloud-init for NFS integration."
+  type        = string
   default     = "/viya-share"
 }
 
 variable "nfs_raid_disk_size" {
-  description = "Size in GB for each disk of the RAID0 cluster, when storage_type=standard"
+  description = "Size in GB for each disk of the RAID0 cluster, when storage_type=standard."
+  type        = number
   default     = 128
 }
 
 variable "nfs_raid_disk_type" {
-  default = "gp3"
+  description = "Disk type for the NFS server EBS volumes."
+  type        = string
+  default     = "gp3"
 }
 
 variable "nfs_raid_disk_iops" {
-  default = 0
+  description = "IOPS for the the NFS server EBS volumes."
+  type        = number
+  default     = 0
 }
 
 variable "create_nfs_public_ip" {
-  type    = bool
-  default = false
+  description = "Add public IP address to the NFS server VM."
+  type        = bool
+  default     = false
 }
 
 variable "nfs_vm_admin" {
-  description = "OS Admin User for NFS VM, when storage_type=standard"
+  description = "OS Admin User for NFS VM, when storage_type=standard."
+  type        = string
   default     = "nfsuser"
 }
 
 variable "nfs_vm_type" {
-  description = "NFS VM type"
-  default    = "m5.4xlarge"
+  description = "NFS VM type."
+  type        = string
+  default     = "m5.4xlarge"
 }
 
 variable "os_disk_size" {
-  default = 64
+  description = "Disk size for default node pool VMs in GB."
+  type        = number
+  default     = 64
 }
 
 variable "os_disk_type" {
-  default = "standard"
+  description = "Disk type for default node pool VMs."
+  type        = string
+  default     = "standard"
 }
 
 variable "os_disk_delete_on_termination" {
-  default = true
+  description = "Delete Disk on termination."
+  type        = bool
+  default     = true
 }
 
 variable "os_disk_iops" {
-  default = 0
+  description = "Disk IOPS for default node pool VMs."
+  type        = number
+  default     = 0
 }
 
 ## PostgresSQL
 
 # Defaults
 variable "postgres_server_defaults" {
-  description = ""
+  description = "Map of PostgresSQL server default objects."
   type        = any
   default = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
-    storage_encrypted            = false
-    backup_retention_days        = 7
-    multi_az                     = false
-    deletion_protection          = false
-    administrator_login          = "pgadmin"
-    administrator_password       = "my$up3rS3cretPassw0rd"
-    server_version               = "13"
-    server_port                  = "5432"
-    ssl_enforcement_enabled      = true
-    parameters                   = []
-    options                      = []
+    instance_type           = "db.m5.xlarge"
+    storage_size            = 50
+    storage_encrypted       = false
+    backup_retention_days   = 7
+    multi_az                = false
+    deletion_protection     = false
+    administrator_login     = "pgadmin"
+    administrator_password  = "my$up3rS3cretPassw0rd"
+    server_version          = "13"
+    server_port             = "5432"
+    ssl_enforcement_enabled = true
+    parameters              = []
+    options                 = []
   }
 }
 
 # User inputs
 variable "postgres_servers" {
-  description = "Map of PostgreSQL server objects"
+  description = "Map of PostgreSQL server objects provided by the user."
   type        = any
   default     = null
 
   # Checking for user provided "default" server
   validation {
-    condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
+    condition     = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? contains(keys(var.postgres_servers), "default") : false : true
     error_message = "ERROR: The provided map of PostgreSQL server objects does not contain the required 'default' key."
   }
 
   # Checking server name
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : alltrue([
+      for k, v in var.postgres_servers : alltrue([
         length(k) > 0,
         length(k) < 61,
         can(regex("^[a-zA-Z]+[a-zA-Z0-9-]*[a-zA-Z0-9]$", k)),
@@ -461,12 +509,12 @@ variable "postgres_servers" {
   # Checking user provided login
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"administrator_login") ? alltrue([
+      for k, v in var.postgres_servers : contains(keys(v), "administrator_login") ? alltrue([
         v.administrator_login != "admin",
         length(v.administrator_login) > 0,
         length(v.administrator_login) < 17,
         can(regex("^[a-zA-Z][a-zA-Z0-9_]+$", v.administrator_login)),
-       ]) : true
+      ]) : true
     ]) : false : true
     error_message = "ERROR: The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers."
   }
@@ -474,7 +522,7 @@ variable "postgres_servers" {
   # Checking user provided password
   validation {
     condition = var.postgres_servers != null ? length(var.postgres_servers) != 0 ? alltrue([
-      for k,v in var.postgres_servers : contains(keys(v),"administrator_password") ? alltrue([
+      for k, v in var.postgres_servers : contains(keys(v), "administrator_password") ? alltrue([
         length(v.administrator_password) > 7,
         can(regex("^[^/'\"@]+$", v.administrator_password)),
       ]) : true
@@ -484,8 +532,9 @@ variable "postgres_servers" {
 }
 
 variable "storage_type" {
-  type    = string
-  default = "standard"
+  description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint."
+  type        = string
+  default     = "standard"
   # NOTE: storage_type=none is for internal use only
   validation {
     condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
@@ -494,13 +543,13 @@ variable "storage_type" {
 }
 
 variable "create_static_kubeconfig" {
-  description = "Allows the user to create a provider- or service account-based kubeconfig file"
+  description = "Allows the user to create a provider- or service account-based kubeconfig file."
   type        = bool
   default     = true
 }
 
 variable "cluster_api_mode" {
-  description = "Use Public or Private IP address for the cluster API endpoint"
+  description = "Use Public or Private IP address for the cluster API endpoint."
   type        = string
   default     = "public"
 
@@ -510,10 +559,10 @@ variable "cluster_api_mode" {
   }
 }
 
-variable "vpc_private_endpoints" {
-   description = "Endpoints needed for private cluster"
-   type        = list(string)
-   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declarations
+  description = "Endpoints needed for private cluster."
+  type        = list(string)
+  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
 }
 
 variable "cluster_node_pool_mode" {
@@ -524,7 +573,7 @@ variable "cluster_node_pool_mode" {
 }
 
 variable "autoscaling_enabled" {
-    description = "Enable autoscaling for your AWS cluster."
-    type        = bool
-    default     = true
+  description = "Enable autoscaling for your AWS cluster."
+  type        = bool
+  default     = true
 }
