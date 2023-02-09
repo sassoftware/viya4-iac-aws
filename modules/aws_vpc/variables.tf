@@ -4,7 +4,7 @@ variable "azs" {
   default     = []
 }
 
-variable vpc_id {
+variable "vpc_id" {
   description = "Existing vpc id"
   default     = null
 }
@@ -20,7 +20,7 @@ variable "cidr" {
 }
 
 variable "subnets" {
-  type        = map
+  type        = map(any)
   description = "Map of list of subnet cidr_blocks"
 }
 
@@ -31,8 +31,8 @@ variable "existing_subnet_ids" {
 }
 
 variable "existing_nat_id" {
-  type = string
-  default = null
+  type        = string
+  default     = null
   description = "Pre-existing VPC NAT Gateway id"
 }
 
@@ -104,9 +104,9 @@ variable "map_public_ip_on_launch" {
 }
 
 variable "vpc_private_endpoints" {
-   description = "Endpoints needed for private cluster"
-   type        = list(string)
-   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+  description = "Endpoints needed for private cluster"
+  type        = list(string)
+  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
 }
 
 variable "region" {

@@ -62,12 +62,12 @@ resource "aws_key_pair" "admin" {
 }
 
 resource "aws_instance" "vm" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.vm_type
-  user_data     = (var.cloud_init != "" ? var.cloud_init : null)
-  key_name      = aws_key_pair.admin.key_name
+  ami               = data.aws_ami.ubuntu.id
+  instance_type     = var.vm_type
+  user_data         = (var.cloud_init != "" ? var.cloud_init : null)
+  key_name          = aws_key_pair.admin.key_name
   availability_zone = var.data_disk_availability_zone
-  
+
   vpc_security_group_ids      = var.security_group_ids
   subnet_id                   = var.subnet_id
   associate_public_ip_address = var.create_public_ip
@@ -79,15 +79,15 @@ resource "aws_instance" "vm" {
     iops                  = var.os_disk_iops
   }
 
-  tags = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
+  tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
 
 }
 
 resource "aws_eip" "eip" {
-  count = var.create_public_ip ? 1 : 0
-  vpc = true
+  count    = var.create_public_ip ? 1 : 0
+  vpc      = true
   instance = aws_instance.vm.id
-  tags = merge(var.tags, tomap({ Name: "${var.name}-eip" }))
+  tags     = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
@@ -103,5 +103,5 @@ resource "aws_ebs_volume" "raid_disk" {
   size              = var.data_disk_size
   type              = var.data_disk_type
   iops              = var.data_disk_iops
-  tags              = merge(var.tags, tomap({ Name: "${var.name}-vm" }))
+  tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
 }
