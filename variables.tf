@@ -122,11 +122,11 @@ variable "default_nodepool_vm_type" {
 
 variable "default_nodepool_os_disk_type" {
   type    = string
-  default = "gp2"
+  default = "gp3"
 
   validation {
-    condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
-    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, io1."
+    condition     = contains(["gp3", "gp2", "io1"], lower(var.default_nodepool_os_disk_type))
+    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp3, gp2, io1."
   }
 }
 
@@ -201,7 +201,7 @@ variable node_pools {
     cas = {
       "vm_type"      = "m5.2xlarge"
       "cpu_type"     = "AL2_x86_64"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -218,7 +218,7 @@ variable node_pools {
     compute = {
       "vm_type"      = "m5.8xlarge"
       "cpu_type"     = "AL2_x86_64"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -236,7 +236,7 @@ variable node_pools {
     stateless = {
       "vm_type"      = "m5.4xlarge"
       "cpu_type"     = "AL2_x86_64"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -253,7 +253,7 @@ variable node_pools {
     stateful = {
       "vm_type"      = "m5.4xlarge"
       "cpu_type"     = "AL2_x86_64"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -373,7 +373,7 @@ variable "nfs_raid_disk_size" {
 }
 
 variable "nfs_raid_disk_type" {
-  default = "gp2"
+  default = "gp3"
 }
 
 variable "nfs_raid_disk_iops" {
