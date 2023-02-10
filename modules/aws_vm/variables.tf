@@ -48,7 +48,7 @@ variable "data_disk_size" {
 }
 
 variable "data_disk_type" {
-  default = "gp2"
+  default = "gp3"
 }
 
 variable "data_disk_availability_zone" {
