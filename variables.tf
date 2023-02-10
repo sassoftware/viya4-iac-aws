@@ -577,3 +577,15 @@ variable "autoscaling_enabled" {
   type        = bool
   default     = true
 }
+
+variable "enable_ebs_encryption" {
+  description = "Enable encryption on EBS volumes."
+  type        = bool
+  default     = false
+}
+
+variable "enable_efs_encryption" {
+  description = "Enable encryption on EFS file systems."
+  type        = bool
+  default     = false
+}
