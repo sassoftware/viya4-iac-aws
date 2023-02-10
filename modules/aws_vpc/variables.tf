@@ -106,7 +106,13 @@ variable "map_public_ip_on_launch" {
 variable "vpc_private_endpoints" {
    description = "Endpoints needed for private cluster"
    type        = list(string)
-   default     = [ "ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+   default     = [ "ec2", "ecr.api", "ecr.dkr", "logs", "sts", "elasticloadbalancing", "autoscaling" ]
+}
+
+variable "vpc_s3_private_endpoint" {
+   description = "S3 gateway endpoint needed for private cluster"
+   type        = string
+   default     = "s3"
 }
 
 variable "region" {

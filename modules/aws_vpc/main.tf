@@ -53,6 +53,21 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   ]
 }
 
+resource "aws_vpc_endpoint" "s3_private_endpoint" {
+  vpc_id             = local.vpc_id
+  service_name       = "com.amazonaws.${var.region}.${var.vpc_s3_private_endpoint}"
+  vpc_endpoint_type  = "Gateway"
+
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-private-endpoint-${var.vpc_s3_private_endpoint}")
+    },
+    var.tags,
+  )
+
+  route_table_ids = aws_route_table.private.*.id
+}
+
 data "aws_subnet" "public" {
   count = local.existing_public_subnets ? length(var.subnets["public"]) : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
