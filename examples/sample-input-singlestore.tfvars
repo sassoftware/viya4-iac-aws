@@ -73,24 +73,6 @@ node_pools = {
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
   },
-  connect = {
-    "vm_type"      = "m5.8xlarge"
-    "cpu_type"     = "AL2_x86_64"
-    "os_disk_type" = "gp2"
-    "os_disk_size" = 200
-    "os_disk_iops" = 0
-    "min_nodes"    = 1
-    "max_nodes"    = 5
-    "node_taints"  = ["workload.sas.com/class=connect:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class"        = "connect"
-      "launcher.sas.com/prepullImage" = "sas-programming-environment"
-    }
-    "custom_data"                          = ""
-    "metadata_http_endpoint"               = "enabled"
-    "metadata_http_tokens"                 = "required"
-    "metadata_http_put_response_hop_limit" = 1
-  },
   stateless = {
     "vm_type"      = "m5.4xlarge"
     "cpu_type"     = "AL2_x86_64"
@@ -119,6 +101,23 @@ node_pools = {
     "node_taints"  = ["workload.sas.com/class=stateful:NoSchedule"]
     "node_labels" = {
       "workload.sas.com/class" = "stateful"
+    }
+    "custom_data"                          = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
+  },
+  singlestore = {
+    "vm_type"      = "r4.4xlarge"
+    "cpu_type"     = "AL2_x86_64"
+    "os_disk_type" = "gp2"
+    "os_disk_size" = 200
+    "os_disk_iops" = 0
+    "min_nodes"    = 0
+    "max_nodes"    = 7
+    "node_taints"  = ["workload.sas.com/class=singlestore:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "singlestore"
     }
     "custom_data"                          = ""
     "metadata_http_endpoint"               = "enabled"

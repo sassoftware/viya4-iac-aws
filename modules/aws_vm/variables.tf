@@ -4,7 +4,7 @@ variable "name" {
 
 variable "tags" {
   description = "Map of common tags to be placed on the Resources"
-  type        = map
+  type        = map(any)
   default     = { project_name = "viya401", cost_center = "rnd", environment = "dev" }
 }
 
@@ -77,4 +77,9 @@ variable "os_disk_iops" {
 
 variable "subnet_id" {
   type = string
+}
+
+variable "enable_ebs_encryption" {
+  description = "Enable encryption on EBS volumes."
+  default     = false
 }
