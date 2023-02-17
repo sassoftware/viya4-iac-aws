@@ -2,7 +2,7 @@
 locals {
 
   # General
-  security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
+  security_group_id         = var.security_group_id == null ? aws_security_group.sg.0.id : data.aws_security_group.sg.0.id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   cluster_name              = "${var.prefix}-eks"
