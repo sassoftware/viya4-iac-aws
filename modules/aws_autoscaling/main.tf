@@ -1,3 +1,5 @@
+# Permissions based off the IAM Policy recommended by kubernetes/autoscaler
+# https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-chart-9.25.0/cluster-autoscaler/cloudprovider/aws/README.md
 data "aws_iam_policy_document" "worker_autoscaling" {
   statement {
     sid    = "eksWorkerAutoscalingAll"
@@ -7,7 +9,9 @@ data "aws_iam_policy_document" "worker_autoscaling" {
       "autoscaling:DescribeAutoScalingGroups",
       "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:DescribeLaunchConfigurations",
+      "autoscaling:DescribeScalingActivities",
       "autoscaling:DescribeTags",
+      "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
     ]
 
@@ -21,7 +25,9 @@ data "aws_iam_policy_document" "worker_autoscaling" {
     actions = [
       "autoscaling:SetDesiredCapacity",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "autoscaling:UpdateAutoScalingGroup",
+      "ec2:DescribeImages",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DescribeNodegroup"
     ]
 
     resources = ["*"]
