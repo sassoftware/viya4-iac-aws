@@ -27,7 +27,7 @@ postgres_servers = {
 }
 
 ## Cluster config
-kubernetes_version           = "1.23"
+kubernetes_version           = "1.24"
 default_nodepool_node_count  = 2
 default_nodepool_vm_type     = "m5.2xlarge"
 default_nodepool_custom_data = ""
