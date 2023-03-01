@@ -46,7 +46,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.tflint.d/plugins
-        key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+        key: ubuntu-latest-tflint-${{ hashFiles('.tflint.hcl') }}
 
     - name: Setup TFLint
       uses: terraform-linters/setup-tflint@v3.0.0
