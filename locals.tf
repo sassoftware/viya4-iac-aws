@@ -106,12 +106,12 @@ locals {
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
       pre_bootstrap_user_data = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
       metadata_options = {
-        http_endpoint               = var.default_nodepool_metadata_http_endpoint
+        http_endpoint                               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
         http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
       }
       # Launch Template
-      create_launch_template          = true
+      create_launch_template                        = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
