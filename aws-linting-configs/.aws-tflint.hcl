@@ -66,34 +66,6 @@ rule "terraform_module_version" {
 rule "terraform_naming_convention" {
   enabled = true
   custom = "^([a-zA-Z0-9])+([_-][a-zA-Z0-9]+)*$"
-
-#Require specific naming structure
-
-# variable {
-# format = "snake_case"
-# }
-
-# locals {
-# format = "snake_case"
-# }
-
-# output {
-# format = "snake_case"
-# }
-
-#Allow any format
-# resource {
-#   format = "none"
-# }
-
-# module {
-#   format = "none"
-# }
-
-# data {
-#   format = "none"
-# }
-
 }
 
 # Require that all providers have version constraints through required_providers. 
