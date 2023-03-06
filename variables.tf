@@ -103,7 +103,7 @@ variable "efs_throughput_mode" {
 
   validation {
     condition     = contains(["bursting", "provisioned"], lower(var.efs_throughput_mode))
-    error_message = "ERROR: Supported values for `efs_throughput_mode` are - busting, provisioned."
+    error_message = "ERROR: Supported values for `efs_throughput_mode` are - bursting, provisioned."
   }
 }
 
