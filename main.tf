@@ -159,6 +159,9 @@ module "eks" {
     # BYO - EKS Workers IAM Role
     create_iam_role = var.workers_iam_role_arn == null ? true : false
     iam_role_arn    = var.workers_iam_role_arn
+
+    # Node Groups Subnets
+    subnet_ids  = local.node_group_subnets
   }
 
   ## Any individual Node Group customizations should go here
