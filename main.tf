@@ -84,7 +84,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "18.7.1"
+  version                              = "18.31.2"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = [] # disable cluster control plan logging
@@ -93,10 +93,11 @@ module "eks" {
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
-  subnet_ids  = module.vpc.private_subnets
-  vpc_id      = module.vpc.vpc_id
-  tags        = var.tags
-  enable_irsa = var.autoscaling_enabled
+  control_plane_subnet_ids = module.vpc.private_subnets # Specifies the list of subnets in which the EKS control plane will be launched.
+  subnet_ids               = var.enable_multi_zones ? module.vpc.private_subnets : [module.vpc.private_subnets[0]] # Specifies the list of subnets in which the worker nodes of the EKS cluster will be launched.
+  vpc_id                   = module.vpc.vpc_id
+  tags                     = var.tags
+  enable_irsa              = var.autoscaling_enabled
   ################################################################################
   # Cluster Security Group
   ################################################################################
@@ -159,9 +160,6 @@ module "eks" {
     # BYO - EKS Workers IAM Role
     create_iam_role = var.workers_iam_role_arn == null ? true : false
     iam_role_arn    = var.workers_iam_role_arn
-
-    # Node Groups Subnets
-    subnet_ids  = local.node_group_subnets
   }
 
   ## Any individual Node Group customizations should go here

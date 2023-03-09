@@ -228,10 +228,10 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
   default     = 1
 }
 
-variable "enable_single_zone" {
-  description = "Should be true to deploy EKS in 1 subnet and 1 availability zone."
+variable "enable_multi_zones" {
+  description = "Should be true to deploy EKS in multiple subnets and availability zones."
   type        = bool
-  default     = false
+  default     = true
 }
 
 ## Dynamic node pool config

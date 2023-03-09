@@ -119,9 +119,6 @@ locals {
     }
   }
 
-  # EKS Managed Node Groups Subnets
-  node_group_subnets = var.enable_single_zone == true ? [module.vpc.private_subnets[0]] : null
-
   # Merging the default_node_pool into the work_groups node pools
   node_groups = merge(local.default_node_pool, local.user_node_pool)
 
