@@ -31,6 +31,7 @@ kubernetes_version           = "1.23"
 default_nodepool_node_count  = 2
 default_nodepool_vm_type     = "m5.2xlarge"
 default_nodepool_custom_data = ""
+enable_multi_zones           = false
 
 ## General
 efs_performance_mode = "maxIO"
