@@ -96,6 +96,28 @@ variable "efs_performance_mode" {
   default     = "generalPurpose"
 }
 
+variable "efs_throughput_mode" {
+  description = "EFS throughput mode. Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required."
+  type        = string
+  default     = "bursting"
+
+  validation {
+    condition     = contains(["bursting", "provisioned"], lower(var.efs_throughput_mode))
+    error_message = "ERROR: Supported values for `efs_throughput_mode` are - bursting, provisioned."
+  }
+}
+
+variable "efs_throughput_rate" {
+  description = "EFS throughput rate, measured in MiB/s. Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'."
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.efs_throughput_rate >= 1 && var.efs_throughput_rate <= 1024 && floor(var.efs_throughput_rate) == var.efs_throughput_rate
+    error_message = "Valid values for `efs_throughput_rate` range from 1 to 1024 MiB/s."
+  }
+}
+
 ## Kubernetes
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
