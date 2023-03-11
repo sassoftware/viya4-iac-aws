@@ -11,11 +11,11 @@ locals {
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  count                           = var.storage_type == "ha" ? 1 : 0
-  creation_token                  = "${var.prefix}-efs"
-  performance_mode                = var.efs_performance_mode
-  tags                            = merge(var.tags, { "Name" : "${var.prefix}-efs" })
-  encrypted                       = var.enable_efs_encryption
+  count            = var.storage_type == "ha" ? 1 : 0
+  creation_token   = "${var.prefix}-efs"
+  performance_mode = var.efs_performance_mode
+  tags             = merge(var.tags, { "Name" : "${var.prefix}-efs" })
+  encrypted        = var.enable_efs_encryption
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
