@@ -14,8 +14,6 @@ resource "aws_efs_file_system" "efs-fs" {
   count                           = var.storage_type == "ha" ? 1 : 0
   creation_token                  = "${var.prefix}-efs"
   performance_mode                = var.efs_performance_mode
-  throughput_mode                 = var.efs_throughput_mode
-  provisioned_throughput_in_mibps = var.efs_throughput_mode == "provisioned" ? var.efs_throughput_rate : null
   tags                            = merge(var.tags, { "Name" : "${var.prefix}-efs" })
   encrypted                       = var.enable_efs_encryption
 }

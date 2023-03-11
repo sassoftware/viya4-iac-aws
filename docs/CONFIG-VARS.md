@@ -21,7 +21,6 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Storage](#storage)
     - [NFS Server](#nfs-server)
     - [AWS Elastic File System (EFS)](#aws-elastic-file-system-efs)
-    - [AWS Elastic Block Store (EBS)](#aws-elastic-block-store-ebs)
   - [PostgreSQL Server](#postgresql-server)
 
 Terraform input variables can be set in the following ways:
@@ -276,8 +275,7 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
 | enable_efs_encryption | Enable encryption on EFS file systems | bool | false | When set to 'true', the EFS file systems will be encrypted. |
-| efs_throughput_mode | EFS throughput mode | string | bursting | Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required. |
-| efs_throughput_rate | EFS throughput rate, measured in MiB/s | number | 1024 | Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'. |
+
 ### AWS Elastic Block Store (EBS)
 
 [AWS Elastic Block Store](https://aws.amazon.com/ebs/) is a block-level storage service provided by AWS for use with EC2 instances. EBS provides persistent storage for EC2 instances, allowing data to persist even after an EC2 instance is stopped or terminated. EBS volumes can be used as the root device for an EC2 instance, or as additional storage volumes. They can be attached and detached from instances as needed and can also be encrypted for increased security.
