@@ -103,7 +103,7 @@ variable "efs_performance_mode" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.23"
+  default     = "1.24"
 }
 
 variable "tags" {
