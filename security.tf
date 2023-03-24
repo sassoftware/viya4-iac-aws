@@ -1,3 +1,6 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 data "aws_security_group" "sg" {
   count = var.security_group_id == null ? 0 : 1
   id    = var.security_group_id
