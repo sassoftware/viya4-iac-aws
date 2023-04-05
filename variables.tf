@@ -111,10 +111,10 @@ variable "tags" {
   type        = map(any)
   default     = { project_name = "viya" }
 
-  validation {
-    condition     = length(var.tags) > 0
-    error_message = "ERROR: You must provide at last one tag."
-  }
+  #  validation {
+  #  condition     = length(local.tags) > 0
+  #  error_message = "ERROR: You must provide at last one tag."
+  #}
 }
 
 ## Default node pool config

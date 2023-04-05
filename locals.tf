@@ -3,6 +3,8 @@
 
 locals {
 
+  tags = length(var.tags) == 0 ? { project_name = "viya4" } : var.tags
+
   # General
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group.0.id : var.cluster_security_group_id
@@ -71,7 +73,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
-      tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : var.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
     }
   }
 
@@ -117,7 +119,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
-      tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : var.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
     }
   }
 
