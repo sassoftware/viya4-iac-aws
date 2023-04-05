@@ -1,10 +1,10 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 ##
-# 
+#
 # For AWS this is a script 'snippet' that is injected into another script
-# which performs tasks that are AWS specific. 
+# which performs tasks that are AWS specific.
 #
 # Link: https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/templates/userdata.sh.tpl
 #
