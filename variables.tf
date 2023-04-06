@@ -110,11 +110,6 @@ variable "tags" {
   description = "Map of common tags to be placed on the resources."
   type        = map(any)
   default     = { project_name = "viya" }
-
-  #  validation {
-  #  condition     = length(local.tags) > 0
-  #  error_message = "ERROR: You must provide at last one tag."
-  #}
 }
 
 ## Default node pool config
