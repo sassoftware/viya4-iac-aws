@@ -202,7 +202,7 @@ Custom policy:
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
-| tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | If a null or empty tags map value is specified, the tags variable will be set to the default value.|
+| tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | If left unspecified, or if a null or empty tags map value is provided, the tags variable will be set to the default value.|
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
