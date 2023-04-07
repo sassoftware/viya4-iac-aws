@@ -8,7 +8,8 @@ locals {
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group.0.id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group.0.id : var.workers_security_group_id
   cluster_name              = "${var.prefix}-eks"
-  tags                      = length(var.tags) == 0 ? { project_name = "viya" } : var.tags
+  default_tags              = { project_name = "viya" }
+  tags                      = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
 
   # CIDRs
   default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
