@@ -19,7 +19,7 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = merge(var.tags, { "Name" : "${var.prefix}-sg" })
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
 resource "aws_security_group_rule" "vms" {
@@ -81,7 +81,7 @@ resource "aws_security_group_rule" "postgres_external" {
 resource "aws_security_group" "cluster_security_group" {
   name   = "${var.prefix}-eks_cluster_sg"
   vpc_id = module.vpc.vpc_id
-  tags   = merge(var.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
+  tags   = merge(local.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
 
   count = var.cluster_security_group_id == null ? 1 : 0
 
@@ -113,7 +113,7 @@ resource "aws_security_group_rule" "cluster_ingress" {
 resource "aws_security_group" "workers_security_group" {
   name   = "${var.prefix}-eks_worker_sg"
   vpc_id = module.vpc.vpc_id
-  tags = merge(var.tags,
+  tags = merge(local.tags,
     { "Name" : "${var.prefix}-eks_worker_sg" },
     { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
   )
@@ -177,6 +177,3 @@ resource "aws_security_group_rule" "worker_cluster_api_443" {
   to_port                  = 443
   security_group_id        = aws_security_group.workers_security_group.0.id
 }
-
-
-
