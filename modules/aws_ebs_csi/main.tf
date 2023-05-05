@@ -166,9 +166,7 @@ module "iam_assumable_role_with_oidc" {
   oidc_fully_qualified_audiences = ["sts.amazonaws.com"]
   oidc_fully_qualified_subjects  = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 
-  tags = {
-    Role = "${var.prefix}-ebs-csi-role"
-  }
+  tags = merge(var.tags, { Role = "${var.prefix}-ebs-csi-role" })
 
 }
 
