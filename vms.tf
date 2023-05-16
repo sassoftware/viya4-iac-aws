@@ -1,3 +1,6 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
@@ -16,7 +19,7 @@ resource "aws_efs_file_system" "efs-fs" {
   performance_mode = var.efs_performance_mode
   throughput_mode                 = var.efs_throughput_mode
   provisioned_throughput_in_mibps = var.efs_throughput_mode == "provisioned" ? var.efs_throughput_rate : null
-  tags             = merge(var.tags, { "Name" : "${var.prefix}-efs" })
+  tags             = merge(local.tags, { "Name" : "${var.prefix}-efs" })
   encrypted        = var.enable_efs_encryption
 }
 
@@ -72,7 +75,7 @@ module "jump" {
   count              = var.create_jump_vm ? 1 : 0
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-jump"
-  tags               = var.tags
+  tags               = local.tags
   subnet_id          = local.jump_vm_subnet
   security_group_ids = [local.security_group_id, local.workers_security_group_id]
   create_public_ip   = var.create_jump_public_ip
@@ -123,7 +126,7 @@ module "nfs" {
   count              = var.storage_type == "standard" ? 1 : 0
   source             = "./modules/aws_vm"
   name               = "${var.prefix}-nfs-server"
-  tags               = var.tags
+  tags               = local.tags
   subnet_id          = local.nfs_vm_subnet
   security_group_ids = [local.security_group_id, local.workers_security_group_id]
   create_public_ip   = var.create_nfs_public_ip
@@ -146,4 +149,3 @@ module "nfs" {
 
   cloud_init = data.template_cloudinit_config.nfs.0.rendered
 }
-

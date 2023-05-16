@@ -1,3 +1,6 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 ## AWS-EKS
 #
 # Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
@@ -56,7 +59,7 @@ EOT
 provider "kubernetes" {
   # The endpoint attribute reference from the aws_eks_cluster data source in the line below will
   # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
-  # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to 
+  # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to
   # the kubernetes provider.
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
@@ -76,9 +79,9 @@ module "vpc" {
   subnets             = var.subnets
   existing_nat_id     = var.nat_id
 
-  tags                = var.tags
-  public_subnet_tags  = merge(var.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
-  private_subnet_tags = merge(var.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  tags                = local.tags
+  public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  private_subnet_tags = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
@@ -95,7 +98,7 @@ module "eks" {
 
   subnet_ids  = module.vpc.private_subnets
   vpc_id      = module.vpc.vpc_id
-  tags        = var.tags
+  tags        = local.tags
   enable_irsa = var.autoscaling_enabled
   ################################################################################
   # Cluster Security Group
@@ -151,7 +154,7 @@ module "eks" {
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   ]
 
-  ## Use this to define any values that are common and applicable to all Node Groups 
+  ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {
     create_security_group  = false
     vpc_security_group_ids = [local.workers_security_group_id]
@@ -171,7 +174,7 @@ module "autoscaling" {
 
   prefix       = var.prefix
   cluster_name = local.cluster_name
-  tags         = var.tags
+  tags         = local.tags
   oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
@@ -180,7 +183,7 @@ module "ebs" {
 
   prefix       = var.prefix
   cluster_name = local.cluster_name
-  tags         = var.tags
+  tags         = local.tags
   oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
@@ -229,7 +232,7 @@ module "postgresql" {
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
 
-  tags = var.tags
+  tags = local.tags
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
@@ -267,7 +270,7 @@ resource "aws_resourcegroups_group" "aws_rg" {
     "AWS::AllSupported"
   ],
   "TagFilters": ${jsonencode([
-    for key, values in var.tags : {
+    for key, values in local.tags : {
       "Key" : key,
       "Values" : [values]
     }
