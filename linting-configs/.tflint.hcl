@@ -3,7 +3,7 @@
 
 # For more information on plugins see https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md
 
-# For more information on TFlint Ruleset for Terraform; see https://github.com/terraform-linters/tflint-ruleset-terraform/blob/v0.2.0/docs/rules/README.md
+# For more information on TFlint Ruleset for Terraform; see https://github.com/terraform-linters/tflint-ruleset-terraform/blob/v0.3.0/docs/rules/README.md
 
 # For more information on TFlint Ruleset for AWS, see https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/rules/README.md
 
@@ -14,7 +14,7 @@ config {
 
 plugin "aws" {
   enabled = true
-  version = "0.21.2"
+  version = "0.23.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
