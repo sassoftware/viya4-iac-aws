@@ -4,7 +4,7 @@
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs.0.dns_name : module.nfs.0.private_ip_address
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_ip_address
   )
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
@@ -27,7 +27,7 @@ resource "aws_efs_file_system" "efs-fs" {
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
   count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
-  file_system_id  = aws_efs_file_system.efs-fs.0.id
+  file_system_id  = aws_efs_file_system.efs-fs[0].id
   subnet_id       = element(module.vpc.private_subnets, count.index)
   security_groups = [local.workers_security_group_id]
 }
@@ -42,7 +42,7 @@ data "template_file" "jump-cloudconfig" {
       ? "[]"
       : jsonencode(
         ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
-          "${var.jump_rwx_filestore_path}",
+          var.jump_rwx_filestore_path,
           "nfs",
           "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
           "0",
@@ -66,7 +66,7 @@ data "template_cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.jump-cloudconfig.0.rendered
+    content      = data.template_file.jump-cloudconfig[0].rendered
   }
 }
 
@@ -90,7 +90,7 @@ module "jump" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.template_cloudinit_config.jump.0.rendered
+  cloud_init = data.template_cloudinit_config.jump[0].rendered
 
   depends_on = [module.nfs]
 
@@ -117,7 +117,7 @@ data "template_cloudinit_config" "nfs" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.nfs-cloudconfig.0.rendered
+    content      = data.template_file.nfs-cloudconfig[0].rendered
   }
 }
 
@@ -147,5 +147,5 @@ module "nfs" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.template_cloudinit_config.nfs.0.rendered
+  cloud_init = data.template_cloudinit_config.nfs[0].rendered
 }
