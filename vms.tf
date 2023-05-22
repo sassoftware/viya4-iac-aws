@@ -32,32 +32,6 @@ resource "aws_efs_mount_target" "efs-mt" {
   security_groups = [local.workers_security_group_id]
 }
 
-
-# Processing the cloud-init/jump/cloud-config template file
-data "template_file" "jump-cloudconfig" {
-  count    = var.create_jump_vm ? 1 : 0
-  template = file("${path.module}/files/cloud-init/jump/cloud-config")
-  vars = {
-    mounts = (var.storage_type == "none"
-      ? "[]"
-      : jsonencode(
-        ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
-          var.jump_rwx_filestore_path,
-          "nfs",
-          "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
-          "0",
-          "0"
-      ])
-    )
-
-    rwx_filestore_endpoint  = local.rwx_filestore_endpoint
-    rwx_filestore_path      = local.rwx_filestore_path
-    jump_rwx_filestore_path = var.jump_rwx_filestore_path
-    vm_admin                = var.jump_vm_admin
-  }
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
-}
-
 # Defining the cloud-config to use
 data "template_cloudinit_config" "jump" {
   count         = var.create_jump_vm ? 1 : 0
@@ -66,8 +40,26 @@ data "template_cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.jump-cloudconfig[0].rendered
+    content     = templatefile("${path.module}/files/cloud-init/jump/cloud-config", {
+      mounts = (var.storage_type == "none"
+        ? "[]"
+        : jsonencode(
+          ["${local.rwx_filestore_endpoint}:${local.rwx_filestore_path}",
+            var.jump_rwx_filestore_path,
+            "nfs",
+            "rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport",
+            "0",
+            "0"
+        ])
+      )
+      rwx_filestore_endpoint  = local.rwx_filestore_endpoint
+      rwx_filestore_path      = local.rwx_filestore_path
+      jump_rwx_filestore_path = var.jump_rwx_filestore_path
+      vm_admin                = var.jump_vm_admin
+      }
+    )
   }
+  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
 }
 
 # Jump BOX
@@ -96,18 +88,6 @@ module "jump" {
 
 }
 
-data "template_file" "nfs-cloudconfig" {
-  template = file("${path.module}/files/cloud-init/nfs/cloud-config")
-  count    = var.storage_type == "standard" ? 1 : 0
-
-  vars = {
-    vm_admin             = var.nfs_vm_admin
-    public_subnet_cidrs  = join(" ", module.vpc.public_subnet_cidrs)
-    private_subnet_cidrs = join(" ", module.vpc.private_subnet_cidrs)
-  }
-
-}
-
 # Defining the cloud-config to use
 data "template_cloudinit_config" "nfs" {
   count = var.storage_type == "standard" ? 1 : 0
@@ -117,7 +97,12 @@ data "template_cloudinit_config" "nfs" {
 
   part {
     content_type = "text/cloud-config"
-    content      = data.template_file.nfs-cloudconfig[0].rendered
+    content = templatefile("${path.module}/files/cloud-init/nfs/cloud-config", {
+      vm_admin             = var.nfs_vm_admin
+      public_subnet_cidrs  = join(" ", module.vpc.public_subnet_cidrs)
+      private_subnet_cidrs = join(" ", module.vpc.private_subnet_cidrs)
+      }
+    )
   }
 }
 
