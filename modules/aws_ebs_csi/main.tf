@@ -1,6 +1,16 @@
 # Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+terraform {
+  required_version = ">= 1.4.5"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
+}
+
 resource "aws_iam_policy" "ebs_csi" {
   name_prefix = "${var.prefix}-ebs-csi-policy"
   description = "EKS ebs csi policy for cluster ${var.cluster_name}"

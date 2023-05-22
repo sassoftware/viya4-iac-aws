@@ -15,6 +15,7 @@ variable "cluster_name" {
 
 variable "tags" {
   description = "Tags used for autoscaling"
+  type        = map(any)
   default     = null
 }
 
