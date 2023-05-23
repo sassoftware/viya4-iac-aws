@@ -33,7 +33,7 @@ resource "aws_efs_mount_target" "efs-mt" {
 }
 
 # Defining the cloud-config to use
-data "template_cloudinit_config" "jump" {
+data "cloudinit_config" "jump" {
   count         = var.create_jump_vm ? 1 : 0
   gzip          = true
   base64_encode = true
@@ -82,14 +82,14 @@ module "jump" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.template_cloudinit_config.jump[0].rendered
+  cloud_init = data.cloudinit_config.jump[0].rendered
 
   depends_on = [module.nfs]
 
 }
 
 # Defining the cloud-config to use
-data "template_cloudinit_config" "nfs" {
+data "cloudinit_config" "nfs" {
   count = var.storage_type == "standard" ? 1 : 0
 
   gzip          = true
@@ -132,5 +132,5 @@ module "nfs" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.template_cloudinit_config.nfs[0].rendered
+  cloud_init = data.cloudinit_config.nfs[0].rendered
 }
