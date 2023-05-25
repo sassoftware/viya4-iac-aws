@@ -148,22 +148,22 @@ resource "aws_route" "public_internet_gateway" {
 resource "aws_route_table_association" "private" {
   count = local.existing_private_subnets ? 0 : length(var.subnets["private"])
 
-  subnet_id      = element(aws_subnet.private.*.id, count.index)
-  route_table_id = element(aws_route_table.private.*.id, 0)
+  subnet_id      = element(aws_subnet.private[*].id, count.index)
+  route_table_id = element(aws_route_table.private[*].id, 0)
 }
 
 resource "aws_route_table_association" "public" {
   count = local.existing_public_subnets ? 0 : length(var.subnets["public"])
 
-  subnet_id      = element(aws_subnet.public.*.id, count.index)
-  route_table_id = element(aws_route_table.public.*.id, 0)
+  subnet_id      = element(aws_subnet.public[*].id, count.index)
+  route_table_id = element(aws_route_table.public[*].id, 0)
 }
 
 resource "aws_route_table_association" "database" {
   count = local.existing_database_subnets ? 0 : length(var.subnets["database"])
 
-  subnet_id      = element(aws_subnet.database.*.id, count.index)
-  route_table_id = element(aws_route_table.private.*.id, 0)
+  subnet_id      = element(aws_subnet.database[*].id, count.index)
+  route_table_id = element(aws_route_table.private[*].id, 0)
 }
 
 #################
@@ -237,7 +237,7 @@ resource "aws_db_subnet_group" "database" {
 
   name        = lower(var.name)
   description = "Database subnet group for ${var.name}"
-  subnet_ids  = aws_subnet.database.*.id
+  subnet_ids  = aws_subnet.database[*].id
 
   tags = merge(
     {
@@ -272,8 +272,8 @@ data "aws_nat_gateway" "nat_gateway" {
 resource "aws_nat_gateway" "nat_gateway" {
   count = var.existing_nat_id == null ? 1 : 0
 
-  allocation_id = element(aws_eip.nat.*.id, 0)
-  subnet_id     = local.existing_public_subnets ? element(data.aws_subnet.public.*.id, 0) : element(aws_subnet.public.*.id, 0)
+  allocation_id = element(aws_eip.nat[*].id, 0)
+  subnet_id     = local.existing_public_subnets ? element(data.aws_subnet.public[*].id, 0) : element(aws_subnet.public[*].id, 0)
 
   tags = merge(
     {
@@ -292,9 +292,9 @@ resource "aws_nat_gateway" "nat_gateway" {
 resource "aws_route" "private_nat_gateway" {
   count = var.existing_nat_id == null ? 1 : 0
 
-  route_table_id         = element(aws_route_table.private.*.id, count.index)
+  route_table_id         = element(aws_route_table.private[*].id, count.index)
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = element(aws_nat_gateway.nat_gateway.*.id, count.index)
+  nat_gateway_id         = element(aws_nat_gateway.nat_gateway[*].id, count.index)
 
   timeouts {
     create = "5m"
