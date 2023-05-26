@@ -28,8 +28,8 @@ Now each time you invoke the container, specify the file with the [`--env-file` 
 Add volume mounts to the `docker run` command for all files and directories that must be accessible from inside the container:
 
 - `--volume=$HOME/.ssh:/.ssh` for [`ssh_public_key`](../CONFIG-VARS.md#required-variables) variable in the `terraform.tfvars` file
-- `--volume=$(pwd):/workspace` for a local directory where the `terraform.tfvars` file resides and where the `terraform.tfstate` file will be written. 
- 
+- `--volume=$(pwd):/workspace` for a local directory where the `terraform.tfvars` file resides and where the `terraform.tfstate` file will be written.
+
     To grant Docker permission to write to the local directory, use the [`--user` option](https://docs.docker.com/engine/reference/run/#user).
 
 **NOTE:** Local references to `$HOME` (or "`~`") need to map to the root directory `/` in the container.
@@ -52,7 +52,7 @@ docker run --rm --group-add root \
   --volume $(pwd):/workspace \
   viya4-iac-aws \
   plan -var-file /workspace/terraform.tfvars \
-       -state /workspace/terraform.tfstate  
+       -state /workspace/terraform.tfstate
 ```
 
 ### Create Cloud Resources
@@ -68,7 +68,7 @@ docker run --rm --group-add root \
   viya4-iac-aws \
   apply -auto-approve \
         -var-file /workspace/terraform.tfvars \
-        -state /workspace/terraform.tfstate 
+        -state /workspace/terraform.tfstate
 ```
 
 This command can take a few minutes to complete. Once complete, Terraform output values are written to the console. The `kubeconfig` file for the cluster is written to `[prefix]-eks-kubeconfig.conf` in the current directory, `$(pwd)`.
@@ -82,7 +82,7 @@ docker run --rm --group-add root \
   --user "$(id -u):$(id -g)" \
   --volume $(pwd):/workspace \
   viya4-iac-aws \
-  output -state /workspace/terraform.tfstate 
+  output -state /workspace/terraform.tfstate
 ```
 
 ### Modify Cloud Resources
@@ -98,7 +98,7 @@ docker run --rm --group-add root \
   viya4-iac-aws \
   apply -auto-approve \
         -var-file /workspace/terraform.tfvars \
-        -state /workspace/terraform.tfstate 
+        -state /workspace/terraform.tfstate
 ```
 
 ### Tear Down Resources
@@ -127,7 +127,9 @@ docker run --rm --group-add root \
 
 ### Example Using `kubectl`
 
-You can run the `kubectl get nodes` command with the `viya4-iac-aws` Docker image in order to get a list of cluster nodes. Switch the entrypoint to kubectl (`--entrypoint kubectl`), provide a kubeconfig file (`--env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf`), and pass kubectl subcommands (such as `get nodes`). For example, to run `kubectl get nodes`, run the following command:
+You can run the `kubectl get nodes` command with the `viya4-iac-aws` Docker image in order to get a list of cluster nodes. Switch the entrypoint to kubectl (`--entrypoint kubectl`), provide a kubeconfig file (`--env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf`), and pass kubectl subcommands (such as `get nodes`). For example, to run `kubectl get nodes`, run one of the following commands that matches your kubeconfig file type:
+
+Using a static kubeconfig file
 
 ```bash
 docker run --rm \
@@ -136,3 +138,19 @@ docker run --rm \
   --entrypoint kubectl \
   viya4-iac-aws get nodes
 ```
+
+Using a provider based kubeconfig file requires AWS cli credentials in order to authenticate to the cluster
+
+```bash
+docker run --rm \
+  --env=KUBECONFIG=/workspace/<your prefix>-eks-kubeconfig.conf \
+  --volume=$(pwd):/workspace \
+  --env=AWS_PROFILE=default \
+  --env=AWS_SHARED_CREDENTIALS_FILE=/workspace/credentials \
+  --volume $HOME/.aws/credentials:/workspace/credentials \
+  --entrypoint kubectl \
+  viya4-iac-aws get nodes
+```
+See [Kubernetes Configuration File Generation](./Kubeconfig.md) for information related to creating static and provider based kube config files.
+
+You can find more information about using AWS CLI credentials in [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles).
