@@ -330,7 +330,7 @@ Multiple SAS offerings require a second PostgreSQL instance referred to as SAS C
 Here is an example of the `postgres_servers` variable with the `default` server entry overriding only the `administrator_password` parameter, and the `cds-postgres` entry overriding all of the parameters:
 
 ```terraform
-database_servers = {
+postgres_servers = {
   default = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
