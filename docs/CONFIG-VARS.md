@@ -327,7 +327,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 
 Multiple SAS offerings require a second PostgreSQL instance referred to as SAS Common Data Store, or CDS PostgreSQL. For more information, see [Common Customizations](https://go.documentation.sas.com/doc/en/itopscdc/default/dplyml0phy0dkr/n08u2yg8tdkb4jn18u8zsi6yfv3d.htm#p0wkxxi9s38zbzn19ukjjaxsc0kl). A list of SAS offerings that require CDS PostgreSQL is provided in [SAS Common Data Store Requirements](https://go.documentation.sas.com/doc/en/itopscdc/default/itopssr/p06lfgkwib3zxbn1t6nyihexp12n.htm#n03wzanutmc6gon1val5fykas9aa). To create and configure an external CDS PostgreSQL instance in addition to the external platform PostgreSQL instance named `default`, specify `cds-postgres` as a second PostgreSQL instance, as shown in the example below.
 
-Here is an example of the `postgres_servers` variable with the `default` server entry overriding only the `administrator_password` parameter, and the `cds-postgres` entry overriding all of the parameters:
+Here is an example of the `postgres_servers` variable with the `default` server entry overriding only the `administrator_password` parameter and the `cds-postgres` entry overriding all of the parameters:
 
 ```terraform
 postgres_servers = {
