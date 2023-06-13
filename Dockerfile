@@ -11,6 +11,7 @@ COPY --from=terraform /bin/terraform /bin/terraform
 COPY . .
 
 RUN yum -y install git openssh jq which \
+  && yum -y update openssl-libs glib2 \
   && yum clean all && rm -rf /var/cache/yum \
   && curl -sLO https://storage.googleapis.com/kubernetes-release/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl \
   && chmod 755 ./kubectl /viya4-iac-aws/docker-entrypoint.sh \
