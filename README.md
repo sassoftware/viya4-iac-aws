@@ -15,7 +15,7 @@ This project contains Terraform scripts to provision the AWS cloud infrastructur
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 
 This project helps you to automate the cluster-provisioning phase of SAS Viya platform deployment. To learn about all phases and options of the
-SAS Viya platform deployment process, see [Getting Started with SAS Viya and Azure Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/n1d7qc4nfr3s5zn103a1qy0kj4l1.htm) in _SAS&reg; Viya&reg; Platform Operations_.
+SAS Viya platform deployment process, see [Getting Started with SAS Viya and Amazon Elastic Kubernetes Service](https://go.documentation.sas.com/doc/en/itopscdc/default/itopscon/p111dd1k5z99kin1f7mciggn9wop.htm) in _SAS&reg; Viya&reg; Platform Operations_.
 
 Once the cloud resources are provisioned, use the [viya4-deployment](https://github.com/sassoftware/viya4-deployment) project to deploy
 the SAS Viya platform in your cloud environment. For more information about SAS Viya platform requirements and documentation for the deployment
@@ -44,8 +44,8 @@ The following are also required:
 
 #### Terraform Requirements:
 
-- [Terraform](https://www.terraform.io/downloads.html) v1.0.0
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.23.8
+- [Terraform](https://www.terraform.io/downloads.html) v1.4.5
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.25.8
 - [jq](https://stedolan.github.io/jq/) v1.6
 - [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.7.22
 

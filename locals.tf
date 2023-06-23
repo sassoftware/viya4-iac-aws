@@ -1,17 +1,21 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 locals {
 
   # General
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
-  cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group.0.id : var.cluster_security_group_id
-  workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group.0.id : var.workers_security_group_id
+  cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
+  workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   cluster_name              = "${var.prefix}-eks"
+  default_tags              = { project_name = "viya" }
+  tags                      = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
 
   # CIDRs
   default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
   vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
   cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs # tflint-ignore: terraform_unused_declarations
   postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
   # Subnets
@@ -28,7 +32,7 @@ locals {
   # Kubernetes
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority.0.data
+  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority[0].data
 
   # Mapping node_pools to node_groups
   default_node_pool = {
@@ -69,7 +73,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
-      tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : var.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
     }
   }
 
@@ -115,7 +119,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
-      tags                            = var.autoscaling_enabled ? merge(var.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : var.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
     }
   }
 

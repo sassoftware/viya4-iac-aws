@@ -1,3 +1,6 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Reference: https://github.com/terraform-providers/terraform-provider-aws
 
 # Hack for assigning disk in a vm based on an index value. 
@@ -95,7 +98,7 @@ resource "aws_volume_attachment" "data-volume-attachment" {
   count       = var.data_disk_count
   device_name = element(local.device_name, count.index)
   instance_id = aws_instance.vm.id
-  volume_id   = element(aws_ebs_volume.raid_disk.*.id, count.index)
+  volume_id   = element(aws_ebs_volume.raid_disk[*].id, count.index)
 }
 
 resource "aws_ebs_volume" "raid_disk" {

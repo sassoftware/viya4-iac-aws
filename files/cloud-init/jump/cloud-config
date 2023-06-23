@@ -31,10 +31,14 @@ runcmd:
       # mount the nfs
       #
   -   while [ `df -h | grep "${rwx_filestore_endpoint}:${rwx_filestore_path}" | wc -l` -eq 0 ]; do sleep 5 && mount -a ; done
-      #
-      # Change permissions and owener
-      #
-  -   mkdir -p ${jump_rwx_filestore_path}/pvs
-  -   chmod 777 ${jump_rwx_filestore_path} -R
-  -   chown -R nobody:nogroup ${jump_rwx_filestore_path}
+      # Create pvs folder and adjust perms and owner only if the folder doesn't exist
+  -   if ! [ -d "${jump_rwx_filestore_path}/pvs" ]
+  -   then
+        #
+        # Change permissions and owner
+        #
+  -     mkdir -p ${jump_rwx_filestore_path}/pvs
+  -     chmod 777 ${jump_rwx_filestore_path} -R
+  -     chown -R nobody:nogroup ${jump_rwx_filestore_path}
+  -   fi
   - fi

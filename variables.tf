@@ -1,3 +1,6 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 ## Global
 variable "prefix" {
   description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with a lowercase letter and contain only alphanumeric characters and hyphens or dashes (-), but cannot start or end with '-'."
@@ -96,22 +99,39 @@ variable "efs_performance_mode" {
   default     = "generalPurpose"
 }
 
+variable "efs_throughput_mode" {
+  description = "EFS throughput mode. Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required."
+  type        = string
+  default     = "bursting"
+
+  validation {
+    condition     = contains(["bursting", "provisioned"], lower(var.efs_throughput_mode))
+    error_message = "ERROR: Supported values for `efs_throughput_mode` are - bursting, provisioned."
+  }
+}
+
+variable "efs_throughput_rate" {
+  description = "EFS throughput rate, measured in MiB/s. Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'."
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.efs_throughput_rate >= 1 && var.efs_throughput_rate <= 1024 && floor(var.efs_throughput_rate) == var.efs_throughput_rate
+    error_message = "Valid values for `efs_throughput_rate` range from 1 to 1024 MiB/s."
+  }
+}
+
 ## Kubernetes
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.23"
+  default     = "1.25"
 }
 
 variable "tags" {
   description = "Map of common tags to be placed on the resources."
   type        = map(any)
   default     = { project_name = "viya" }
-
-  validation {
-    condition     = length(var.tags) > 0
-    error_message = "ERROR: You must provide at last one tag."
-  }
 }
 
 ## Default node pool config

@@ -1,3 +1,16 @@
+# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+terraform {
+  required_version = ">= 1.4.5"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+  }
+}
+
 resource "aws_iam_policy" "ebs_csi" {
   name_prefix = "${var.prefix}-ebs-csi-policy"
   description = "EKS ebs csi policy for cluster ${var.cluster_name}"
@@ -154,7 +167,7 @@ EOT
 
 module "iam_assumable_role_with_oidc" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version = "4.12.0"
+  version = "4.24.1"
 
   create_role                    = true
   role_name                      = "${var.prefix}-ebs-csi-role"
