@@ -250,7 +250,7 @@ resource "aws_db_subnet_group" "database" {
 resource "aws_eip" "nat" {
   count = var.existing_nat_id == null ? 1 : 0
 
-  vpc = true
+  domain = "vpc"
 
   tags = merge(
     {
@@ -266,7 +266,7 @@ resource "aws_eip" "nat" {
 
 data "aws_nat_gateway" "nat_gateway" {
   count = var.existing_nat_id != null ? 1 : 0
-  id    = var.existing_nat_id # alt. support vpc_id or subnet_id where NAT 
+  id    = var.existing_nat_id # alt. support vpc_id or subnet_id where NAT
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
