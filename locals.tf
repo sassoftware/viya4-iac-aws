@@ -10,7 +10,11 @@ locals {
   cluster_name              = "${var.prefix}-eks"
   default_tags              = { project_name = "viya" }
   tags                      = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
-  aws_shared_credentials    = var.aws_shared_credentials_file == "" ? var.aws_shared_credentials_files : [var.aws_shared_credentials_file]
+
+  # aws_shared_credentials_file - is DEPRECATED and will be removed in a future release
+  use_aws_shared_credentials_file = var.aws_shared_credentials_file != null ? length(var.aws_shared_credentials_file) > 0 ? true : false : false
+  # Assign correct credential file value - If the old value is false, then new value must be used.
+  aws_shared_credentials          = local.use_aws_shared_credentials_file ? [var.aws_shared_credentials_file] : var.aws_shared_credentials_files
 
   # CIDRs
   default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
