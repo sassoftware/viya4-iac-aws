@@ -31,6 +31,12 @@ variable "aws_shared_credentials_file" {
   default     = ""
 }
 
+variable "aws_shared_credentials_files" {
+  description = "List of paths to shared credentials files, if using non-default location."
+  type        = list(string)
+  default     = null
+}
+
 variable "aws_session_token" {
   description = "Session token for temporary credentials."
   type        = string

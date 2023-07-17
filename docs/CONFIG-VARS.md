@@ -57,7 +57,8 @@ You can use either static credentials or the name of an AWS profile. If both are
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | aws_profile | Name of AWS Profile in the credentials file | string | "" | |
-| aws_shared_credentials_file | Path to credentials file | string | [`~/.aws/credentials` on Linux and macOS](https://docs.aws.amazon.com/credref/latest/refdocs/file-location.html) | Can be ignored when using the default value. |
+| aws_shared_credentials_file | Path to shared credentials file | string | [`~/.aws/credentials` on Linux and macOS](https://docs.aws.amazon.com/credref/latest/refdocs/file-location.html) | **`aws_shared_credentials_file` is deprecated and will be removed in a future release**: use `aws_shared_credentials_files` instead. Can be ignored when using the default value. `aws_shared_credentials_file` and `aws_shared_credentials_files` are mutually exclusive, configure one or the other but not both. |
+| aws_shared_credentials_files | List of paths to shared credentials files. | list of strings | [[`~/.aws/credentials`] on Linux and macOS](https://docs.aws.amazon.com/credref/latest/refdocs/file-location.html) | Can be ignored when using the default value. `aws_shared_credentials_file` and `aws_shared_credentials_files` are mutually exclusive, configure one or the other but not both.|
 
 ## Admin Access
 

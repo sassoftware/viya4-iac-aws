@@ -8,12 +8,13 @@
 #
 
 provider "aws" {
-  region                  = var.location
-  profile                 = var.aws_profile
-  shared_credentials_file = var.aws_shared_credentials_file
-  access_key              = var.aws_access_key_id
-  secret_key              = var.aws_secret_access_key
-  token                   = var.aws_session_token
+  region                   = var.location
+  profile                  = var.aws_profile
+  shared_credentials_files = local.aws_shared_credentials
+  access_key               = var.aws_access_key_id
+  secret_key               = var.aws_secret_access_key
+  token                    = var.aws_session_token
+
 }
 
 data "aws_eks_cluster" "cluster" {
@@ -202,10 +203,10 @@ module "kubeconfig" {
   depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
-# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/3.3.0
+# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/5.9.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "3.3.0"
+  version = "5.9.0"
 
   for_each = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
 
