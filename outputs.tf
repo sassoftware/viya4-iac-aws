@@ -143,3 +143,19 @@ output "ebs_csi_account" {
 output "k8s_version" {
   value = data.aws_eks_cluster.cluster.version
 }
+
+output "aws_shared_credentials_file" {
+  value = var.aws_shared_credentials_file
+  precondition {
+    condition = var.aws_shared_credentials_file != null
+    error_message = "aws_shared_credentials_file must not be null. aws_shared_credentials_file has been deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
+  }
+}
+
+output "aws_shared_credentials" {
+  value = local.aws_shared_credentials
+  precondition {
+    condition = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
+    error_message = "Set either aws_shared_credentials_files or aws_shared_credentials_file, but not both. aws_shared_credentials_file is deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
+  }
+}
