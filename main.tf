@@ -258,6 +258,7 @@ module "postgresql" {
   create_db_subnet_group    = true
   create_db_parameter_group = true
   create_db_option_group    = true
+  create_random_password    = false
 
 }
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
