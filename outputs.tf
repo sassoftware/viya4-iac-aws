@@ -31,7 +31,8 @@ output "rwx_filestore_id" {
 output "rwx_filestore_endpoint" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_dns
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name
+    : var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].dns_name : module.nfs[0].private_dns
   )
 }
 

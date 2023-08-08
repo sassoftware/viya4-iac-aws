@@ -4,12 +4,50 @@
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_ip_address
+    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name
+    : var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].dns_name : module.nfs[0].private_ip_address
   )
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? "/" : "/export"
+    : var.storage_type == "ha" ? "/"
+    : var.storage_type == "ontap" ? "/" : "/export"
   )
+}
+
+# ONTAP File System - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fsx_ontap_file_system
+
+resource "aws_fsx_ontap_file_system" "ontap-fs" {
+
+  count               = var.storage_type == "ontap" ? 1 : 0
+  storage_capacity    = 1024
+  deployment_type     = var.fsx_ontap_deployment_type
+
+  # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
+  # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs. 
+  # Only 2 subnet IDs maximum may be listed.
+  subnet_ids          = var.fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+  throughput_capacity = 512
+  preferred_subnet_id = module.vpc.private_subnets[0]
+  security_group_ids  = [local.workers_security_group_id]
+
+  tags                            = merge(local.tags, { "Name" : "${var.prefix}-ontap" })
+}
+
+# ONTAP storage virtual machine and volume resources
+
+resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
+  file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
+  name           = "ontap-svm"
+}
+
+# A default volume gets created with the svm, we may want another
+# in order to configure desired attributes
+resource "aws_fsx_ontap_volume" "vol1" {
+  name                       = "vol1"
+  junction_path              = "/vol1"
+  size_in_megabytes          = 1024
+  storage_efficiency_enabled = true
+  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm.id
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html

@@ -563,8 +563,8 @@ variable "storage_type" {
   default     = "standard"
   # NOTE: storage_type=none is for internal use only
   validation {
-    condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
-    error_message = "ERROR: Supported values for `storage_type` are standard, ha."
+    condition     = contains(["standard", "ha", "ontap", "none"], lower(var.storage_type))
+    error_message = "ERROR: Supported values for `storage_type` are standard, ha, ontap."
   }
 }
 
@@ -614,4 +614,15 @@ variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
   default     = false
+}
+
+variable "fsx_ontap_deployment_type" {
+  description = "The filesystem deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
+  type        = string
+  default     = "SINGLE_AZ_1"
+
+  validation {
+    condition     = contains(["single_az_1", "multi_az_1"], lower(var.fsx_ontap_deployment_type))
+    error_message = "ERROR: Supported values for `fsx_ontap_deployment_type` are - SINGLE_AZ_1, MULTI_AZ_1."
+  }
 }
