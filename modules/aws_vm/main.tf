@@ -3,7 +3,7 @@
 
 # Reference: https://github.com/terraform-providers/terraform-provider-aws
 
-# Hack for assigning disk in a vm based on an index value. 
+# Hack for assigning disk in a vm based on an index value.
 locals {
   device_name = [
     # "/dev/sdb", - NOTE: These are skipped, Ubuntu Server 20.04 LTS
@@ -89,7 +89,7 @@ resource "aws_instance" "vm" {
 
 resource "aws_eip" "eip" {
   count    = var.create_public_ip ? 1 : 0
-  vpc      = true
+  domain   = "vpc"
   instance = aws_instance.vm.id
   tags     = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
 }
