@@ -616,13 +616,19 @@ variable "enable_efs_encryption" {
   default     = false
 }
 
-variable "fsx_ontap_deployment_type" {
+variable "aws_fsx_ontap_deployment_type" {
   description = "The filesystem deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
   type        = string
   default     = "SINGLE_AZ_1"
 
   validation {
-    condition     = contains(["single_az_1", "multi_az_1"], lower(var.fsx_ontap_deployment_type))
+    condition     = contains(["single_az_1", "multi_az_1"], lower(var.aws_fsx_ontap_deployment_type))
     error_message = "ERROR: Supported values for `fsx_ontap_deployment_type` are - SINGLE_AZ_1, MULTI_AZ_1."
   }
+}
+
+variable "aws_fsx_ontap_fsxadmin_password" {
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system"
+  type        = string
+  default     = "Password123"
 }

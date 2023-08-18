@@ -32,14 +32,15 @@ output "rwx_filestore_endpoint" {
   value = (var.storage_type == "none"
     ? null
     : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name
-    : var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].dns_name : module.nfs[0].private_dns
+    : var.storage_type == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm.endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_dns
   )
 }
 
 output "rwx_filestore_path" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? "/" : "/export"
+    : var.storage_type == "ha" ? "/" 
+    : var.storage_type == "ontap" ? "/ontap" : "/export"
   )
 }
 
@@ -159,4 +160,25 @@ output "aws_shared_credentials" {
     condition = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
     error_message = "Set either aws_shared_credentials_files or aws_shared_credentials_file, but not both. aws_shared_credentials_file is deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
   }
+}
+
+output "aws_fsx_ontap_file_system_management_endpoint" {
+  value = (var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].endpoints[0]["management"][0]["dns_name"] : null)
+}
+
+output "aws_fsx_ontap_storage_virtual_machine_name" {
+  value = (var.storage_type == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm.name : null)
+}
+
+output "aws_fsx_ontap_volume_junction_path" {
+  value = aws_fsx_ontap_volume.ontap-vol.junction_path
+}
+
+output "aws_fsx_ontap_fsxadmin_password" {
+  value = var.aws_fsx_ontap_fsxadmin_password
+  sensitive = true
+}
+
+output "fsx_ontap_account" {
+  value = module.ontap.fsx_ontap_account
 }

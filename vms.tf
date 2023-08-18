@@ -19,35 +19,39 @@ locals {
 resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
   count               = var.storage_type == "ontap" ? 1 : 0
-  storage_capacity    = 1024
-  deployment_type     = var.fsx_ontap_deployment_type
+  storage_capacity    = 1024   # Units are in gigabytes
+  fsx_admin_password  = var.aws_fsx_ontap_fsxadmin_password
+
+  # Making this an input variable since not all regions support both types
+  deployment_type     = var.aws_fsx_ontap_deployment_type
 
   # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
-  # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs. 
-  # Only 2 subnet IDs maximum may be listed.
-  subnet_ids          = var.fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+  # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs, there is a 2 subnet ID maximum
+  subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
   throughput_capacity = 512
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
-
-  tags                            = merge(local.tags, { "Name" : "${var.prefix}-ontap" })
+  
+  tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
 }
 
 # ONTAP storage virtual machine and volume resources
 
 resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
   file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
-  name           = "ontap-svm"
+  name           = "${var.prefix}-ontap-svm"
+  tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
 }
 
 # A default volume gets created with the svm, we may want another
 # in order to configure desired attributes
-resource "aws_fsx_ontap_volume" "vol1" {
-  name                       = "vol1"
-  junction_path              = "/vol1"
-  size_in_megabytes          = 1024
+resource "aws_fsx_ontap_volume" "ontap-vol" {
+  name                       = replace("${var.prefix}_ontap_vol", "-", "_")   # TODO: base this on the prefix like all other names
+  junction_path              = "/ontap" 
+  size_in_megabytes          = aws_fsx_ontap_file_system.ontap-fs[0].storage_capacity * 1024 # any whole number in the range of 20–314572800 to specify the size in mebibytes (MiB)
   storage_efficiency_enabled = true
   storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm.id
+  tags                       = merge(local.tags, { "Name" : "${var.prefix}-ontap-vol" })
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html

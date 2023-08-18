@@ -188,6 +188,15 @@ module "ebs" {
   oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
+module "ontap" {
+  source = "./modules/aws_fsx_ontap"
+
+  prefix       = var.prefix
+  cluster_name = local.cluster_name
+  tags         = local.tags
+  oidc_url     = module.eks.cluster_oidc_issuer_url
+}
+
 module "kubeconfig" {
   source                   = "./modules/kubeconfig"
   prefix                   = var.prefix
@@ -232,6 +241,8 @@ module "postgresql" {
 
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
+
+  skip_final_snapshot = true
 
   tags = local.tags
 
