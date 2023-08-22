@@ -563,8 +563,22 @@ variable "storage_type" {
   default     = "standard"
   # NOTE: storage_type=none is for internal use only
   validation {
-    condition     = contains(["standard", "ha", "ontap", "none"], lower(var.storage_type))
-    error_message = "ERROR: Supported values for `storage_type` are standard, ha, ontap."
+    condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
+    error_message = "ERROR: Supported values for `storage_type` are standard and ha."
+  }
+}
+
+# TODO: Consider passing this to the DAC side as an output in the future
+variable "storage_type_backend" {
+  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'; 'efs' and 'ontap' are choices for storage_type='ha'."
+  type        = string
+  default     = "nfs"
+  # if type is standard, this will be set to "nfs"
+  # Default is nfs, a local will decide whether the "efs" should be used or not, in the case of "ha" storage_type, and if the user overrides it with "ontap"
+  # it can be validated
+  validation {
+    condition     = contains(["nfs", "efs", "ontap", "none"], lower(var.storage_type_backend))
+    error_message = "ERROR: Supported values for `storage_type_backend` are nfs, efs, ontap and none."
   }
 }
 
@@ -630,5 +644,5 @@ variable "aws_fsx_ontap_deployment_type" {
 variable "aws_fsx_ontap_fsxadmin_password" {
   description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system"
   type        = string
-  default     = "Password123"
+  default     = "v3RyS3cretPassw0rd"
 }

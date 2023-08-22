@@ -25,27 +25,29 @@ output "workers_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
-  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].id : null
+  value = (var.storage_type == "ha" && local.storage_backend == "efs" 
+    ? aws_efs_file_system.efs-fs[0].id
+    : var.storage_type == "ha" && local.storage_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null)
 }
 
 output "rwx_filestore_endpoint" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name
-    : var.storage_type == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm.endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_dns
+    : var.storage_type == "ha" && local.storage_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
+    : var.storage_type == "ha" && local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_dns
   )
 }
 
 output "rwx_filestore_path" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? "/" 
-    : var.storage_type == "ontap" ? "/ontap" : "/export"
+    : local.storage_backend == "efs" ? "/" 
+    : local.storage_backend == "ontap" ? "/ontap" : "/export"
   )
 }
 
 output "efs_arn" {
-  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].arn : null
+  value = var.storage_type == "ha" && local.storage_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
 }
 
 output "jump_private_ip" {
@@ -162,23 +164,27 @@ output "aws_shared_credentials" {
   }
 }
 
+output "storage_type_backend" {
+  value = local.storage_backend != null ? local.storage_backend : null
+}
+
 output "aws_fsx_ontap_file_system_management_endpoint" {
-  value = (var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].endpoints[0]["management"][0]["dns_name"] : null)
+  value = (local.storage_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].endpoints[0]["management"][0]["dns_name"] : null)
 }
 
 output "aws_fsx_ontap_storage_virtual_machine_name" {
-  value = (var.storage_type == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm.name : null)
+  value = (local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].name : null)
 }
 
-output "aws_fsx_ontap_volume_junction_path" {
-  value = aws_fsx_ontap_volume.ontap-vol.junction_path
-}
+# output "aws_fsx_ontap_volume_junction_path" {
+#   value = aws_fsx_ontap_volume.ontap-vol.junction_path
+# }
 
 output "aws_fsx_ontap_fsxadmin_password" {
-  value = var.aws_fsx_ontap_fsxadmin_password
+  value = (local.storage_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
   sensitive = true
 }
 
 output "fsx_ontap_account" {
-  value = module.ontap.fsx_ontap_account
+  value = (local.storage_backend == "ontap" ? module.ontap.fsx_ontap_account : null)
 }

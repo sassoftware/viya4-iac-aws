@@ -4,13 +4,13 @@
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name
-    : var.storage_type == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].dns_name : module.nfs[0].private_ip_address
+    : local.storage_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
+    : local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_ip_address
   )
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? "/"
-    : var.storage_type == "ontap" ? "/" : "/export"
+    : local.storage_backend == "efs" ? "/"
+    : local.storage_backend == "ontap" ? "/ontap" : "/export"
   )
 }
 
@@ -18,7 +18,7 @@ locals {
 
 resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
-  count               = var.storage_type == "ontap" ? 1 : 0
+  count               = local.storage_backend == "ontap" ? 1 : 0
   storage_capacity    = 1024   # Units are in gigabytes
   fsx_admin_password  = var.aws_fsx_ontap_fsxadmin_password
 
@@ -38,6 +38,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
 # ONTAP storage virtual machine and volume resources
 
 resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
+  count          = local.storage_backend == "ontap" ? 1 : 0
   file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
   name           = "${var.prefix}-ontap-svm"
   tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
@@ -46,17 +47,18 @@ resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
 # A default volume gets created with the svm, we may want another
 # in order to configure desired attributes
 resource "aws_fsx_ontap_volume" "ontap-vol" {
-  name                       = replace("${var.prefix}_ontap_vol", "-", "_")   # TODO: base this on the prefix like all other names
-  junction_path              = "/ontap" 
+  count                      = local.storage_backend == "ontap" ? 1 : 0
+  name                       = replace("${var.prefix}_ontap_vol", "-", "_")
+  junction_path              = "/ontap"
   size_in_megabytes          = aws_fsx_ontap_file_system.ontap-fs[0].storage_capacity * 1024 # any whole number in the range of 20–314572800 to specify the size in mebibytes (MiB)
   storage_efficiency_enabled = true
-  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm.id
+  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].id
   tags                       = merge(local.tags, { "Name" : "${var.prefix}-ontap-vol" })
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  count                           = var.storage_type == "ha" ? 1 : 0
+  count                           = local.storage_backend == "efs" ? 1 : 0
   creation_token                  = "${var.prefix}-efs"
   performance_mode                = var.efs_performance_mode
   throughput_mode                 = var.efs_throughput_mode
@@ -68,7 +70,7 @@ resource "aws_efs_file_system" "efs-fs" {
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
-  count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
+  count           = local.storage_backend == "efs" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs[0].id
   subnet_id       = element(module.vpc.private_subnets, count.index)
   security_groups = [local.workers_security_group_id]
@@ -101,7 +103,7 @@ data "cloudinit_config" "jump" {
       }
     )
   }
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
+  depends_on = [aws_efs_file_system.efs-fs, aws_fsx_ontap_storage_virtual_machine.ontap-svm, aws_efs_mount_target.efs-mt, module.nfs]
 }
 
 # Jump BOX
