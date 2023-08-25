@@ -568,7 +568,7 @@ variable "storage_type" {
   }
 }
 
-# TODO: Consider passing this to the DAC side as an output in the future
+# TODO: Consider passing this to the DAC side as an output if necessary
 variable "storage_type_backend" {
   description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'; 'efs' and 'ontap' are choices for storage_type='ha'."
   type        = string
@@ -642,7 +642,29 @@ variable "aws_fsx_ontap_deployment_type" {
 }
 
 variable "aws_fsx_ontap_fsxadmin_password" {
-  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system"
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API."
   type        = string
-  default     = "v3RyS3cretPassw0rd"
+  default     = "v3RyS3cretPa$sw0rd"
+}
+
+variable "aws_fsx_ontap_file_system_storage_capacity" {
+  description = "The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608."
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.aws_fsx_ontap_file_system_storage_capacity >= 1024 && var.aws_fsx_ontap_file_system_storage_capacity <= 196608 && floor(var.aws_fsx_ontap_file_system_storage_capacity) == var.aws_fsx_ontap_file_system_storage_capacity
+    error_message = "Valid values for `aws_fsx_ontap_file_system_storage_capacity` range from 1024 to 196608 GiB"
+  }
+}
+
+variable "aws_fsx_ontap_file_system_throughput_capacity" {
+  description = "Sets the throughput capacity (in MBps) for the ONTAP file system that you're creating. Valid values are 128, 256, 512, 1024, 2048, and 4096."
+  type        = number
+  default     = 512
+
+  validation {
+    condition     = contains([128, 256, 512, 1024, 2048, 4096], var.aws_fsx_ontap_file_system_throughput_capacity)
+    error_message = "Valid values for `aws_fsx_ontap_file_system_throughput_capacity` are 128, 256, 512, 1024, 2048 and 4096."
+  }
 }

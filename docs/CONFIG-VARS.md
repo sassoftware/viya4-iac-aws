@@ -253,7 +253,8 @@ Additional node pools can be created separately from the default node pool. This
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates NFS server VM; a value of "ha" creates an AWS EFS mountpoint. |
+| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates a NFS server VM; a value of "ha" creates an AWS EFS mountpoint by default. |
+| storage_type_backend | The storage technology backend employed for the chosen `storage_type`. Valid Values: "nfs" if `storage_type` is "standard"; "efs" or "ontap" if `storage_type` is "ha" | string | "nfs" | |
 
 ### NFS Server
 

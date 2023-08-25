@@ -18,21 +18,22 @@ locals {
 
 resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
-  count               = local.storage_backend == "ontap" ? 1 : 0
-  storage_capacity    = 1024   # Units are in gigabytes
-  fsx_admin_password  = var.aws_fsx_ontap_fsxadmin_password
+  count              = local.storage_backend == "ontap" ? 1 : 0
+  storage_capacity   = var.aws_fsx_ontap_file_system_storage_capacity
+  fsx_admin_password = var.aws_fsx_ontap_fsxadmin_password
 
-  # Making this an input variable since not all regions support both types
-  deployment_type     = var.aws_fsx_ontap_deployment_type
+  # Exposing as an input variable since not all regions support both types
+  deployment_type = var.aws_fsx_ontap_deployment_type
 
   # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
   # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs, there is a 2 subnet ID maximum
   subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
-  throughput_capacity = 512
+  throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
-  
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
+
+  depends_on = [module.ontap]
 }
 
 # ONTAP storage virtual machine and volume resources
@@ -84,7 +85,7 @@ data "cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content     = templatefile("${path.module}/files/cloud-init/jump/cloud-config", {
+    content = templatefile("${path.module}/files/cloud-init/jump/cloud-config", {
       mounts = (var.storage_type == "none"
         ? "[]"
         : jsonencode(
