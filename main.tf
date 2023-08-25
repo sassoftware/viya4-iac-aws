@@ -194,7 +194,6 @@ module "ontap" {
   prefix        = var.prefix
   cluster_name  = local.cluster_name
   tags          = local.tags
-  oidc_url      = module.eks.cluster_oidc_issuer_url
   iam_user_name = local.aws_caller_identity_user_name
 }
 
