@@ -568,7 +568,6 @@ variable "storage_type" {
   }
 }
 
-# TODO: It may become useful to pass this to the DAC side as an output in the future
 variable "storage_type_backend" {
   description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type-'ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
   type        = string

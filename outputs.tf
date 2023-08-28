@@ -183,15 +183,7 @@ output "aws_fsx_ontap_storage_virtual_machine_name" {
   value = (local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].name : null)
 }
 
-# output "aws_fsx_ontap_volume_junction_path" {
-#   value = aws_fsx_ontap_volume.ontap-vol.junction_path
-# }
-
 output "aws_fsx_ontap_fsxadmin_password" {
   value     = (local.storage_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
   sensitive = true
 }
-
-# output "fsx_ontap_account" {
-#   value = (local.storage_backend == "ontap" ? module.ontap.fsx_ontap_account : null)
-# }
