@@ -569,7 +569,7 @@ variable "storage_type" {
 }
 
 variable "storage_type_backend" {
-  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type-'ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
+  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type='ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
   type        = string
   default     = "nfs"
   # If storage_type is standard, this will be set to "nfs"
@@ -659,7 +659,7 @@ variable "aws_fsx_ontap_file_system_storage_capacity" {
 variable "aws_fsx_ontap_file_system_throughput_capacity" {
   description = "Sets the throughput capacity (in MBps) for the ONTAP file system that you're creating. Valid values are 128, 256, 512, 1024, 2048, and 4096."
   type        = number
-  default     = 512
+  default     = 256
 
   validation {
     condition     = contains([128, 256, 512, 1024, 2048, 4096], var.aws_fsx_ontap_file_system_throughput_capacity)
