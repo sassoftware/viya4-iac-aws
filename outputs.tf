@@ -175,14 +175,6 @@ output "storage_type_backend" {
   }
 }
 
-output "aws_fsx_ontap_file_system_management_endpoint" {
-  value = (local.storage_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].endpoints[0]["management"][0]["dns_name"] : null)
-}
-
-output "aws_fsx_ontap_storage_virtual_machine_name" {
-  value = (local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].name : null)
-}
-
 output "aws_fsx_ontap_fsxadmin_password" {
   value     = (local.storage_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
   sensitive = true
