@@ -558,7 +558,7 @@ variable "postgres_servers" {
 }
 
 variable "storage_type" {
-  description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint."
+  description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint or AWS for NetApp ONTAP file system depending on the storage_type_backend"
   type        = string
   default     = "standard"
   # NOTE: storage_type=none is for internal use only
