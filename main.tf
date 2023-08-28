@@ -242,8 +242,6 @@ module "postgresql" {
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
 
-  skip_final_snapshot = true
-
   tags = local.tags
 
   # DB subnet group - use public subnet if public access is requested
