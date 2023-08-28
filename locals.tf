@@ -37,7 +37,7 @@ locals {
   )
 
   # Storage
-  storage_backend = (var.storage_type == "none" ? "none"
+  storage_type_backend = (var.storage_type == "none" ? "none"
     : var.storage_type == "standard" ? "nfs"
     : var.storage_type == "ha" && var.storage_type_backend == "ontap" ? "ontap"
   : var.storage_type == "ha" ? "efs" : "none")

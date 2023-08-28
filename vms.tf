@@ -4,13 +4,13 @@
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
-    : local.storage_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
-    : local.storage_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_ip_address
+    : local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
+    : local.storage_type_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_ip_address
   )
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
-    : local.storage_backend == "efs" ? "/"
-    : local.storage_backend == "ontap" ? "/ontap" : "/export"
+    : local.storage_type_backend == "efs" ? "/"
+    : local.storage_type_backend == "ontap" ? "/ontap" : "/export"
   )
 }
 
@@ -18,7 +18,7 @@ locals {
 
 resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
-  count              = local.storage_backend == "ontap" ? 1 : 0
+  count              = local.storage_type_backend == "ontap" ? 1 : 0
   storage_capacity   = var.aws_fsx_ontap_file_system_storage_capacity
   fsx_admin_password = var.aws_fsx_ontap_fsxadmin_password
 
@@ -39,7 +39,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
 # ONTAP storage virtual machine and volume resources
 
 resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
-  count          = local.storage_backend == "ontap" ? 1 : 0
+  count          = local.storage_type_backend == "ontap" ? 1 : 0
   file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
   name           = "${var.prefix}-ontap-svm"
   tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
@@ -48,7 +48,7 @@ resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
 # A default volume gets created with the svm, we may want another
 # in order to configure desired attributes
 resource "aws_fsx_ontap_volume" "ontap-vol" {
-  count                      = local.storage_backend == "ontap" ? 1 : 0
+  count                      = local.storage_type_backend == "ontap" ? 1 : 0
   name                       = replace("${var.prefix}_ontap_vol", "-", "_")
   junction_path              = "/ontap"
   size_in_megabytes          = aws_fsx_ontap_file_system.ontap-fs[0].storage_capacity * 1024 # any whole number in the range of 20–314572800 to specify the size in mebibytes (MiB)
@@ -59,7 +59,7 @@ resource "aws_fsx_ontap_volume" "ontap-vol" {
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  count                           = local.storage_backend == "efs" ? 1 : 0
+  count                           = local.storage_type_backend == "efs" ? 1 : 0
   creation_token                  = "${var.prefix}-efs"
   performance_mode                = var.efs_performance_mode
   throughput_mode                 = var.efs_throughput_mode
@@ -71,7 +71,7 @@ resource "aws_efs_file_system" "efs-fs" {
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
-  count           = local.storage_backend == "efs" ? length(module.vpc.private_subnets) : 0
+  count           = local.storage_type_backend == "efs" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs[0].id
   subnet_id       = element(module.vpc.private_subnets, count.index)
   security_groups = [local.workers_security_group_id]
