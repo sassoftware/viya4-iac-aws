@@ -568,14 +568,13 @@ variable "storage_type" {
   }
 }
 
-# TODO: Consider passing this to the DAC side as an output if necessary
+# TODO: It may become useful to pass this to the DAC side as an output in the future
 variable "storage_type_backend" {
-  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'; 'efs' and 'ontap' are choices for storage_type='ha'."
+  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type-'ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
   type        = string
   default     = "nfs"
-  # if type is standard, this will be set to "nfs"
-  # Default is nfs, a local will decide whether the "efs" should be used or not, in the case of "ha" storage_type, and if the user overrides it with "ontap"
-  # it can be validated
+  # If storage_type is standard, this will be set to "nfs"
+
   validation {
     condition     = contains(["nfs", "efs", "ontap", "none"], lower(var.storage_type_backend))
     error_message = "ERROR: Supported values for `storage_type_backend` are nfs, efs, ontap and none."
@@ -631,7 +630,7 @@ variable "enable_efs_encryption" {
 }
 
 variable "aws_fsx_ontap_deployment_type" {
-  description = "The filesystem deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
+  description = "The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
   type        = string
   default     = "SINGLE_AZ_1"
 
