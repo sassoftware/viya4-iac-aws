@@ -558,13 +558,25 @@ variable "postgres_servers" {
 }
 
 variable "storage_type" {
-  description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint."
+  description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint or AWS for NetApp ONTAP file system depending on the storage_type_backend"
   type        = string
   default     = "standard"
   # NOTE: storage_type=none is for internal use only
   validation {
     condition     = contains(["standard", "ha", "none"], lower(var.storage_type))
-    error_message = "ERROR: Supported values for `storage_type` are standard, ha."
+    error_message = "ERROR: Supported values for `storage_type` are standard and ha."
+  }
+}
+
+variable "storage_type_backend" {
+  description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type='ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
+  type        = string
+  default     = "nfs"
+  # If storage_type is standard, this will be set to "nfs"
+
+  validation {
+    condition     = contains(["nfs", "efs", "ontap", "none"], lower(var.storage_type_backend))
+    error_message = "ERROR: Supported values for `storage_type_backend` are nfs, efs, ontap and none."
   }
 }
 
@@ -614,4 +626,43 @@ variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
   default     = false
+}
+
+variable "aws_fsx_ontap_deployment_type" {
+  description = "The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
+  type        = string
+  default     = "SINGLE_AZ_1"
+
+  validation {
+    condition     = contains(["single_az_1", "multi_az_1"], lower(var.aws_fsx_ontap_deployment_type))
+    error_message = "ERROR: Supported values for `fsx_ontap_deployment_type` are - SINGLE_AZ_1, MULTI_AZ_1."
+  }
+}
+
+variable "aws_fsx_ontap_fsxadmin_password" {
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API."
+  type        = string
+  default     = "v3RyS3cretPa$sw0rd"
+}
+
+variable "aws_fsx_ontap_file_system_storage_capacity" {
+  description = "The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608."
+  type        = number
+  default     = 1024
+
+  validation {
+    condition     = var.aws_fsx_ontap_file_system_storage_capacity >= 1024 && var.aws_fsx_ontap_file_system_storage_capacity <= 196608 && floor(var.aws_fsx_ontap_file_system_storage_capacity) == var.aws_fsx_ontap_file_system_storage_capacity
+    error_message = "Valid values for `aws_fsx_ontap_file_system_storage_capacity` range from 1024 to 196608 GiB"
+  }
+}
+
+variable "aws_fsx_ontap_file_system_throughput_capacity" {
+  description = "Sets the throughput capacity (in MBps) for the ONTAP file system that you're creating. Valid values are 128, 256, 512, 1024, 2048, and 4096."
+  type        = number
+  default     = 256
+
+  validation {
+    condition     = contains([128, 256, 512, 1024, 2048, 4096], var.aws_fsx_ontap_file_system_throughput_capacity)
+    error_message = "Valid values for `aws_fsx_ontap_file_system_throughput_capacity` are 128, 256, 512, 1024, 2048 and 4096."
+  }
 }

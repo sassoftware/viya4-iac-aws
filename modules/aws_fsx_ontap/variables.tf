@@ -14,13 +14,13 @@ variable "cluster_name" {
 }
 
 variable "tags" {
-  description = "Tags used for autoscaling"
+  description = "Tags used for fsx_ontap"
   type        = map(any)
   default     = null
 }
 
-variable "oidc_url" {
-  description = "OIDC URL of EKS cluster"
+variable "iam_user_name" {
+  description = "AWS caller identity user name parsed from the ARN value"
   type        = string
   default     = ""
 }

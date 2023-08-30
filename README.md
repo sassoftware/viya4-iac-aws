@@ -10,6 +10,7 @@ This project contains Terraform scripts to provision the AWS cloud infrastructur
   >- Infrastructure to deploy the SAS Viya platform CAS server in SMP or MPP mode
   >- Amazon Elastic Block Storage (EBS) for NFS
   >- Amazon Elastic File System (EFS)
+  >- Amazon FSx for NetApp ONTAP File System
   >- Amazon Relational Database Service (RDS)
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
@@ -40,6 +41,8 @@ This project supports two options for running Terraform scripts:
 
 The following are also required:
 - Access to an **AWS account** with a user that is associated with the applied [IAM Policy](./files/policies/devops-iac-eks-policy.json)
+
+  **NOTE:** The base [IAM Policy](./files/policies/devops-iac-eks-policy.json) document has been updated for the 7.2.0 release, you will need to adopt the updated permission list to take advantage of new features added to the viya4-iac-aws project code.
 - Subscription to [Ubuntu 20.04 LTS - Focal](https://aws.amazon.com/marketplace/pp/prodview-iftkyuwv2sjxi)
 
 #### Terraform Requirements:
