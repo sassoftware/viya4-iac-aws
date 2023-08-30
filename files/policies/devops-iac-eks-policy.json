@@ -110,6 +110,8 @@
                 "ecr:ListTagsForResource",
                 "iam:AddRoleToInstanceProfile",
                 "iam:AttachRolePolicy",
+                "iam:AttachUserPolicy",
+                "iam:DetachUserPolicy",
                 "iam:CreateAccessKey",
                 "iam:CreateInstanceProfile",
                 "iam:CreateOpenIDConnectProvider",

@@ -21,6 +21,7 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Storage](#storage)
     - [NFS Server](#nfs-server)
     - [AWS Elastic File System (EFS)](#aws-elastic-file-system-efs)
+    - [AWS FSx for NetApp ONTAP File System](#aws-fsx-for-netapp-ontap-file-system)
     - [AWS Elastic Block Store (EBS)](#aws-elastic-block-store-ebs)
   - [PostgreSQL Server](#postgresql-server)
 
@@ -251,9 +252,10 @@ Additional node pools can be created separately from the default node pool. This
 
 ## Storage
 
-| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| <div style="width:50px">Name</div> | <div style="width:130px">Description</div> | <div style="width:40px">Type</div> | <div style="width:200px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates NFS server VM; a value of "ha" creates an AWS EFS mountpoint. |
+| storage_type | Type of Storage. Valid Values: "standard", "ha"  | string | "standard" | A value of "standard" creates a NFS server VM; a value of "ha" creates an AWS EFS mountpoint by default. |
+| storage_type_backend | The storage backend employed for the chosen `storage_type`. | string | If `storage_type=standard` the default is "nfs";<br>If `storage_type=ha` the default is "efs" | Valid Values: "nfs" if `storage_type=standard`; "efs" or "ontap" if `storage_type=ha` |
 
 ### NFS Server
 
@@ -270,7 +272,7 @@ When `storage_type=standard`, an NFS server VM is created, and the following var
 
 ### AWS Elastic File System (EFS)
 
-When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs/) service is created, and the following variables are applicable:
+When `storage_type=ha` and `storage_type_backend=efs`, an [AWS Elastic File System](https://aws.amazon.com/efs/) service is created, and the following variables are applicable:
 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -279,6 +281,19 @@ When `storage_type=ha`, the [AWS Elastic File System](https://aws.amazon.com/efs
 | enable_efs_encryption | Enable encryption on EFS file systems | bool | false | When set to 'true', the EFS file systems will be encrypted. |
 | efs_throughput_mode | EFS throughput mode | string | bursting | Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required. |
 | efs_throughput_rate | EFS throughput rate, measured in MiB/s | number | 1024 | Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'. |
+
+### AWS FSx for NetApp ONTAP File System
+
+When `storage_type=ha` and `storage_type_backend=ontap`, an [AWS FSx for NetApp ONTAP File System](https://aws.amazon.com/fsx/netapp-ontap/) is created, and the following variables are applicable:
+
+<!--| Name | Description | Type | Default | Notes | -->
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| aws_fsx_ontap_deployment_type | The FSx file system availability zone deployment type. | string | SINGLE_AZ_1 | Supported values are `MULTI_AZ_1` and `SINGLE_AZ_1`. |
+| aws_fsx_ontap_file_system_storage_capacity | The storage capacity of the ONTAP file system in GiB. | number | 1024 | Valid values range from  1024 to 196608. |
+| aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 512 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
+| aws_fsx_ontap_fsxadmin_password | The ONTAP administrative password for the fsxadmin user. | string | "v3RyS3cretPa$sw0rd" | |
+
 ### AWS Elastic Block Store (EBS)
 
 [AWS Elastic Block Store](https://aws.amazon.com/ebs/) is a block-level storage service provided by AWS for use with EC2 instances. EBS provides persistent storage for EC2 instances, allowing data to persist even after an EC2 instance is stopped or terminated. EBS volumes can be used as the root device for an EC2 instance, or as additional storage volumes. They can be attached and detached from instances as needed and can also be encrypted for increased security.
