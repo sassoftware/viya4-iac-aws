@@ -25,25 +25,29 @@ output "workers_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
-  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].id : null
+  value = (var.storage_type == "ha" && local.storage_type_backend == "efs"
+    ? aws_efs_file_system.efs-fs[0].id
+  : var.storage_type == "ha" && local.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null)
 }
 
 output "rwx_filestore_endpoint" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_dns
+    : var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
+    : var.storage_type == "ha" && local.storage_type_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_dns
   )
 }
 
 output "rwx_filestore_path" {
   value = (var.storage_type == "none"
     ? null
-    : var.storage_type == "ha" ? "/" : "/export"
+    : local.storage_type_backend == "efs" ? "/"
+    : local.storage_type_backend == "ontap" ? "/ontap" : "/export"
   )
 }
 
 output "efs_arn" {
-  value = var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].arn : null
+  value = var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
 }
 
 output "jump_private_ip" {
@@ -147,7 +151,7 @@ output "k8s_version" {
 output "aws_shared_credentials_file" {
   value = var.aws_shared_credentials_file
   precondition {
-    condition = var.aws_shared_credentials_file != null
+    condition     = var.aws_shared_credentials_file != null
     error_message = "aws_shared_credentials_file must not be null. aws_shared_credentials_file has been deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
   }
 }
@@ -155,7 +159,23 @@ output "aws_shared_credentials_file" {
 output "aws_shared_credentials" {
   value = local.aws_shared_credentials
   precondition {
-    condition = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
+    condition     = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
     error_message = "Set either aws_shared_credentials_files or aws_shared_credentials_file, but not both. aws_shared_credentials_file is deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
   }
+}
+
+output "storage_type_backend" {
+  value = local.storage_type_backend != null ? local.storage_type_backend : null
+  precondition {
+    condition = (var.storage_type == "standard" && var.storage_type_backend == "nfs"
+      || var.storage_type == "ha" && var.storage_type_backend == "nfs"
+      || var.storage_type == "ha" && var.storage_type_backend == "efs"
+    || var.storage_type == "ha" && var.storage_type_backend == "ontap")
+    error_message = "nfs is the only valid storage_type_backend when storage_type == 'standard'"
+  }
+}
+
+output "aws_fsx_ontap_fsxadmin_password" {
+  value     = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
+  sensitive = true
 }

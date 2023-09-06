@@ -188,6 +188,15 @@ module "ebs" {
   oidc_url     = module.eks.cluster_oidc_issuer_url
 }
 
+module "ontap" {
+  source = "./modules/aws_fsx_ontap"
+
+  prefix        = var.prefix
+  cluster_name  = local.cluster_name
+  tags          = local.tags
+  iam_user_name = local.aws_caller_identity_user_name
+}
+
 module "kubeconfig" {
   source                   = "./modules/kubeconfig"
   prefix                   = var.prefix

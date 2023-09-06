@@ -4,17 +4,62 @@
 locals {
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? aws_efs_file_system.efs-fs[0].dns_name : module.nfs[0].private_ip_address
+    : local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
+    : local.storage_type_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_ip_address
   )
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
-    : var.storage_type == "ha" ? "/" : "/export"
+    : local.storage_type_backend == "efs" ? "/"
+    : local.storage_type_backend == "ontap" ? "/ontap" : "/export"
   )
+}
+
+# ONTAP File System - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fsx_ontap_file_system
+
+resource "aws_fsx_ontap_file_system" "ontap-fs" {
+
+  count              = local.storage_type_backend == "ontap" ? 1 : 0
+  storage_capacity   = var.aws_fsx_ontap_file_system_storage_capacity
+  fsx_admin_password = var.aws_fsx_ontap_fsxadmin_password
+
+  # Exposing as an input variable since not all regions support both types
+  deployment_type = var.aws_fsx_ontap_deployment_type
+
+  # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
+  # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs, there is a 2 subnet ID maximum
+  subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+  throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
+  preferred_subnet_id = module.vpc.private_subnets[0]
+  security_group_ids  = [local.workers_security_group_id]
+  tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
+
+  depends_on = [module.ontap]
+}
+
+# ONTAP storage virtual machine and volume resources
+
+resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
+  count          = local.storage_type_backend == "ontap" ? 1 : 0
+  file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
+  name           = "${var.prefix}-ontap-svm"
+  tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
+}
+
+# A default volume gets created with the svm, we may want another
+# in order to configure desired attributes
+resource "aws_fsx_ontap_volume" "ontap-vol" {
+  count                      = local.storage_type_backend == "ontap" ? 1 : 0
+  name                       = replace("${var.prefix}_ontap_vol", "-", "_")
+  junction_path              = "/ontap"
+  size_in_megabytes          = aws_fsx_ontap_file_system.ontap-fs[0].storage_capacity * 1024 # any whole number in the range of 20–314572800 to specify the size in mebibytes (MiB)
+  storage_efficiency_enabled = true
+  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].id
+  tags                       = merge(local.tags, { "Name" : "${var.prefix}-ontap-vol" })
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
 resource "aws_efs_file_system" "efs-fs" {
-  count                           = var.storage_type == "ha" ? 1 : 0
+  count                           = local.storage_type_backend == "efs" ? 1 : 0
   creation_token                  = "${var.prefix}-efs"
   performance_mode                = var.efs_performance_mode
   throughput_mode                 = var.efs_throughput_mode
@@ -26,7 +71,7 @@ resource "aws_efs_file_system" "efs-fs" {
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html
 resource "aws_efs_mount_target" "efs-mt" {
   # NOTE - Testing. use num_azs = 2
-  count           = var.storage_type == "ha" ? length(module.vpc.private_subnets) : 0
+  count           = local.storage_type_backend == "efs" ? length(module.vpc.private_subnets) : 0
   file_system_id  = aws_efs_file_system.efs-fs[0].id
   subnet_id       = element(module.vpc.private_subnets, count.index)
   security_groups = [local.workers_security_group_id]
@@ -40,7 +85,7 @@ data "cloudinit_config" "jump" {
 
   part {
     content_type = "text/cloud-config"
-    content     = templatefile("${path.module}/files/cloud-init/jump/cloud-config", {
+    content = templatefile("${path.module}/files/cloud-init/jump/cloud-config", {
       mounts = (var.storage_type == "none"
         ? "[]"
         : jsonencode(
@@ -59,7 +104,7 @@ data "cloudinit_config" "jump" {
       }
     )
   }
-  depends_on = [aws_efs_file_system.efs-fs, aws_efs_mount_target.efs-mt, module.nfs]
+  depends_on = [aws_efs_file_system.efs-fs, aws_fsx_ontap_storage_virtual_machine.ontap-svm, aws_efs_mount_target.efs-mt, module.nfs]
 }
 
 # Jump BOX

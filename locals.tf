@@ -3,6 +3,9 @@
 
 locals {
 
+  # AWS caller identity user_name derived from ARN value
+  aws_caller_identity_user_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
+
   # General
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
@@ -14,7 +17,7 @@ locals {
   # aws_shared_credentials_file - is DEPRECATED and will be removed in a future release
   use_aws_shared_credentials_file = var.aws_shared_credentials_file != null ? length(var.aws_shared_credentials_file) > 0 ? true : false : false
   # Assign correct credential file value - If the old value is false, then new value must be used.
-  aws_shared_credentials          = local.use_aws_shared_credentials_file ? [var.aws_shared_credentials_file] : var.aws_shared_credentials_files
+  aws_shared_credentials = local.use_aws_shared_credentials_file ? [var.aws_shared_credentials_file] : var.aws_shared_credentials_files
 
   # CIDRs
   default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
@@ -33,6 +36,11 @@ locals {
     : null
   )
 
+  # Storage
+  storage_type_backend = (var.storage_type == "none" ? "none"
+    : var.storage_type == "standard" ? "nfs"
+    : var.storage_type == "ha" && var.storage_type_backend == "ontap" ? "ontap"
+  : var.storage_type == "ha" ? "efs" : "none")
 
   # Kubernetes
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
