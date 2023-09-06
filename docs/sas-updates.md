@@ -4,7 +4,7 @@ To deploy the SAS Viya platform 2021.2.6 and later, use the most recent version 
 
 If you are updating the SAS Viya platform to version 2021.2.6, take some additional steps to remove the connect nodes.
 
-1.	Perform the update by following the steps in the [SAS Viya platform documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=v_043&docsetId=k8sag&docsetTarget=p043aa4ghwwom6n1beyfifdgkve7.htm).
+1.	Perform the update by following the steps in the [SAS Viya platform documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=k8sag&docsetTarget=p043aa4ghwwom6n1beyfifdgkve7.htm).
 2.	When the update to 2021.2.6 has completed successfully, edit the sample-input-*.tfvars to scale down the connect node pool. Change `min_nodes` and `max_nodes` to 0:
 ```
   connect = {
