@@ -190,9 +190,9 @@ module "ebs" {
 
 module "ontap" {
   source = "./modules/aws_fsx_ontap"
+  count  = var.storage_type_backend == "ontap" ? 1 : 0
 
   prefix        = var.prefix
-  cluster_name  = local.cluster_name
   tags          = local.tags
   iam_user_name = local.aws_caller_identity_user_name
 }
