@@ -291,8 +291,10 @@ When `storage_type=ha` and `storage_type_backend=ontap`, an [AWS FSx for NetApp 
 | :--- | :--- | :--- | :--- | :--- |
 | aws_fsx_ontap_deployment_type | The FSx file system availability zone deployment type. | string | SINGLE_AZ_1 | Supported values are `MULTI_AZ_1` and `SINGLE_AZ_1`. |
 | aws_fsx_ontap_file_system_storage_capacity | The storage capacity of the ONTAP file system in GiB. | number | 1024 | Valid values range from  1024 to 196608. |
-| aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 512 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
+| aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 256 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
 | aws_fsx_ontap_fsxadmin_password | The ONTAP administrative password for the fsxadmin user. | string | "v3RyS3cretPa$sw0rd" | |
+
+**Note:** The base [IAM Policy](../files/policies/devops-iac-eks-policy.json) document has been updated for the 7.2.0 release to support FSx for NetApp ONTAP. You will need to add the iam:AttachUserPolicy and iam:DetachUserPolicy permissions to your user's existing base policy document to use FSx for NetApp ONTAP features added in the 7.2.0 release.
 
 ### AWS Elastic Block Store (EBS)
 

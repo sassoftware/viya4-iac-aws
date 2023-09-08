@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Permissions based off the IAM Policies required to manage fsx_ontap resources in this project
-data "aws_iam_policy_document" "worker_fsx_ontap" {
+data "aws_iam_policy_document" "fsx_ontap" {
   statement {
     sid       = "fsxFileSystemOwn"
     effect    = "Allow"
@@ -66,10 +66,10 @@ data "aws_iam_policy_document" "worker_fsx_ontap" {
   }
 }
 
-resource "aws_iam_policy" "worker_fsx_ontap" {
+resource "aws_iam_policy" "fsx_ontap" {
   name_prefix = "${var.prefix}-fsx-ontap"
-  description = "EKS worker node fsx_ontap policy for cluster ${var.cluster_name}"
-  policy      = data.aws_iam_policy_document.worker_fsx_ontap.json
+  description = "FSx policy for user ${data.aws_iam_user.terraform.user_name}"
+  policy      = data.aws_iam_policy_document.fsx_ontap.json
   tags        = var.tags
 }
 
@@ -79,5 +79,5 @@ data "aws_iam_user" "terraform" {
 
 resource "aws_iam_user_policy_attachment" "attachment" {
   user       = data.aws_iam_user.terraform.user_name
-  policy_arn = aws_iam_policy.worker_fsx_ontap.arn
+  policy_arn = aws_iam_policy.fsx_ontap.arn
 }
