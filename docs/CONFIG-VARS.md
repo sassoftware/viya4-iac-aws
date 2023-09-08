@@ -294,6 +294,8 @@ When `storage_type=ha` and `storage_type_backend=ontap`, an [AWS FSx for NetApp 
 | aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 256 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
 | aws_fsx_ontap_fsxadmin_password | The ONTAP administrative password for the fsxadmin user. | string | "v3RyS3cretPa$sw0rd" | |
 
+**Note:** The base [IAM Policy](../files/policies/devops-iac-eks-policy.json) document has been updated for the 7.2.0 release to suport FSx for NetApp ONTAP. You will need to add the iam:AttachUserPolicy and iam:DetachUserPolicy permissions to your user's existing base policy document to use FSx for NetApp ONTAP features added in the 7.2.0 release.
+
 ### AWS Elastic Block Store (EBS)
 
 [AWS Elastic Block Store](https://aws.amazon.com/ebs/) is a block-level storage service provided by AWS for use with EC2 instances. EBS provides persistent storage for EC2 instances, allowing data to persist even after an EC2 instance is stopped or terminated. EBS volumes can be used as the root device for an EC2 instance, or as additional storage volumes. They can be attached and detached from instances as needed and can also be encrypted for increased security.
