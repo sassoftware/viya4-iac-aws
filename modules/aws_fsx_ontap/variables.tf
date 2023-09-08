@@ -7,12 +7,6 @@ variable "prefix" {
   default     = ""
 }
 
-variable "cluster_name" {
-  description = "Name of EKS cluster"
-  type        = string
-  default     = ""
-}
-
 variable "tags" {
   description = "Tags used for fsx_ontap"
   type        = map(any)
