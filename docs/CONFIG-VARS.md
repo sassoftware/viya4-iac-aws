@@ -330,7 +330,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| server_version | The version of the PostgreSQL server | string | "13" | Refer to the [SAS Viya platform Administration Guide](https://go.documentation.sas.com/doc/en/sasadmincdc/default/itopssr/p05lfgkwib3zxbn1t6nyihexp12n.htm?fromDefault=#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
+| server_version | The version of the PostgreSQL server | string | "13" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
 | instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
 | storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
