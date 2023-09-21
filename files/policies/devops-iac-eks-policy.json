@@ -145,6 +145,7 @@
                 "iam:TagPolicy",
                 "iam:TagInstanceProfile",
                 "iam:TagOpenIDConnectProvider",
+                "iam:UpdateOpenIDConnectProviderThumbprint",
                 "iam:UntagPolicy",
                 "iam:UpdateAssumeRolePolicy",
                 "iam:UpdateAccessKey",
