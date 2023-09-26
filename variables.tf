@@ -233,7 +233,7 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
 }
 
 variable "enable_multi_zone" {
-  description = "Should be true to deploy EKS in multiple availability zones."
+  description = "Set to true to deploy EKS Node Pools in multiple availability zones."
   type        = bool
   default     = false
 }
