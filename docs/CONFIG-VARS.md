@@ -41,7 +41,7 @@ Terraform input variables can be set in the following ways:
 
 ### AWS Authentication
 
-The Terraform process manages AWS resources on your behalf. In order to do so, it needs the credentials for an AWS identity with the required permissons.
+The Terraform process manages AWS resources on your behalf. In order to do so, it needs the credentials for an AWS identity with the required permissions.
 
 You can use either static credentials or the name of an AWS profile. If both are specified, the static credentials take precedence. For recommendations on how to set these variables in your environment, see [Authenticating Terraform to Access AWS](./user/TerraformAWSAuthentication.md).
 
@@ -63,7 +63,7 @@ You can use either static credentials or the name of an AWS profile. If both are
 
 ## Admin Access
 
-By default, the pubic endpoints of the AWS resources that are being created are only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
+By default, the public endpoints of the AWS resources that are being created are only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
 To enable access for other administrative client applications (for example `kubectl`, `psql`, etc.), you can set Security Group rules to control access from your source IP addresses.
 
 To set these permissions as part of this Terraform script, specify ranges of IP addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing). Contact your Network Administrator to find the public CIDR range of your network.
@@ -112,11 +112,11 @@ The variables in the table below can be used to define the existing resources. R
  | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. |
  | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
 | cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
-| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sourcess (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
+| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sources (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
 
 Example `subnet_ids` variable:
 
-```yaml
+```terraform
 subnet_ids = {
   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
@@ -209,6 +209,7 @@ Custom policy:
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
+| enable_multi_zone | Set to true to deploy EKS Node Pools in multiple availability zones | boolean | false | **WARNING**: changing this from true to false after infrastructure creation is destructive. If you have an existing Viya deployment in your cluster, following the [SAS Viya Platform Operations backup and restore documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopsmigwlcm&docsetTarget=home.htm) is recommended before changing this. |
 
 ## Node Pools
 
@@ -336,7 +337,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
-| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
+| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin password must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
