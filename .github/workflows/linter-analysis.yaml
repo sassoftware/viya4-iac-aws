@@ -2,7 +2,7 @@ name: Linter Analysis
 
 on:
   push:
-    branches: [ '**' ] # '*8' will cause the workflow to run on all commits to all branches, including those with path separators
+    branches: [ '**' ] # '**' will cause the workflow to run on all commits to all branches, including those with path separators
 
 jobs:
   # Hadolint: Job-1
