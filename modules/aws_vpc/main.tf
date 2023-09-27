@@ -11,7 +11,7 @@ locals {
   existing_private_subnets  = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
   existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
 
-  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public
+  #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
   private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
 
 }

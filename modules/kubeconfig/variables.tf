@@ -13,6 +13,7 @@ variable "namespace" {
 }
 
 variable "region" {
+  description = "AWS Region this cluster was provisioned in"
   type        = string
   default     = null
 }
@@ -24,17 +25,21 @@ variable "create_static_kubeconfig" {
 }
 
 variable "path" {
+  description = "Path to output the kubeconfig file"
   type        = string
 }
 
 variable "cluster_name" {
+  description = "Kubernetes cluster name"
   type        = string
 }
 
 variable "endpoint" {
+  description = "Kubernetes cluster endpoint"
   type        = string
 }
 
 variable "ca_crt" {
+  description = "Kubernetes CA certificate"
   type        = string
 }
