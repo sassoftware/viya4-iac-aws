@@ -15,8 +15,8 @@ variable "vpc_id" {
 
 variable "name" {
   description = "Prefix used when creating VPC resources"
-  type    = string
-  default = null
+  type        = string
+  default     = null
 }
 
 variable "cidr" {
