@@ -365,6 +365,19 @@ variable "subnets" {
   }
 }
 
+variable "subnet_azs" {
+  description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
+  type        = map(list(string))
+  default     = {}
+  nullable    = false
+
+  # We only support configuring the AZs for the public, private, and database subnet
+  validation {
+    condition     =  var.subnet_azs == {}  || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "database"], subnet)])
+    error_message = "ERROR: only public, private, and database are the only keys allowed in the subnet_azs map"
+  }
+}
+
 variable "security_group_id" {
   description = "Pre-existing Security Group id. Leave blank to have one created."
   type        = string

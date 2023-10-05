@@ -31,6 +31,34 @@ locals {
   nfs_vm_subnet    = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
+  # Generate list of AZ where created subnets should be placed
+  # If not specified by the user replace with list of all AZs in a region
+  # If not enough regions provided, append with the list of all AZs in the region while retaining
+  # order of user provided list of regions
+  public_subnet_azs   = (
+  can(var.subnet_azs["public"]) ?
+    (length(var.subnet_azs["public"]) >= length(lookup(var.subnets, "public", [])) ?
+      var.subnet_azs["public"]
+      : distinct(concat(var.subnet_azs["public"], data.aws_availability_zones.available.names)))
+    : data.aws_availability_zones.available.names
+  )
+
+  private_subnet_azs   = (
+  can(var.subnet_azs["private"]) ?
+    (length(var.subnet_azs["private"]) >= length(lookup(var.subnets, "private", [])) ?
+      var.subnet_azs["private"]
+      : distinct(concat(var.subnet_azs["private"], data.aws_availability_zones.available.names)))
+    : data.aws_availability_zones.available.names
+  )
+
+  database_subnet_azs   = (
+  can(var.subnet_azs["database"]) ?
+    (length(var.subnet_azs["database"]) >= length(lookup(var.subnets, "database", [])) ?
+      var.subnet_azs["database"]
+      : distinct(concat(var.subnet_azs["database"], data.aws_availability_zones.available.names)))
+    : data.aws_availability_zones.available.names
+  )
+
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)
     : null

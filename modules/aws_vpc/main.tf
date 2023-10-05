@@ -78,8 +78,8 @@ resource "aws_subnet" "public" {
   count                   = local.existing_public_subnets ? 0 : length(var.subnets["public"])
   vpc_id                  = local.vpc_id
   cidr_block              = element(var.subnets["public"], count.index)
-  availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  availability_zone       = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
+  availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
   map_public_ip_on_launch = var.map_public_ip_on_launch
 
   tags = merge(
@@ -87,7 +87,7 @@ resource "aws_subnet" "public" {
       "Name" = format(
         "%s-${var.public_subnet_suffix}-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.public_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -123,7 +123,7 @@ resource "aws_route_table" "public" {
       "Name" = format(
         "%s-${var.public_subnet_suffix}-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.public_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -173,15 +173,15 @@ resource "aws_subnet" "private" {
   count                = local.existing_private_subnets ? 0 : length(var.subnets["private"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["private"], count.index)
-  availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
 
   tags = merge(
     {
       "Name" = format(
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.private_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -203,7 +203,7 @@ resource "aws_route_table" "private" {
       "Name" = format(
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.private_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -217,15 +217,15 @@ resource "aws_subnet" "database" {
   count                = local.existing_database_subnets ? 0 : length(var.subnets["database"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["database"], count.index)
-  availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
-  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
 
   tags = merge(
     {
       "Name" = format(
         "%s-${var.database_subnet_suffix}-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.database_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -257,7 +257,7 @@ resource "aws_eip" "nat" {
       "Name" = format(
         "%s-%s",
         var.name,
-        element(var.azs, count.index),
+        element(var.public_subnet_azs, count.index),
       )
     },
     var.tags,
@@ -280,7 +280,7 @@ resource "aws_nat_gateway" "nat_gateway" {
       "Name" = format(
         "%s-%s",
         var.name,
-        element(var.azs, 0),
+        element(var.public_subnet_azs, 0),
       )
     },
     var.tags,
