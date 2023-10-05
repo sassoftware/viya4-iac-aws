@@ -86,6 +86,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
  | subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
+ | subnet_azs | Configure specific AZs you want the subnets to created in. The values must be distinct | optional map | {} see below for an example | If not defined or if not enough zones are listed to match the definitions in `subnets`, the code will perform a lookup to get a list of AZs in your selected region. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
 
 The default values for the subnets variable are as follows:
 
@@ -94,6 +95,18 @@ The default values for the subnets variable are as follows:
   "private" : ["192.168.0.0/18", "192.168.64.0/18"],
   "public" : ["192.168.129.0/25", "192.168.129.128/25"],
   "database" : ["192.168.128.0/25", "192.168.128.128/25"]
+}
+```
+
+Example for `subnet_azs`:
+
+The zones below define allow you to configure where each subnet in the map above will be created.
+e.g. for `"private" : ["192.168.0.0/18", "192.168.64.0/18"]`, the first subnet will be created in `us-east-2c` and the second in `us-east-2b` 
+```terraform
+subnet_azs = {
+  "private"  : ["us-east-2c", "us-east-2b"],
+  "public"   : ["us-east-2a", "us-east-2b"],
+  "database" : ["us-east-2a", "us-east-2b"]
 }
 ```
 
