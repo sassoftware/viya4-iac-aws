@@ -47,7 +47,7 @@ output "database_subnets" {
 
 output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
-  value       = var.existing_nat_id == null ? aws_eip.nat[*].public_ip : data.aws_nat_gateway.nat_gateway[*].public_ip
+  value       = var.existing_nat_id == null ? local.create_nat_gateway ? aws_eip.nat[*].public_ip : null : data.aws_nat_gateway.nat_gateway[*].public_ip
 }
 
 output "public_route_table_ids" {
@@ -63,4 +63,14 @@ output "private_route_table_ids" {
 output "vpc_cidr" {
   description = "CIDR block of VPC"
   value       = var.vpc_id == null ? var.cidr : data.aws_vpc.vpc[0].cidr_block
+}
+
+output "byon_scenario" {
+  description = "The BYO networking configuration (0,1,2, or 3) determined by the set of networking input values configured"
+  value       = local.byon_scenario
+}
+
+output "create_nat_gateway" {
+  description = "The networking configuration will create a NAT gateway"
+  value       = local.create_nat_gateway
 }

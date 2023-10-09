@@ -22,6 +22,17 @@ resource "aws_security_group" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
+resource "aws_security_group_rule" "private_vpc" {
+  count             = length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0
+  type              = "ingress"
+  description       = "Allow tcp port 443 ingress from all VPC endpoints"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = local.cluster_endpoint_private_access_cidrs
+  security_group_id = local.security_group_id
+}
+
 resource "aws_security_group_rule" "vms" {
   count = (length(local.vm_public_access_cidrs) > 0
     && var.security_group_id == null
