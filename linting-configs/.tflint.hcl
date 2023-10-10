@@ -9,7 +9,7 @@
 
 config {
   # Enables module inspection.
-  module = false
+  module = true
 }
 
 plugin "aws" {

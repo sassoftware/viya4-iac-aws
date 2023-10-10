@@ -599,8 +599,17 @@ variable "cluster_api_mode" {
 
 variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declarations
   description = "Endpoints needed for private cluster."
-  type        = list(string)
-  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  type        = map(string)
+  default = {
+    "ec2"                  = "Interface",
+    "ecr.api"              = "Interface",
+    "ecr.dkr"              = "Interface",
+    "s3"                   = "Gateway",
+    "logs"                 = "Interface",
+    "sts"                  = "Interface",
+    "elasticloadbalancing" = "Interface",
+    "autoscaling"          = "Interface"
+  }
 }
 
 variable "cluster_node_pool_mode" {

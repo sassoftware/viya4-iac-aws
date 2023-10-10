@@ -13,8 +13,8 @@ locals {
 
   #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
   private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
-  byon_selector = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
-  byon_scenario = local.byon_selector
+  byon_selector   = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
+  byon_scenario   = local.byon_selector
 
   create_nat_gateway = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
   create_subnets     = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
@@ -42,23 +42,23 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_vpc_endpoint" "private_endpoints" {
-  for_each            = toset(var.vpc_private_endpoints)
+  for_each            = var.vpc_private_endpoints
   vpc_id              = local.vpc_id
-  service_name        = "com.amazonaws.${var.region}.${each.value}"
-  vpc_endpoint_type   = "Interface"
-  security_group_ids  = [var.security_group_id]
-  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.region}.${each.key}"
+  vpc_endpoint_type   = each.value
+  security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
+  private_dns_enabled = each.value == "Interface" ? true : null
 
   tags = merge(
     {
-      "Name" = format("%s", "${var.name}-private-endpoint-${each.value}")
+      "Name" = format("%s", "${var.name}-private-endpoint-${each.key}")
     },
     var.tags,
   )
 
-  subnet_ids = [
+  subnet_ids = each.value == "Interface" ? [
     for subnet in local.private_subnets : subnet.id
-  ]
+  ] : null
 }
 
 data "aws_subnet" "public" {

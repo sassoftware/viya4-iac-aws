@@ -89,7 +89,7 @@ locals {
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
-      iam_role_name = "${var.prefix}-default-eks-node-group"
+      iam_role_name            = "${var.prefix}-default-eks-node-group"
     }
   }
 
@@ -138,7 +138,7 @@ locals {
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
-      iam_role_name = "${var.prefix}-${key}-eks-node-group"
+      iam_role_name            = "${var.prefix}-${key}-eks-node-group"
     }
   }
 
