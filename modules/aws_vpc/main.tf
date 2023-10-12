@@ -12,9 +12,11 @@ locals {
   existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
 
   #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
-  private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
-  byon_selector   = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
-  byon_scenario   = local.byon_selector
+  private_subnets  = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
+  database_subnets = local.existing_database_subnets ? data.aws_subnet.database : aws_subnet.database # tflint-ignore: terraform_unused_declarations
+
+  byon_selector = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
+  byon_scenario = local.byon_selector
 
   create_nat_gateway = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
   create_subnets     = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
@@ -80,7 +82,7 @@ data "aws_subnet" "database" {
 # Public subnet
 ################
 resource "aws_subnet" "public" {
-  count                   = local.existing_public_subnets ? 0 : length(var.subnets["public"])
+  count                   = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
   vpc_id                  = local.vpc_id
   cidr_block              = element(var.subnets["public"], count.index)
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
