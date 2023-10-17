@@ -44,7 +44,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_vpc_endpoint" "private_endpoints" {
-  for_each            = var.vpc_private_endpoints
+  for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
   vpc_id              = local.vpc_id
   service_name        = "com.amazonaws.${var.region}.${each.key}"
   vpc_endpoint_type   = each.value

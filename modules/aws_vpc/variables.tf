@@ -110,6 +110,12 @@ variable "vpc_private_endpoints" {
   }
 }
 
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
+}
+
 variable "region" {
   description = "Region"
   type        = string

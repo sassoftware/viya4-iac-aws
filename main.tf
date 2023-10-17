@@ -70,16 +70,17 @@ provider "kubernetes" {
 module "vpc" {
   source = "./modules/aws_vpc"
 
-  name                = var.prefix
-  vpc_id              = var.vpc_id
-  region              = var.location
-  security_group_id   = local.security_group_id
-  raw_sec_group_id    = var.security_group_id
-  cidr                = var.vpc_cidr
-  azs                 = data.aws_availability_zones.available.names
-  existing_subnet_ids = var.subnet_ids
-  subnets             = var.subnets
-  existing_nat_id     = var.nat_id
+  name                          = var.prefix
+  vpc_id                        = var.vpc_id
+  region                        = var.location
+  security_group_id             = local.security_group_id
+  raw_sec_group_id              = var.security_group_id
+  cidr                          = var.vpc_cidr
+  azs                           = data.aws_availability_zones.available.names
+  existing_subnet_ids           = var.subnet_ids
+  subnets                       = var.subnets
+  existing_nat_id               = var.nat_id
+  vpc_private_endpoints_enabled = var.vpc_private_endpoints_enabled
 
   tags                = local.tags
   public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })

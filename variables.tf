@@ -612,6 +612,12 @@ variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declaration
   }
 }
 
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
+}
+
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations. Supported values are default, minimal."
   type        = string

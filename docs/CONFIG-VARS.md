@@ -124,6 +124,12 @@ subnet_ids = {
 }
 ```
 
+### VPC Endpoints
+| Name | Description | Type | Default | Notes |
+ | :--- | ---: | ---: | ---: | ---: |
+ | vpc_private_endpoints_enabled | Enable the creation of VPC private endpoints | bool | true | Setting to false prevents IaC from creating and managing VPC private endpoints in the cluster |
+
+
 ## IAM
 
 By default, two custom IAM policies and two custom IAM roles (with instance profiles) are created. If your site security protocol does not allow for automatic creation of IAM resources, you can provide pre-created roles using the following options:
