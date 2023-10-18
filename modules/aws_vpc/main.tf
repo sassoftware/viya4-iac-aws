@@ -15,8 +15,8 @@ locals {
   private_subnets  = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
   database_subnets = local.existing_database_subnets ? data.aws_subnet.database : aws_subnet.database # tflint-ignore: terraform_unused_declarations
 
-  byon_selector = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
-  byon_scenario = local.byon_selector
+  byon_tier     = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null) ? 2 : 3 : 1
+  byon_scenario = local.byon_tier
 
   create_nat_gateway = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
   create_subnets     = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
