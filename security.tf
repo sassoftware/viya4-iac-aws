@@ -23,7 +23,7 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "private_vpc" {
-  count             = length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0
+  count             = var.vpc_private_endpoints_enabled ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
   type              = "ingress"
   description       = "Allow tcp port 443 ingress from all VPC endpoints"
   from_port         = 443
