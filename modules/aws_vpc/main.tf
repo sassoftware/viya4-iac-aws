@@ -12,8 +12,10 @@ locals {
   existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
 
   #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
-  private_subnets  = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
-  database_subnets = local.existing_database_subnets ? data.aws_subnet.database : aws_subnet.database # tflint-ignore: terraform_unused_declarations
+  private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
+
+  # Use private subnets if we are not creating db subnets and there are no existing db subnets
+  database_subnets = local.existing_database_subnets ? data.aws_subnet.database : element(concat(aws_subnet.database[*].id, tolist([""])), 0) != "" ? aws_subnet.database : local.private_subnets
 
   byon_tier     = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null && var.cluster_security_group_id == null && var.workers_security_group_id == null) ? 2 : 3 : 1
   byon_scenario = local.byon_tier

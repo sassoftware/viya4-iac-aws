@@ -42,7 +42,7 @@ output "private_subnet_cidrs" {
 
 output "database_subnets" {
   description = "List of IDs of database subnets"
-  value       = local.existing_database_subnets ? data.aws_subnet.database[*].id : aws_subnet.database[*].id
+  value       = local.existing_database_subnets ? data.aws_subnet.database[*].id : local.database_subnets[*].id
 }
 
 output "nat_public_ips" {
