@@ -12,6 +12,7 @@ resource "aws_security_group" "sg" {
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
+  description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
   egress {
     description = "Allow all outbound traffic."
     from_port   = 0
@@ -25,7 +26,7 @@ resource "aws_security_group" "sg" {
 resource "aws_security_group_rule" "private_vpc" {
   count             = var.vpc_private_endpoints_enabled ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
   type              = "ingress"
-  description       = "Allow tcp port 443 ingress from all VPC endpoints"
+  description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
