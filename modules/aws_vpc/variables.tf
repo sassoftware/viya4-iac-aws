@@ -130,3 +130,13 @@ variable "raw_sec_group_id" {
   description = "Security Group ID input variable value"
   type        = string
 }
+
+variable "cluster_security_group_id" {
+  description = "Cluster Security Group ID input variable value"
+  type        = string
+}
+
+variable "workers_security_group_id" {
+  description = "Workers Security Group ID input variable value"
+  type        = string
+}
