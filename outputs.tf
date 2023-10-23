@@ -181,6 +181,6 @@ output "aws_fsx_ontap_fsxadmin_password" {
   sensitive = true
 }
 
-output "byon_scenario" {
+output "byo_network_scenario" {
   value = module.vpc.byon_scenario
 }
