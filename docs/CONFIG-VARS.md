@@ -209,7 +209,6 @@ Custom policy:
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
-| enable_multi_zone | Set to true to deploy EKS Node Pools in multiple availability zones | boolean | false | **WARNING**: changing this from true to false after infrastructure creation is destructive. If you have an existing Viya deployment in your cluster, following the [SAS Viya Platform Operations backup and restore documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopsmigwlcm&docsetTarget=home.htm) is recommended before changing this. |
 
 ## Node Pools
 
