@@ -24,13 +24,13 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "private_vpc" {
-  count             = var.vpc_private_endpoints_enabled ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
+  count             = var.vpc_private_endpoints_enabled ? length(local.vpc_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
   type              = "ingress"
   description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
-  cidr_blocks       = local.cluster_endpoint_private_access_cidrs
+  cidr_blocks       = local.vpc_endpoint_private_access_cidrs
   security_group_id = local.security_group_id
 }
 
@@ -121,6 +121,17 @@ resource "aws_security_group_rule" "cluster_ingress" {
   security_group_id        = local.cluster_security_group_id
 }
 
+resource "aws_security_group_rule" "private_cluster_ingress" {
+  count             = local.cluster_endpoint_private_access_cidrs != null ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
+  type              = "ingress"
+  description       = "Allow tcp port 443 ingress to EKS cluster API from cluster endpoint private access cidrs"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = local.cluster_endpoint_private_access_cidrs
+  security_group_id = local.cluster_security_group_id
+}
+
 
 resource "aws_security_group" "workers_security_group" {
   name   = "${var.prefix}-eks_worker_sg"
@@ -188,4 +199,23 @@ resource "aws_security_group_rule" "worker_cluster_api_443" {
   source_security_group_id = local.cluster_security_group_id
   to_port                  = 443
   security_group_id        = aws_security_group.workers_security_group[0].id
+}
+
+
+resource "aws_security_group_rule" "vm_private_access_22" {
+
+  count = (length(local.vm_private_access_cidrs) > 0
+    && var.workers_security_group_id == null
+    && ((var.create_jump_public_ip == false && var.create_jump_vm)
+      || (var.create_nfs_public_ip == false && var.storage_type == "standard")
+    )
+    ? 1 : 0
+  )
+  type              = "ingress"
+  description       = "Allow the client VMs to reach a private IP based Jump VM"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = local.vm_private_access_cidrs
+  security_group_id = aws_security_group.workers_security_group[0].id
 }

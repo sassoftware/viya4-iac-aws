@@ -61,9 +61,15 @@ variable "iac_tooling" {
   default     = "terraform"
 }
 
-## Public Access
+## Public & Private Access
 variable "default_public_access_cidrs" {
-  description = "List of CIDRs to access created resources."
+  description = "List of CIDRs to access created resources - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "default_private_access_cidrs" {
+  description = "List of CIDRs to access created resources - Private."
   type        = list(string)
   default     = null
 }
@@ -80,8 +86,20 @@ variable "cluster_endpoint_private_access_cidrs" {
   default     = null
 }
 
+variable "vpc_endpoint_private_access_cidrs" {
+  description = "List of CIDRs to access VPC endpoints - Private."
+  type        = list(string)
+  default     = null
+}
+
 variable "vm_public_access_cidrs" {
-  description = "List of CIDRs to access jump VM or NFS VM."
+  description = "List of CIDRs to access jump VM or NFS VM - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "vm_private_access_cidrs" {
+  description = "List of CIDRs to access jump VM or NFS VM - Private."
   type        = list(string)
   default     = null
 }

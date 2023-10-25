@@ -11,6 +11,8 @@ Supported configuration variables are listed in the tables below.  All variables
       - [Using Static Credentials](#using-static-credentials)
       - [Using AWS Profile](#using-aws-profile)
   - [Admin Access](#admin-access)
+    - [Public Access CIDRs](#public-access-cidrs)
+    - [Private Access CIDRs](#private-access-cidrs)
   - [Networking](#networking)
     - [Use Existing](#use-existing)
   - [IAM](#iam)
@@ -72,14 +74,27 @@ NOTE: When deploying infrastructure into a private network (e.g. a VPN), with no
 
 NOTE: The script will either create a new Security Group, or use an existing Security Group, if specified in the `security_group_id` variable.
 
+### Public Access CIDRS
+
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Set a default for all resources. |
-| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
+| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the EKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
 | vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Security Group. Only used with `create_jump_public_ip=true` or `create_nfs_public_ip=true`. |
-| postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+| postgres_public_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+
+### Private Access CIDRS
+
+You can use `default_private_access_cidrs` to set a default range for all created private resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| default_private_access_cidrs | IP address ranges that are allowed to access all created private cloud resources | list of strings | | Set a default for all private resources. |
+| cluster_endpoint_private_access_cidrs | IP address ranges that are allowed to access the EKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=private` |
+| vpc_endpoint_private_access_cidrs | IP address ranges that are allowed to access all AWS Services targeted by the VPC endpoints  | list of strings | | |
+| vm_private_access_cidrs | IP address ranges that are allowed to access the private IP based VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
 
 ## Networking
  | Name | Description | Type | Default | Notes |
