@@ -124,7 +124,7 @@ resource "aws_security_group_rule" "cluster_ingress" {
 resource "aws_security_group_rule" "private_cluster_ingress" {
   count             = local.cluster_endpoint_private_access_cidrs != null ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
   type              = "ingress"
-  description       = "Allow tcp port 443 ingress to EKS cluster API from cluster endpoint private access cidrs"
+  description       = "Allow additional HTTPS/443 ingress to private EKS cluster API server endpoint per var.cluster_endpoint_private_access_cidrs"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
@@ -212,7 +212,7 @@ resource "aws_security_group_rule" "vm_private_access_22" {
     ? 1 : 0
   )
   type              = "ingress"
-  description       = "Allow the client VMs to reach a private IP based Jump VM"
+  description       = "Allow SSH to a private IP based Jump VM per var.vm_private_access_cidrs. Required for DAC baseline client VM."
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
