@@ -91,10 +91,10 @@ You can use `default_private_access_cidrs` to set a default range for all create
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| default_private_access_cidrs | IP address ranges that are allowed to access all created private cloud resources | list of strings | | Set a default for all private resources. |
-| cluster_endpoint_private_access_cidrs | IP address ranges that are allowed to access the EKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=private` |
-| vpc_endpoint_private_access_cidrs | IP address ranges that are allowed to access all AWS Services targeted by the VPC endpoints  | list of strings | | |
-| vm_private_access_cidrs | IP address ranges that are allowed to access the private IP based VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
+| default_private_access_cidrs | IP address ranges that are allowed to access all created private cloud resources | list of strings | | Set a list of CIDR ranges that will be applied as a default value for `cluster_endpoint_private_access_cidrs`, `vpc_endpoint_private_access_cidrs` and `vm_private_access_cidrs`.  **Note:** If you need to set distinct IP CIDR ranges for any of these contexts, use the specific variables below rather than this one. |
+| cluster_endpoint_private_access_cidrs | IP address ranges that are allowed to access the EKS cluster API Server endpoint| list of strings | | For clients needing access to the cluster api server endpoint (e.g. for VMs running terraform apply and for VMs where admins will use kubectl). Only used with `cluster_api_mode=private` |
+| vpc_endpoint_private_access_cidrs | IP address ranges that are allowed to access all AWS Services targeted by the VPC endpoints  | list of strings | | Adds an ingress rule to the auxiliary security group (_prefix_-sg) protecting the VPC Endpoints, allowing HTTPS access at port 443. Only used with `vpc_private_endpoints_enabled=true`. |
+| vm_private_access_cidrs | IP address ranges that are allowed to access private IP based Jump or NFS Server VMs.| list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
 
 ## Networking
  | Name | Description | Type | Default | Notes |
