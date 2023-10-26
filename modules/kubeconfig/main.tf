@@ -42,6 +42,10 @@ locals {
 
 }
 
+data "aws_security_group" "selected" {
+  id = var.sg_id
+}
+
 data "kubernetes_secret" "sa_secret" {
   count = var.create_static_kubeconfig ? 1 : 0
   metadata {
@@ -65,7 +69,7 @@ resource "kubernetes_secret" "sa_secret" {
 
   depends_on = [
     kubernetes_service_account.kubernetes_sa,
-    var.aws_sgr,
+    data.aws_security_group.selected,
   ]
 }
 
@@ -96,7 +100,7 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
   }
 
   depends_on = [
-    var.aws_sgr,
+    data.aws_security_group.selected,
   ]
 }
 

@@ -105,6 +105,13 @@ resource "aws_security_group" "cluster_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "Allow additional HTTPS/443 ingress to private EKS cluster API server endpoint per var.cluster_endpoint_private_access_cidrs"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.cluster_endpoint_private_access_cidrs
+  }
 
 }
 
@@ -120,18 +127,6 @@ resource "aws_security_group_rule" "cluster_ingress" {
   source_security_group_id = local.workers_security_group_id
   security_group_id        = local.cluster_security_group_id
 }
-
-resource "aws_security_group_rule" "private_cluster_ingress" {
-  count             = local.cluster_endpoint_private_access_cidrs != null ? length(local.cluster_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
-  type              = "ingress"
-  description       = "Allow additional HTTPS/443 ingress to private EKS cluster API server endpoint per var.cluster_endpoint_private_access_cidrs"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = local.cluster_endpoint_private_access_cidrs
-  security_group_id = local.cluster_security_group_id
-}
-
 
 resource "aws_security_group" "workers_security_group" {
   name   = "${var.prefix}-eks_worker_sg"

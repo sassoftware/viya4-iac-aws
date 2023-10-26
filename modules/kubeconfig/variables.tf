@@ -44,7 +44,7 @@ variable "ca_crt" {
   type        = string
 }
 
-variable "aws_sgr" {
-  description = "Security group rule"
+variable "sg_id" {
+  description = "Security group ID"
   type        = string
 }
