@@ -212,6 +212,7 @@ module "kubeconfig" {
   region       = var.location
   endpoint     = module.eks.cluster_endpoint
   ca_crt       = local.kubeconfig_ca_cert
+  aws_sgr      = aws_security_group_rule.private_cluster_ingress
 
   depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }

@@ -61,8 +61,12 @@ resource "kubernetes_secret" "sa_secret" {
       "kubernetes.io/service-account.name" = local.service_account_name
     }
   }
-  type       = "kubernetes.io/service-account-token"
-  depends_on = [kubernetes_service_account.kubernetes_sa]
+  type = "kubernetes.io/service-account-token"
+
+  depends_on = [
+    kubernetes_service_account.kubernetes_sa,
+    var.aws_sgr,
+  ]
 }
 
 # Starting K8s v1.24+ hashicorp/terraform-provider-kubernetes issues warning message:
@@ -90,6 +94,10 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
     name      = local.service_account_name
     namespace = var.namespace
   }
+
+  depends_on = [
+    var.aws_sgr,
+  ]
 }
 
 # kube config file generation
