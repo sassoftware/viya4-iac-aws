@@ -74,7 +74,7 @@ NOTE: When deploying infrastructure into a private network (e.g. a VPN), with no
 
 NOTE: The script will either create a new Security Group, or use an existing Security Group, if specified in the `security_group_id` variable.
 
-### Public Access CIDRS
+### Public Access CIDRs
 
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
 
@@ -85,7 +85,7 @@ You can use `default_public_access_cidrs` to set a default range for all created
 | vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Security Group. Only used with `create_jump_public_ip=true` or `create_nfs_public_ip=true`. |
 | postgres_public_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
 
-### Private Access CIDRS
+### Private Access CIDRs
 
 For resources accessible at private IP addresses only, it may be necessary, depending upon your networking configuration, to specify additional CIDRs for clients requiring access to those resources.  There are three private access CIDR variables provided so that you may specify distinct IP ranges needing access for each of the three different contexts:
 
