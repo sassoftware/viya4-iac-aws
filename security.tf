@@ -7,8 +7,8 @@ data "aws_security_group" "sg" {
 }
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
-resource "aws_security_group" "sg" {
-  count  = var.security_group_id == null ? 1 : 0
+resource "aws_security_group" "sg_a" {
+  count  = var.security_group_id == null && var.vpc_private_endpoints_enabled == false ? 1 : 0
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
@@ -23,16 +23,40 @@ resource "aws_security_group" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
-resource "aws_security_group_rule" "private_vpc" {
-  count             = var.vpc_private_endpoints_enabled ? length(local.vpc_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
-  type              = "ingress"
-  description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = local.vpc_endpoint_private_access_cidrs
-  security_group_id = local.security_group_id
+# Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
+resource "aws_security_group" "sg_b" {
+  count  = var.security_group_id == null && var.vpc_private_endpoints_enabled ? 1 : 0
+  name   = "${var.prefix}-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
+  egress {
+    description = "Allow all outbound traffic."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.vpc_endpoint_private_access_cidrs
+  }
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
+
+# resource "aws_security_group_rule" "private_vpc" {
+#   count             = var.vpc_private_endpoints_enabled ? length(local.vpc_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
+#   type              = "ingress"
+#   description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
+#   from_port         = 443
+#   to_port           = 443
+#   protocol          = "tcp"
+#   cidr_blocks       = local.vpc_endpoint_private_access_cidrs
+#   security_group_id = local.security_group_id
+# }
 
 resource "aws_security_group_rule" "vms" {
   count = (length(local.vm_public_access_cidrs) > 0
