@@ -87,7 +87,15 @@ You can use `default_public_access_cidrs` to set a default range for all created
 
 ### Private Access CIDRS
 
-You can use `default_private_access_cidrs` to set a default range for all created private resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
+For resources accessible at private IP addresses only, it may be necessary, depending upon your networking configuration, to specify additional CIDRs for clients requiring access to those resources.  There are three private access CIDR variables provided so that you may specify distinct IP ranges needing access for each of the three different contexts:
+
+1. Cluster API Server Endpoint is Private - use `cluster_endpoint_private_access_cidrs` to indicate the client IP ranges needing access
+2. Jump or NFS Server VMs have only private IPs - use `vm_private_access_cidrs` to indicate the IP ranges for the DAC client VM needing access. DAC's baseline module will require SSH access to the Jump VM and/or NFS Server VM.
+3. VPC has no public egress - use `vpc_endpoint_private_access_cidrs` to allow access to AWS private link services required to build the cluster, e.g. EC2.
+
+For example, with a cluster API server endpoint that is private, the IAC client VM must have API server endpoint access during cluster creation to perform a health check.  If your IAC client VM is not in your private subnet, its IP or CIDR range should be present in `cluster_endpoint_private_access_cidrs`.
+
+You can also use `default_private_access_cidrs` to apply the same CIDR range to all three private contexts. To set different CIDR ranges for a specific private context, set the appropriate variable. Use an empty list [] to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
