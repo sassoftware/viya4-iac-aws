@@ -47,17 +47,6 @@ resource "aws_security_group" "sg_b" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
-# resource "aws_security_group_rule" "private_vpc" {
-#   count             = var.vpc_private_endpoints_enabled ? length(local.vpc_endpoint_private_access_cidrs) > 0 ? 1 : 0 : 0
-#   type              = "ingress"
-#   description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
-#   from_port         = 443
-#   to_port           = 443
-#   protocol          = "tcp"
-#   cidr_blocks       = local.vpc_endpoint_private_access_cidrs
-#   security_group_id = local.security_group_id
-# }
-
 resource "aws_security_group_rule" "vms" {
   count = (length(local.vm_public_access_cidrs) > 0
     && var.security_group_id == null
