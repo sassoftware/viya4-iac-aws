@@ -89,6 +89,12 @@ variable "database_subnet_suffix" {
   default     = "db"
 }
 
+variable "control_plane_subnet_suffix" {
+  description = "Suffix to append to control plane subnets name"
+  type        = string
+  default     = "control-plane"
+}
+
 variable "map_public_ip_on_launch" {
   description = "Should be false if you do not want to auto-assign public IP on launch"
   type        = bool

@@ -45,6 +45,11 @@ output "database_subnets" {
   value       = local.existing_database_subnets ? data.aws_subnet.database[*].id : local.database_subnets[*].id
 }
 
+output "control_plane_subnets" {
+  description = "List of IDs of control plane subnets"
+  value       = local.existing_control_plane_subnets ? data.aws_subnet.control_plane[*].id : local.control_plane_subnets[*].id
+}
+
 output "nat_public_ips" {
   description = "List of public Elastic IPs created for AWS NAT Gateway"
   value       = var.existing_nat_id == null ? local.create_nat_gateway ? aws_eip.nat[*].public_ip : null : data.aws_nat_gateway.nat_gateway[*].public_ip

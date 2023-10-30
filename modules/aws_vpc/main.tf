@@ -10,9 +10,11 @@ locals {
   existing_public_subnets   = local.existing_subnets && contains(keys(var.existing_subnet_ids), "public") ? (length(var.existing_subnet_ids["public"]) > 0 ? true : false) : false
   existing_private_subnets  = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
   existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
+  existing_control_plane_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "control_plane") ? (length(var.existing_subnet_ids["control_plane"]) > 0 ? true : false) : false
 
   #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
   private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
+  control_plane_subnets = local.existing_control_plane_subnets ? data.aws_subnet.control_plane : aws_subnet.control_plane
 
   # Use private subnets if we are not creating db subnets and there are no existing db subnets
   database_subnets = local.existing_database_subnets ? data.aws_subnet.database : element(concat(aws_subnet.database[*].id, tolist([""])), 0) != "" ? aws_subnet.database : local.private_subnets
@@ -80,6 +82,10 @@ data "aws_subnet" "database" {
   id    = element(var.existing_subnet_ids["database"], count.index)
 }
 
+data "aws_subnet" "control_plane" {
+  count = local.existing_control_plane_subnets ? length(var.existing_subnet_ids["control_plane"]) : 0
+  id    = element(var.existing_subnet_ids["control_plane"], count.index)
+}
 ################
 # Public subnet
 ################
@@ -175,6 +181,12 @@ resource "aws_route_table_association" "database" {
   route_table_id = element(aws_route_table.private[*].id, 0)
 }
 
+resource "aws_route_table_association" "control_plane" {
+  count = local.existing_control_plane_subnets ? 0 : local.create_subnets ? length(var.subnets["control_plane"]) : 0
+
+  subnet_id      = element(aws_subnet.control_plane[*].id, count.index)
+  route_table_id = element(aws_route_table.private[*].id, 0)
+}
 #################
 # Private subnet
 #################
@@ -251,6 +263,28 @@ resource "aws_db_subnet_group" "database" {
   tags = merge(
     {
       "Name" = format("%s", var.name)
+    },
+    var.tags,
+  )
+}
+
+#################
+# Control Plane subnet
+#################
+resource "aws_subnet" "control_plane" {
+  count                = local.existing_control_plane_subnets ? 0 : length(var.subnets["control_plane"])
+  vpc_id               = local.vpc_id
+  cidr_block           = element(var.subnets["control_plane"], count.index)
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) > 0 ? element(var.azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.azs, count.index))) == 0 ? element(var.azs, count.index) : null
+
+  tags = merge(
+    {
+      "Name" = format(
+        "%s-${var.control_plane_subnet_suffix}-%s",
+        var.name,
+        element(var.azs, count.index),
+      )
     },
     var.tags,
   )
