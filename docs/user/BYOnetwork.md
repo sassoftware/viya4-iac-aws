@@ -4,7 +4,7 @@ You have the option to use existing network resources with SAS Viya 4 Terraform 
 
 **NOTE:** We refer to the use of existing resources as "bring your own" or "BYO" resources.
 
-|BYO network Scenario |Description|Required Variables|Optional Variables|Additional Requirements|Resources to be Created|
+|Scenario |Description|Required Variables|Optional Variables|Additional Requirements|Resources to be Created|
 | -: | :--- | :--- | :--- | :--- | :---|
 | 0|No existing network resources  | None  | | Not a BYO network scenario | IaC creates the required network resources |
 | 1|To work with an existing VPC | `vpc_id` | | <ul><li>VPC does not contain any Subnets or other [Network components](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html)</li><li>VPC block size must be IPv4 with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>[`subnets`](../CONFIG-VARS.md#networking) CIDR blocks must match with VPC IPv4 CIDR block</li></ul> | Subnets, NAT Gateway and Security Groups|
