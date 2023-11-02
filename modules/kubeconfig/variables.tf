@@ -43,3 +43,8 @@ variable "ca_crt" {
   description = "Kubernetes CA certificate"
   type        = string
 }
+
+variable "sg_id" {
+  description = "Security group ID"
+  type        = string
+}

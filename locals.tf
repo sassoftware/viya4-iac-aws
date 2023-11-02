@@ -7,7 +7,8 @@ locals {
   aws_caller_identity_user_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
 
   # General
-  security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
+  sec_group                 = coalescelist(aws_security_group.sg_a, aws_security_group.sg_b)
+  security_group_id         = var.security_group_id == null ? local.sec_group[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   cluster_name              = "${var.prefix}-eks"
@@ -20,11 +21,19 @@ locals {
   aws_shared_credentials = local.use_aws_shared_credentials_file ? [var.aws_shared_credentials_file] : var.aws_shared_credentials_files
 
   # CIDRs
-  default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
-  vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
-  cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs # tflint-ignore: terraform_unused_declarations
-  postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+  default_public_access_cidrs  = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
+  default_private_access_cidrs = var.default_private_access_cidrs == null ? [] : var.default_private_access_cidrs
+
+  vm_public_access_cidrs  = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
+  vm_private_access_cidrs = var.vm_private_access_cidrs == null ? local.default_private_access_cidrs : var.vm_private_access_cidrs
+
+  cluster_endpoint_public_access_cidrs = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+
+  cluster_endpoint_private_access_cidrs = var.cluster_api_mode == "public" ? [] : var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.cluster_endpoint_private_access_cidrs)) # tflint-ignore: terraform_unused_declarations
+
+  vpc_endpoint_private_access_cidrs = var.vpc_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.vpc_endpoint_private_access_cidrs))
+
+  postgres_public_access_cidrs = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
   # Subnets
   jump_vm_subnet   = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
@@ -89,7 +98,7 @@ locals {
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
-      iam_role_name = "${var.prefix}-default-eks-node-group"
+      iam_role_name            = "${var.prefix}-default-eks-node-group"
     }
   }
 
@@ -138,7 +147,7 @@ locals {
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
-      iam_role_name = "${var.prefix}-${key}-eks-node-group"
+      iam_role_name            = "${var.prefix}-${key}-eks-node-group"
     }
   }
 

@@ -97,8 +97,23 @@ variable "map_public_ip_on_launch" {
 
 variable "vpc_private_endpoints" {
   description = "Endpoints needed for private cluster"
-  type        = list(string)
-  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  type        = map(string)
+  default = {
+    "ec2"                  = "Interface",
+    "ecr.api"              = "Interface",
+    "ecr.dkr"              = "Interface",
+    "s3"                   = "Gateway",
+    "logs"                 = "Interface",
+    "sts"                  = "Interface",
+    "elasticloadbalancing" = "Interface",
+    "autoscaling"          = "Interface"
+  }
+}
+
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
 }
 
 variable "region" {
@@ -107,6 +122,21 @@ variable "region" {
 }
 
 variable "security_group_id" {
-  description = "Security Group ID"
+  description = "Security Group ID local variable value"
+  type        = string
+}
+
+variable "raw_sec_group_id" {
+  description = "Security Group ID input variable value"
+  type        = string
+}
+
+variable "cluster_security_group_id" {
+  description = "Cluster Security Group ID input variable value"
+  type        = string
+}
+
+variable "workers_security_group_id" {
+  description = "Workers Security Group ID input variable value"
   type        = string
 }

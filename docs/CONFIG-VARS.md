@@ -11,6 +11,8 @@ Supported configuration variables are listed in the tables below.  All variables
       - [Using Static Credentials](#using-static-credentials)
       - [Using AWS Profile](#using-aws-profile)
   - [Admin Access](#admin-access)
+    - [Public Access CIDRs](#public-access-cidrs)
+    - [Private Access CIDRs](#private-access-cidrs)
   - [Networking](#networking)
     - [Use Existing](#use-existing)
   - [IAM](#iam)
@@ -72,14 +74,35 @@ NOTE: When deploying infrastructure into a private network (e.g. a VPN), with no
 
 NOTE: The script will either create a new Security Group, or use an existing Security Group, if specified in the `security_group_id` variable.
 
+### Public Access CIDRs
+
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Set a default for all resources. |
-| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
+| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the EKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
 | vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Security Group. Only used with `create_jump_public_ip=true` or `create_nfs_public_ip=true`. |
-| postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+| postgres_public_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+
+### Private Access CIDRs
+
+For resources accessible at private IP addresses only, it may be necessary, depending upon your networking configuration, to specify additional CIDRs for clients requiring access to those resources.  There are three private access CIDR variables provided so that you may specify distinct IP ranges needing access for each of the three different contexts:
+
+1. Cluster API Server Endpoint is Private - use `cluster_endpoint_private_access_cidrs` to indicate the client IP ranges needing access
+2. Jump or NFS Server VMs have only private IPs - use `vm_private_access_cidrs` to indicate the IP ranges for the DAC client VM needing access. DAC's baseline module will require SSH access to the Jump VM and/or NFS Server VM.
+3. VPC has no public egress - use `vpc_endpoint_private_access_cidrs` to allow access to AWS private link services required to build the cluster, e.g. EC2.
+
+For example, with a cluster API server endpoint that is private, the IAC client VM must have API server endpoint access during cluster creation to perform a health check.  If your IAC client VM is not in your private subnet, its IP or CIDR range should be present in `cluster_endpoint_private_access_cidrs`.
+
+You can also use `default_private_access_cidrs` to apply the same CIDR range to all three private contexts. To set different CIDR ranges for a specific private context, set the appropriate variable. Use an empty list [] to disallow access explicitly.
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| default_private_access_cidrs | IP address ranges that are allowed to access all created private cloud resources | list of strings | | Set a list of CIDR ranges that will be applied as a default value for `cluster_endpoint_private_access_cidrs`, `vpc_endpoint_private_access_cidrs` and `vm_private_access_cidrs`.  **Note:** If you need to set distinct IP CIDR ranges for any of these contexts, use the specific variables below rather than this one. |
+| cluster_endpoint_private_access_cidrs | IP address ranges that are allowed to access the EKS cluster API Server endpoint| list of strings | | For clients needing access to the cluster api server endpoint (e.g. for VMs running terraform apply and for VMs where admins will use kubectl). Only used with `cluster_api_mode=private` |
+| vpc_endpoint_private_access_cidrs | IP address ranges that are allowed to access all AWS Services targeted by the VPC endpoints  | list of strings | | Adds an ingress rule to the auxiliary security group (_prefix_-sg) protecting the VPC Endpoints, allowing HTTPS access at port 443. Only used with `vpc_private_endpoints_enabled=true`. |
+| vm_private_access_cidrs | IP address ranges that are allowed to access private IP based Jump or NFS Server VMs.| list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
 
 ## Networking
  | Name | Description | Type | Default | Notes |
@@ -109,7 +132,7 @@ The variables in the table below can be used to define the existing resources. R
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of existing VPC | string | null | Only required if deploying into existing VPC. |
  | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. |
- | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. |
+ | nat_id | ID of existing AWS NAT gateway | string | null | Optional if deploying into existing VPC and subnets for [BYON scenarios 2 & 3](./user/BYOnetwork.md#supported-scenarios-and-requirements-for-using-existing-network-resources)|
  | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
 | cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
 | workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sources (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
@@ -123,6 +146,12 @@ subnet_ids = {
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
+
+### VPC Endpoints
+| Name | Description | Type | Default | Notes |
+ | :--- | ---: | ---: | ---: | ---: |
+ | vpc_private_endpoints_enabled | Enable the creation of VPC private endpoints | bool | true | Setting to false prevents IaC from creating and managing VPC private endpoints in the cluster |
+
 
 ## IAM
 
