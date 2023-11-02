@@ -70,15 +70,19 @@ provider "kubernetes" {
 module "vpc" {
   source = "./modules/aws_vpc"
 
-  name                = var.prefix
-  vpc_id              = var.vpc_id
-  region              = var.location
-  security_group_id   = local.security_group_id
-  cidr                = var.vpc_cidr
-  azs                 = data.aws_availability_zones.available.names
-  existing_subnet_ids = var.subnet_ids
-  subnets             = var.subnets
-  existing_nat_id     = var.nat_id
+  name                          = var.prefix
+  vpc_id                        = var.vpc_id
+  region                        = var.location
+  security_group_id             = local.security_group_id
+  raw_sec_group_id              = var.security_group_id
+  cluster_security_group_id     = var.cluster_security_group_id
+  workers_security_group_id     = var.workers_security_group_id
+  cidr                          = var.vpc_cidr
+  azs                           = data.aws_availability_zones.available.names
+  existing_subnet_ids           = var.subnet_ids
+  subnets                       = var.subnets
+  existing_nat_id               = var.nat_id
+  vpc_private_endpoints_enabled = var.vpc_private_endpoints_enabled
 
   tags                = local.tags
   public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
@@ -208,6 +212,7 @@ module "kubeconfig" {
   region       = var.location
   endpoint     = module.eks.cluster_endpoint
   ca_crt       = local.kubeconfig_ca_cert
+  sg_id        = local.cluster_security_group_id
 
   depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
@@ -246,7 +251,7 @@ module "postgresql" {
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${each.value.server_version}"

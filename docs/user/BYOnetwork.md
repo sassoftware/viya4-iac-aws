@@ -4,12 +4,14 @@ You have the option to use existing network resources with SAS Viya 4 Terraform 
 
 **NOTE:** We refer to the use of existing resources as "bring your own" or "BYO" resources.
 
-| Scenario|Required Variables|Additional Requirements|Resources to be Created|
-| :--- | :--- | :--- | :--- |
-| 1. To work with an existing VPC | `vpc_id` | <ul><li>VPC does not contain any Subnets or other [Network components](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html)</li><li>VPC block size must be IPv4 with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>[`subnets`](../CONFIG-VARS.md#networking) CIDR blocks must match with VPC IPv4 CIDR block</li></ul> | Subnets, NAT Gateway and Security Group|
-| 2. To configure all components of your VPC network - Subnets, Routes & associations, Internet and NAT Gateways | `vpc_id`, <br>`subnet_ids` and <br>`nat_id` | <ul><li>all requirements from Scenario #1</li><li>Subnets Availability Zones must be within the [location](../CONFIG-VARS.md#required-variables)</li><li>AWS Tags with `<prefix>` value replaced with the [prefix](../CONFIG-VARS.md#required-variables) input value for <br>- Public Subnets:<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>-Private Subnets:<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>See [AWS docs](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) for background on subnet tag requirements to match EKS Cluster name| Security Group |
-| 3. To configure all components of your VPC network and Security Groups | `vpc_id`,<br>`subnet_ids`, <br>`nat_id`, <br>`security_group_id`, <br>`cluster_security_group_id`, and <br>`workers_security_group_id` |<ul><li>all requirements from Scenarios #2 and [these pre-defined Security Groups](#security-groups)</li></ul>| None |
+|Scenario |Description|Required Variables|Optional Variables|Additional Requirements|Resources to be Created|
+| -: | :--- | :--- | :--- | :--- | :---|
+| 0|No existing network resources  | None  | | Not a BYO network scenario | IaC creates the required network resources |
+| 1|To work with an existing VPC | `vpc_id` | | <ul><li>VPC does not contain any Subnets or other [Network components](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Networking.html)</li><li>VPC block size must be IPv4 with '/16' netmask (supports 65,536 IP addresses)</li><li>`DNS hostnames` and `DNS resolution` are enabled</li><li>[`subnets`](../CONFIG-VARS.md#networking) CIDR blocks must match with VPC IPv4 CIDR block</li></ul> | Subnets, NAT Gateway and Security Groups|
+| 2|To configure all components of your VPC network - Subnets, Routes & associations and optionally Internet and NAT Gateways | `vpc_id`,<br>`private` subnet list within the [subnet_ids](../CONFIG-VARS.md#use-existing) map| `nat_id`, <br>`public` and `database` subnet lists within the [subnet_ids](../CONFIG-VARS.md#use-existing) map | <ul><li>all requirements from Scenario #1</li><li>Subnets Availability Zones must be within the [location](../CONFIG-VARS.md#required-variables)</li><li>AWS Tags with `<prefix>` value replaced with the [prefix](../CONFIG-VARS.md#required-variables) input value for <br>- Public Subnets:<ul><li>`{"kubernetes.io/role/elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>-Private Subnets:<ul><li>`{"kubernetes.io/role/internal-elb"="1"}`</li><li>`{"kubernetes.io/cluster/<prefix>-eks"="shared"}`</li></ul>See [AWS docs](https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html) for background on subnet tag requirements to match EKS Cluster name| Security Groups |
+| 3|To configure all components of your VPC network and Security Groups and optionally Internet and NAT Gateways| `vpc_id`,<br>`private` subnet list within the [subnet_ids](../CONFIG-VARS.md#use-existing) map, <br>`security_group_id`, <br>`cluster_security_group_id`, and <br>`workers_security_group_id` | `nat_id`, <br>`public` and `database` subnet lists within the [subnet_ids](../CONFIG-VARS.md#use-existing) map |<ul><li>all requirements from Scenarios #2 and [these pre-defined Security Groups](#security-groups)</li></ul>| None |
 
+**Note**: The `byo_network_scenario` IAC output value is informational only and is intended to convey the BYO network scenario that IAC has selected according to the [Use Existing](../CONFIG-VARS.md#use-existing) input variable values provided to IAC.
 
 ### Security Groups
 
@@ -50,9 +52,9 @@ For more information on these Security Groups, please see https://docs.aws.amazo
 
 When creating your BYO Network resources you should consult with your Network Administrator and use any of these methods to create a working AWS VPC Network:
 - [AWS QuickStarts for VPC](https://aws.amazon.com/quickstart/architecture/vpc/)
-- See the "simple-vpc" and "complete-vpc" examples in [terraform-aws-vpc module](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples) 
+- See the "simple-vpc" and "complete-vpc" examples in [terraform-aws-vpc module](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples)
 
-AWS documentation for reference:  
+AWS documentation for reference:
 - [How Amazon VPC works](https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html)
 - [VPC and subnet sizing for IPv4](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#vpc-sizing-ipv4)
 

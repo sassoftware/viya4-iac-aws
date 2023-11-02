@@ -104,7 +104,7 @@ output "postgres_servers" {
 }
 
 output "nat_ip" {
-  value = module.vpc.nat_public_ips[0]
+  value = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
 }
 
 output "prefix" {
@@ -170,7 +170,8 @@ output "storage_type_backend" {
     condition = (var.storage_type == "standard" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "efs"
-    || var.storage_type == "ha" && var.storage_type_backend == "ontap")
+      || var.storage_type == "ha" && var.storage_type_backend == "ontap"
+    || var.storage_type == "none" && var.storage_type_backend == "none")
     error_message = "nfs is the only valid storage_type_backend when storage_type == 'standard'"
   }
 }
@@ -178,4 +179,8 @@ output "storage_type_backend" {
 output "aws_fsx_ontap_fsxadmin_password" {
   value     = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
   sensitive = true
+}
+
+output "byo_network_scenario" {
+  value = module.vpc.byon_scenario
 }

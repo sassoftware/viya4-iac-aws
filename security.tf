@@ -7,17 +7,42 @@ data "aws_security_group" "sg" {
 }
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
-resource "aws_security_group" "sg" {
-  count  = var.security_group_id == null ? 1 : 0
+resource "aws_security_group" "sg_a" {
+  count  = var.security_group_id == null && var.vpc_private_endpoints_enabled == false ? 1 : 0
   name   = "${var.prefix}-sg"
   vpc_id = module.vpc.vpc_id
 
+  description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
   egress {
     description = "Allow all outbound traffic."
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
+}
+
+# Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
+resource "aws_security_group" "sg_b" {
+  count  = var.security_group_id == null && var.vpc_private_endpoints_enabled ? 1 : 0
+  name   = "${var.prefix}-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
+  egress {
+    description = "Allow all outbound traffic."
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.vpc_endpoint_private_access_cidrs
   }
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
@@ -93,6 +118,13 @@ resource "aws_security_group" "cluster_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "Allow additional HTTPS/443 ingress to private EKS cluster API server endpoint per var.cluster_endpoint_private_access_cidrs"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = local.cluster_endpoint_private_access_cidrs
+  }
 
 }
 
@@ -105,10 +137,9 @@ resource "aws_security_group_rule" "cluster_ingress" {
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.workers_security_group[0].id
+  source_security_group_id = local.workers_security_group_id
   security_group_id        = local.cluster_security_group_id
 }
-
 
 resource "aws_security_group" "workers_security_group" {
   name   = "${var.prefix}-eks_worker_sg"
@@ -176,4 +207,23 @@ resource "aws_security_group_rule" "worker_cluster_api_443" {
   source_security_group_id = local.cluster_security_group_id
   to_port                  = 443
   security_group_id        = aws_security_group.workers_security_group[0].id
+}
+
+
+resource "aws_security_group_rule" "vm_private_access_22" {
+
+  count = (length(local.vm_private_access_cidrs) > 0
+    && var.workers_security_group_id == null
+    && ((var.create_jump_public_ip == false && var.create_jump_vm)
+      || (var.create_nfs_public_ip == false && var.storage_type == "standard")
+    )
+    ? 1 : 0
+  )
+  type              = "ingress"
+  description       = "Allow SSH to a private IP based Jump VM per var.vm_private_access_cidrs. Required for DAC baseline client VM."
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = local.vm_private_access_cidrs
+  security_group_id = aws_security_group.workers_security_group[0].id
 }

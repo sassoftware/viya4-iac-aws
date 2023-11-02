@@ -61,9 +61,15 @@ variable "iac_tooling" {
   default     = "terraform"
 }
 
-## Public Access
+## Public & Private Access
 variable "default_public_access_cidrs" {
-  description = "List of CIDRs to access created resources."
+  description = "List of CIDRs to access created resources - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "default_private_access_cidrs" {
+  description = "List of CIDRs to access created resources - Private."
   type        = list(string)
   default     = null
 }
@@ -80,8 +86,20 @@ variable "cluster_endpoint_private_access_cidrs" {
   default     = null
 }
 
+variable "vpc_endpoint_private_access_cidrs" {
+  description = "List of CIDRs to access VPC endpoints - Private."
+  type        = list(string)
+  default     = null
+}
+
 variable "vm_public_access_cidrs" {
-  description = "List of CIDRs to access jump VM or NFS VM."
+  description = "List of CIDRs to access jump VM or NFS VM - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "vm_private_access_cidrs" {
+  description = "List of CIDRs to access jump VM or NFS VM - Private."
   type        = list(string)
   default     = null
 }
@@ -599,8 +617,23 @@ variable "cluster_api_mode" {
 
 variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declarations
   description = "Endpoints needed for private cluster."
-  type        = list(string)
-  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  type        = map(string)
+  default = {
+    "ec2"                  = "Interface",
+    "ecr.api"              = "Interface",
+    "ecr.dkr"              = "Interface",
+    "s3"                   = "Gateway",
+    "logs"                 = "Interface",
+    "sts"                  = "Interface",
+    "elasticloadbalancing" = "Interface",
+    "autoscaling"          = "Interface"
+  }
+}
+
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
 }
 
 variable "cluster_node_pool_mode" {
