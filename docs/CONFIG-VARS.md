@@ -124,7 +124,7 @@ The default values for the subnets variable are as follows:
 
 Example for `subnet_azs`:
 
-The zones below define allow you to configure where each subnet in the map above will be created.
+The zones defined below allow you to configure where each subnet in the map above will be created.
 e.g. Looking at the example `subnets` map above, for `"control_plane" : ["192.168.130.0/28", "192.168.130.16/28"]`, the first subnet will be created in `us-east-2c` and the second in `us-east-2b` 
 
 ```terraform
