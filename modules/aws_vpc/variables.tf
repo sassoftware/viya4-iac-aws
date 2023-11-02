@@ -1,8 +1,26 @@
 # Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-variable "azs" {
-  description = "A list of availability zones names or ids in the region"
+variable "public_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the public subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "private_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the private subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "control_plane_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the control plane subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "database_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the database subnets"
   type        = list(string)
   default     = []
 }
