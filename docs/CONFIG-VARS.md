@@ -114,9 +114,10 @@ The default values for the subnets variable are as follows:
 
 ```yaml
 {
-  "private" : ["192.168.0.0/18", "192.168.64.0/18"],
-  "public" : ["192.168.129.0/25", "192.168.129.128/25"],
-  "database" : ["192.168.128.0/25", "192.168.128.128/25"]
+    "private" : ["192.168.0.0/18"], # multi-zonal cluster is created by adding additional subnets here
+    "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
+    "public" : ["192.168.129.0/25", "192.168.129.128/25"],
+    "database" : ["192.168.128.0/25", "192.168.128.128/25"]
 }
 ```
 
@@ -142,7 +143,8 @@ Example `subnet_ids` variable:
 ```terraform
 subnet_ids = {
   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
-  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  "private" : ["existing-private-subnet-id1"],
+  "control_plane" : ["existing-control-plane-subnet-id1", "existing-control-plane-subnet-id2"],
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
