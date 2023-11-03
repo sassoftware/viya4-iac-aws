@@ -109,7 +109,7 @@ You can also use `default_private_access_cidrs` to apply the same CIDR range to 
 | :--- | ---: | ---: | ---: | ---: |
 | vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
 | subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
-| subnet_azs | Configure specific AZs you want the subnets to be created in. The values must be distinct | optional map | {} see below for an example | If not defined or if any keys are not defined, the code will perform a lookup to get a list of AZs in your selected region. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
+| subnet_azs | Configure specific AZs you want the subnets to be created in. The values must be distinct | optional map | {} see below for an example | If you wish for the codebase to lookup a list of AZs for you: either don't define subnet_azs to lookup AZs for all subnets, or omit the key for a specific subnet in the map to perform a lookup for it. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
 
 The default values for the subnets variable are as follows:
 
