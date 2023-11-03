@@ -40,6 +40,13 @@ locals {
   nfs_vm_subnet    = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
+  # Generate list of AZ where created subnets should be placed
+  # If not specified by the user replace with list of all AZs in a region
+  public_subnet_azs        =  can(var.subnet_azs["public"]) ? var.subnet_azs["public"] : data.aws_availability_zones.available.names
+  private_subnet_azs       =  can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
+  database_subnet_azs      =  can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
+  control_plane_subnet_azs =  can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
+
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)
     : null

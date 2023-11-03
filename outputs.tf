@@ -184,3 +184,23 @@ output "aws_fsx_ontap_fsxadmin_password" {
 output "byo_network_scenario" {
   value = module.vpc.byon_scenario
 }
+
+output "validate_subnet_azs" {
+  # validation, no output value needed
+  value = null
+  precondition {
+    # Validation Notes:
+    # Either the user does not define subnet_azs and it defaults to {}, in which case the whole map will be populated
+    # If the user does not define a specific key, that is allowed and we will populate the az list for that subnet
+    # Lastly, if the user does define a specific subnet_azs key, it must be greater than or equal to the matching subnet map list
+    condition = (var.subnet_azs == {} ||
+      (
+        (length(lookup(var.subnet_azs, "private", [])) == 0 || length(lookup(var.subnet_azs, "private", [])) >= length(lookup(var.subnets, "private", []))) &&
+        (length(lookup(var.subnet_azs, "control_plane", [])) == 0 || length(lookup(var.subnet_azs, "control_plane", [])) >= length(lookup(var.subnets, "control_plane", []))) &&
+        (length(lookup(var.subnet_azs, "public", [])) == 0 || length(lookup(var.subnet_azs, "public", [])) >= length(lookup(var.subnets, "public", []))) &&
+        (length(lookup(var.subnet_azs, "database", [])) == 0 || length(lookup(var.subnet_azs, "database", [])) >= length(lookup(var.subnets, "database", [])))
+      )
+    )
+    error_message = "Your subnet_azs keys must have a string list value of AZs greater than or equal to the list of CIDRs in equivalent key in the subnets variable."
+  }
+}

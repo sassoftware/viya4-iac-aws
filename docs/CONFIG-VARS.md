@@ -105,10 +105,11 @@ You can also use `default_private_access_cidrs` to apply the same CIDR range to 
 | vm_private_access_cidrs | IP address ranges that are allowed to access private IP based Jump or NFS Server VMs.| list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
 
 ## Networking
- | Name | Description | Type | Default | Notes |
- | :--- | ---: | ---: | ---: | ---: |
- | vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
- | subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
+| subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
+| subnet_azs | Configure specific AZs you want the subnets to be created in. The values must be distinct | optional map | {} see below for an example | If you wish for the codebase to lookup a list of AZs for you: either don't define subnet_azs to lookup AZs for all subnets, or omit the key for a specific subnet in the map to perform a lookup for it. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
 
 The default values for the subnets variable are as follows:
 
@@ -118,6 +119,20 @@ The default values for the subnets variable are as follows:
     "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
+}
+```
+
+Example for `subnet_azs`:
+
+The zones defined below allow you to configure where each subnet in the map above will be created.
+e.g. Looking at the example `subnets` map above, for `"control_plane" : ["192.168.130.0/28", "192.168.130.16/28"]`, the first subnet will be created in `us-east-2c` and the second in `us-east-2b` 
+
+```terraform
+subnet_azs = {
+  "private"       : ["us-east-2c"],
+  "control_plane" : ["us-east-2c", "us-east-2b"],
+  "public"        : ["us-east-2a", "us-east-2b"],
+  "database"      : ["us-east-2a", "us-east-2b"]
 }
 ```
 
