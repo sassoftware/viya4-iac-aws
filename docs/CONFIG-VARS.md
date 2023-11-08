@@ -136,6 +136,8 @@ subnet_azs = {
 }
 ```
 
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
+
 ### Use Existing
 If desired, you can deploy into an existing VPC, subnet and NAT gateway, and Security Group.
 
@@ -163,6 +165,8 @@ subnet_ids = {
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
+
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
 
 ### VPC Endpoints
 | Name | Description | Type | Default | Notes |
