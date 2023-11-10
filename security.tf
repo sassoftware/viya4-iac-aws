@@ -175,7 +175,7 @@ resource "aws_security_group_rule" "worker_self" {
   count = var.workers_security_group_id == null ? 1 : 0
 
   type              = "ingress"
-  description       = "Allow node to comunicate with each other."
+  description       = "Allow node to communicate with each other."
   from_port         = 0
   protocol          = "-1"
   self              = true

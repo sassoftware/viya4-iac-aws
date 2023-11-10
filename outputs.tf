@@ -204,3 +204,7 @@ output "validate_subnet_azs" {
     error_message = "Your subnet_azs keys must have a string list value of AZs greater than or equal to the list of CIDRs in equivalent key in the subnets variable."
   }
 }
+
+output "test" {
+  value = module.postgresql.db_instance_identifier
+}

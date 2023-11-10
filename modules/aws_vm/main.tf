@@ -7,7 +7,7 @@
 locals {
   device_name = [
     # "/dev/sdb", - NOTE: These are skipped, Ubuntu Server 20.04 LTS
-    # "/dev/sdc",         uses these for ephmeral storage.
+    # "/dev/sdc",         uses these for ephemeral storage.
     "/dev/sdd",
     "/dev/sde",
     "/dev/sdf",
