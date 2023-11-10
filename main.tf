@@ -19,10 +19,12 @@ provider "aws" {
 
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_name
+  depends_on = [module.eks.cluster_name]
 }
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_name
+  depends_on = [module.eks.cluster_name]
 }
 
 data "aws_availability_zones" "available" {}
@@ -280,7 +282,6 @@ module "postgresql" {
   create_db_subnet_group      = true
   create_db_parameter_group   = true
   create_db_option_group      = true
-  create_random_password      = false
   manage_master_user_password = false
 
 }
