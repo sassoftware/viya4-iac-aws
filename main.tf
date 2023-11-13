@@ -236,8 +236,9 @@ module "postgresql" {
 
   vpc_security_group_ids = [local.security_group_id, local.workers_security_group_id]
 
-  maintenance_window = "Mon:00:00-Mon:03:00"
-  backup_window      = "03:00-06:00"
+  maintenance_window  = "Mon:00:00-Mon:03:00"
+  backup_window       = "03:00-06:00"
+  skip_final_snapshot = true
 
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
