@@ -115,7 +115,7 @@ The default values for the subnets variable are as follows:
 
 ```yaml
 {
-    "private" : ["192.168.0.0/18"], # multi-zonal cluster is created by adding additional subnets here
+    "private" : ["192.168.0.0/18"],
     "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
@@ -135,6 +135,8 @@ subnet_azs = {
   "database"      : ["us-east-2a", "us-east-2b"]
 }
 ```
+
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
 
 ### Use Existing
 If desired, you can deploy into an existing VPC, subnet and NAT gateway, and Security Group.
@@ -163,6 +165,8 @@ subnet_ids = {
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
+
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
 
 ### VPC Endpoints
 | Name | Description | Type | Default | Notes |
