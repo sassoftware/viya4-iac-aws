@@ -158,6 +158,9 @@ module "eks" {
   # We already set our own rules above, no need to use Amazon's defaults.
   node_security_group_enable_recommended_rules = false
 
+  # enabled by default in v19, setting to false to preserve behavior.
+  create_kms_key = false
+
   ################################################################################
   # Handle BYO IAM Roles & Policies
   ################################################################################
