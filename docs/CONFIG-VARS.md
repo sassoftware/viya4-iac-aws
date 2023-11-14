@@ -14,6 +14,7 @@ Supported configuration variables are listed in the tables below.  All variables
     - [Public Access CIDRs](#public-access-cidrs)
     - [Private Access CIDRs](#private-access-cidrs)
   - [Networking](#networking)
+    - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
   - [IAM](#iam)
   - [General](#general)
@@ -111,6 +112,12 @@ You can also use `default_private_access_cidrs` to apply the same CIDR range to 
 | subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
 | subnet_azs | Configure specific AZs you want the subnets to be created in. The values must be distinct | optional map | {} see below for an example | If you wish for the codebase to lookup a list of AZs for you: either don't define subnet_azs to lookup AZs for all subnets, or omit the key for a specific subnet in the map to perform a lookup for it. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
 
+### Subnet requirements
+
+If no values are set for the [`subnet_ids`](#use-existing) configuration variable, `viya4-iac-aws` will create subnet resources for you. By default, a `private` subnet, two `control_plane` subnets, two `public` subnets and two `database` subnets will be created. The CIDR ranges selected for the default subnets are intended to provide sufficient IP address space for the cluster, any nodes and other Kubernetes resources that you expect to create in each subnet. The `private` subnet should provide sufficient IP address space for the maximum expected number of worker nodes and every pod launched within the EKS cluster. For the `control_plane` subnets, [AWS requires](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html) at least two CIDR ranges, each in a different AZ, and recommends that a minimum of 16 IP addresses should be available in each subnet. If an external [postgres server](#postgresql-server) is configured, either two `public` or two `database` subnets, each in a different AZ are required. If public access to an external [postgres server](#postgresql-server) is configured by setting either `postgres_public_access_cidrs` or `default_public_access_cidrs`, the postgres server will use the public subnets, otherwise it will use database subnets. 
+
+For [BYO networking scenarios](../docs/user/BYOnetwork.md#supported-scenarios-and-requirements-for-using-existing-network-resources), existing subnet values are provided using the `subnet_ids` configuration variable. When configuring an EKS cluster without public access, the minimum subnet requirements include a `private` subnet with a recommended CIDR range of /18, and two `control_plane` subnets with recommended CIDR ranges of /28, each in a separate AZ. If an external postgres server is configured, two `database` subnets with recommended CIDR ranges of /25, each in a separate AZ also need to be provided. Amazon RDS relies on having two subnets in separate AZs to provide database redundancy should a failure occur in one AZ. If public access is required for your postgres server or cluster, supply two `public` subnets in different AZs instead of the `database` subnets.
+
 The default values for the subnets variable are as follows:
 
 ```yaml
@@ -149,7 +156,7 @@ The variables in the table below can be used to define the existing resources. R
 | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of existing VPC | string | null | Only required if deploying into existing VPC. |
- | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. |
+ | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. See [Subnet requirements](#subnet-requirements) above.|
  | nat_id | ID of existing AWS NAT gateway | string | null | Optional if deploying into existing VPC and subnets for [BYON scenarios 2 & 3](./user/BYOnetwork.md#supported-scenarios-and-requirements-for-using-existing-network-resources)|
  | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
 | cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
