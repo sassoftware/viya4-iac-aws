@@ -17,14 +17,8 @@ provider "aws" {
 
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_name
-  depends_on = [module.eks.cluster_name]
-}
-
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_name
-  depends_on = [module.eks.cluster_name]
 }
 
 data "aws_availability_zones" "available" {}
@@ -64,7 +58,7 @@ provider "kubernetes" {
   # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
   # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to
   # the kubernetes provider.
-  host                   = data.aws_eks_cluster.cluster.endpoint
+  host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
 }

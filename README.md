@@ -47,10 +47,10 @@ The following are also required:
 
 #### Terraform Requirements:
 
-- [Terraform](https://www.terraform.io/downloads.html) v1.4.5
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.26.7
+- [Terraform](https://www.terraform.io/downloads.html) v1.6.3
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.26.10
 - [jq](https://stedolan.github.io/jq/) v1.6
-- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.7.22
+- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.13.33
 
 #### Docker Requirements:
 
