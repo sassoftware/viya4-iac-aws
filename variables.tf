@@ -372,7 +372,7 @@ variable "subnets" {
   description = "Subnets to be created and their settings - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
   default = {
-    "private" : ["192.168.0.0/18"],                              # multi-zonal cluster is created by adding additional subnets here
+    "private" : ["192.168.0.0/18"],
     "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
