@@ -7,7 +7,7 @@ locals {
   aws_caller_identity_user_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
 
   # General
-  sec_group                 = coalescelist(aws_security_group.sg_a, aws_security_group.sg_b)
+  sec_group                 = (length(aws_security_group.sg_a) == 0 && length(aws_security_group.sg_b) == 0) ? null : coalescelist(aws_security_group.sg_a, aws_security_group.sg_b)
   security_group_id         = var.security_group_id == null ? local.sec_group[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
@@ -42,10 +42,10 @@ locals {
 
   # Generate list of AZ where created subnets should be placed
   # If not specified by the user replace with list of all AZs in a region
-  public_subnet_azs        =  can(var.subnet_azs["public"]) ? var.subnet_azs["public"] : data.aws_availability_zones.available.names
-  private_subnet_azs       =  can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
-  database_subnet_azs      =  can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
-  control_plane_subnet_azs =  can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
+  public_subnet_azs        = can(var.subnet_azs["public"]) ? var.subnet_azs["public"] : data.aws_availability_zones.available.names
+  private_subnet_azs       = can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
+  database_subnet_azs      = can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
+  control_plane_subnet_azs = can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
 
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)
