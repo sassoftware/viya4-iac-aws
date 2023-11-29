@@ -61,7 +61,7 @@ locals {
   # Kubernetes
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority[0].data
+  kubeconfig_ca_cert  = module.eks.cluster_certificate_authority_data
 
   # Mapping node_pools to node_groups
   default_node_pool = {
@@ -169,10 +169,10 @@ locals {
 
   postgres_outputs = length(module.postgresql) != 0 ? { for k, v in module.postgresql :
     k => {
-      "server_name" : module.postgresql[k].db_instance_id,
+      "server_name" : module.postgresql[k].db_instance_identifier,
       "fqdn" : module.postgresql[k].db_instance_address,
       "admin" : module.postgresql[k].db_instance_username,
-      "password" : module.postgresql[k].db_instance_password,
+      "password" : local.postgres_servers[k].administrator_password,
       "server_port" : module.postgresql[k].db_instance_port
       "ssl_enforcement_enabled" : local.postgres_servers[k].ssl_enforcement_enabled,
       "internal" : false

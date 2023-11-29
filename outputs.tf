@@ -145,7 +145,7 @@ output "ebs_csi_account" {
 }
 
 output "k8s_version" {
-  value = data.aws_eks_cluster.cluster.version
+  value = module.eks.cluster_version
 }
 
 output "aws_shared_credentials_file" {
