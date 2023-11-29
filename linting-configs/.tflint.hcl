@@ -130,10 +130,3 @@ rule "terraform_unused_required_providers" {
 rule "terraform_workspace_remote" {
   enabled = true
 }
-
-# Disallow deprecated lookup function usage without a default.
-# temporarily disabling for the 8.0.0 release, will fix in following release.
-# See IAC-1227
-rule "terraform_deprecated_lookup" {
-  enabled = false
-}
