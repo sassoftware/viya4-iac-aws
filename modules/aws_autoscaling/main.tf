@@ -6,7 +6,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "5.25.0"
     }
   }
 }
@@ -69,7 +69,7 @@ resource "aws_iam_policy" "worker_autoscaling" {
 
 module "iam_assumable_role_with_oidc" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version = "4.24.1"
+  version = "5.30.2"
 
   create_role                   = true
   role_name                     = "${var.prefix}-cluster-autoscaler"

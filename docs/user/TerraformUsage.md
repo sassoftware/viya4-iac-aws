@@ -54,7 +54,7 @@ terraform apply
 
 This command can take a few minutes to complete. Once it has completed, Terraform output values are written to the console. The `kubeconfig` file for the cluster is written to `[prefix]-eks-kubeconfig.conf` in the current directory, `$(pwd)`.
 
-### Display Terrafrom Output
+### Display Terraform Output
 
 Once the cloud resources have been created using the `terraform apply` command, Terraform output values can be displayed again later at any time by running the following command:
 
@@ -68,7 +68,7 @@ After provisioning the infrastructure, you can make additional changes by modify
 
 ### Tear Down Cloud Resources
 
-To destroy all the cloud resources created with the previous comamnds, run the following command:
+To destroy all the cloud resources created with the previous commands, run the following command:
 
 ```bash
 terraform destroy

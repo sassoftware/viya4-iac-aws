@@ -17,12 +17,8 @@ provider "aws" {
 
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
-}
-
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+  name = module.eks.cluster_name
 }
 
 data "aws_availability_zones" "available" {}
@@ -62,7 +58,7 @@ provider "kubernetes" {
   # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
   # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to
   # the kubernetes provider.
-  host                   = data.aws_eks_cluster.cluster.endpoint
+  host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
@@ -95,7 +91,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "18.31.2"
+  version                              = "19.19.1"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = [] # disable cluster control plan logging
@@ -153,6 +149,12 @@ module "eks" {
       ipv6_cidr_blocks = ["::/0"]
     }
   }
+  # We already set our own rules above, no need to use Amazon's defaults.
+  node_security_group_enable_recommended_rules = false
+
+  # enabled by default in v19, setting to false to preserve original behavior.
+  create_kms_key = false
+  cluster_encryption_config = []
 
   ################################################################################
   # Handle BYO IAM Roles & Policies
@@ -161,9 +163,9 @@ module "eks" {
   create_iam_role = var.cluster_iam_role_arn == null ? true : false
   iam_role_arn    = var.cluster_iam_role_arn
 
-  iam_role_additional_policies = [
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  ]
+  iam_role_additional_policies = {
+    "additional": "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  }
 
   ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {
@@ -220,13 +222,13 @@ module "kubeconfig" {
   ca_crt       = local.kubeconfig_ca_cert
   sg_id        = local.cluster_security_group_id
 
-  depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
+  depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
-# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/5.9.0
+# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "5.9.0"
+  version = "6.2.0"
 
   for_each = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
 
@@ -274,11 +276,11 @@ module "postgresql" {
   options    = each.value.options
 
   # Flags for module to flag if postgres should be created or not.
-  create_db_instance        = true
-  create_db_subnet_group    = true
-  create_db_parameter_group = true
-  create_db_option_group    = true
-  create_random_password    = false
+  create_db_instance          = true
+  create_db_subnet_group      = true
+  create_db_parameter_group   = true
+  create_db_option_group      = true
+  manage_master_user_password = false
 
 }
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
