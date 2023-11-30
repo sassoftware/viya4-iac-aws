@@ -29,7 +29,7 @@ locals {
 
   cluster_endpoint_public_access_cidrs = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
 
-  cluster_endpoint_private_access_cidrs = var.cluster_api_mode == "public" ? [] : var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.cluster_endpoint_private_access_cidrs)) # tflint-ignore: terraform_unused_declarations
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.cluster_endpoint_private_access_cidrs)) # tflint-ignore: terraform_unused_declarations
 
   vpc_endpoint_private_access_cidrs = var.vpc_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.vpc_endpoint_private_access_cidrs))
 
