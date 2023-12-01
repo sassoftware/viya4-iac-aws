@@ -2,5 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 output "autoscaler_account" {
-  value = module.iam_assumable_role_with_oidc.iam_role_arn
+  description = "ARN of IAM role for cluster-autoscaler."
+  value       = module.iam_assumable_role_with_oidc.iam_role_arn
 }
