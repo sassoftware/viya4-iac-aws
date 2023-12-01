@@ -27,7 +27,7 @@ output "workers_iam_role_arn" {
 
 output "rwx_filestore_id" {
   description = "The ID that identifies the file system."
-  value       = (var.storage_type == "ha" && local.storage_type_backend == "efs"
+  value = (var.storage_type == "ha" && local.storage_type_backend == "efs"
     ? aws_efs_file_system.efs-fs[0].id
   : var.storage_type == "ha" && local.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null)
 }
@@ -52,7 +52,7 @@ output "rwx_filestore_path" {
 
 output "efs_arn" {
   description = "Amazon Resource Name of the file system."
-  value = var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
+  value       = var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
 }
 
 output "jump_private_ip" {
@@ -122,7 +122,7 @@ output "postgres_servers" {
 
 output "nat_ip" {
   description = "List of public Elastic IPs created for AWS NAT Gateway."
-  value = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
+  value       = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
 }
 
 output "prefix" {
@@ -177,7 +177,8 @@ output "k8s_version" {
 }
 
 output "aws_shared_credentials_file" {
-  value = var.aws_shared_credentials_file
+  description = "Path to shared AWS credentials file"
+  value       = var.aws_shared_credentials_file
   precondition {
     condition     = var.aws_shared_credentials_file != null
     error_message = "aws_shared_credentials_file must not be null. aws_shared_credentials_file has been deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
@@ -185,7 +186,8 @@ output "aws_shared_credentials_file" {
 }
 
 output "aws_shared_credentials" {
-  value = local.aws_shared_credentials
+  description = "Path to shared AWS credentials file"
+  value       = local.aws_shared_credentials
   precondition {
     condition     = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
     error_message = "Set either aws_shared_credentials_files or aws_shared_credentials_file, but not both. aws_shared_credentials_file is deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
@@ -193,7 +195,8 @@ output "aws_shared_credentials" {
 }
 
 output "storage_type_backend" {
-  value = local.storage_type_backend != null ? local.storage_type_backend : null
+  description = "The storage backend employed for the chosen storage_type."
+  value       = local.storage_type_backend != null ? local.storage_type_backend : null
   precondition {
     condition = (var.storage_type == "standard" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "nfs"
@@ -205,15 +208,18 @@ output "storage_type_backend" {
 }
 
 output "aws_fsx_ontap_fsxadmin_password" {
-  value     = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
-  sensitive = true
+  description = "The ONTAP administrative password for the fsxadmin user."
+  value       = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
+  sensitive   = true
 }
 
 output "byo_network_scenario" {
-  value = module.vpc.byon_scenario
+  description = "BYON Scenario Number"
+  value       = module.vpc.byon_scenario
 }
 
 output "validate_subnet_azs" {
+  description = "Validation for user inputted subnet_azs"
   # validation, no output value needed
   value = null
   precondition {
