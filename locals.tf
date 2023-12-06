@@ -7,7 +7,8 @@ locals {
   aws_caller_identity_user_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
 
   # General
-  security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
+  sec_group                 = (length(aws_security_group.sg_a) == 0 && length(aws_security_group.sg_b) == 0) ? null : coalescelist(aws_security_group.sg_a, aws_security_group.sg_b)
+  security_group_id         = var.security_group_id == null ? local.sec_group[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   cluster_name              = "${var.prefix}-eks"
@@ -20,16 +21,31 @@ locals {
   aws_shared_credentials = local.use_aws_shared_credentials_file ? [var.aws_shared_credentials_file] : var.aws_shared_credentials_files
 
   # CIDRs
-  default_public_access_cidrs           = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
-  vm_public_access_cidrs                = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
-  cluster_endpoint_public_access_cidrs  = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
-  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs)) : var.cluster_endpoint_private_access_cidrs # tflint-ignore: terraform_unused_declarations
-  postgres_public_access_cidrs          = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
+  default_public_access_cidrs  = var.default_public_access_cidrs == null ? [] : var.default_public_access_cidrs
+  default_private_access_cidrs = var.default_private_access_cidrs == null ? [] : var.default_private_access_cidrs
+
+  vm_public_access_cidrs  = var.vm_public_access_cidrs == null ? local.default_public_access_cidrs : var.vm_public_access_cidrs
+  vm_private_access_cidrs = var.vm_private_access_cidrs == null ? local.default_private_access_cidrs : var.vm_private_access_cidrs
+
+  cluster_endpoint_public_access_cidrs = var.cluster_api_mode == "private" ? [] : (var.cluster_endpoint_public_access_cidrs == null ? local.default_public_access_cidrs : var.cluster_endpoint_public_access_cidrs)
+
+  cluster_endpoint_private_access_cidrs = var.cluster_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.cluster_endpoint_private_access_cidrs)) # tflint-ignore: terraform_unused_declarations
+
+  vpc_endpoint_private_access_cidrs = var.vpc_endpoint_private_access_cidrs == null ? distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs)) : distinct(concat(module.vpc.public_subnet_cidrs, module.vpc.private_subnet_cidrs, local.default_private_access_cidrs, var.vpc_endpoint_private_access_cidrs))
+
+  postgres_public_access_cidrs = var.postgres_public_access_cidrs == null ? local.default_public_access_cidrs : var.postgres_public_access_cidrs
 
   # Subnets
   jump_vm_subnet   = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet    = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   nfs_vm_subnet_az = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
+
+  # Generate list of AZ where created subnets should be placed
+  # If not specified by the user replace with list of all AZs in a region
+  public_subnet_azs        = can(var.subnet_azs["public"]) ? var.subnet_azs["public"] : data.aws_availability_zones.available.names
+  private_subnet_azs       = can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
+  database_subnet_azs      = can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
+  control_plane_subnet_azs = can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
 
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)
@@ -45,7 +61,7 @@ locals {
   # Kubernetes
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
-  kubeconfig_ca_cert  = data.aws_eks_cluster.cluster.certificate_authority[0].data
+  kubeconfig_ca_cert  = module.eks.cluster_certificate_authority_data
 
   # Mapping node_pools to node_groups
   default_node_pool = {
@@ -87,6 +103,9 @@ locals {
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
+      # Node Pool IAM Configuration
+      iam_role_use_name_prefix = false
+      iam_role_name            = "${var.prefix}-default-eks-node-group"
     }
   }
 
@@ -133,6 +152,9 @@ locals {
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
       tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
+      # Node Pool IAM Configuration
+      iam_role_use_name_prefix = false
+      iam_role_name            = "${var.prefix}-${key}-eks-node-group"
     }
   }
 
@@ -147,10 +169,10 @@ locals {
 
   postgres_outputs = length(module.postgresql) != 0 ? { for k, v in module.postgresql :
     k => {
-      "server_name" : module.postgresql[k].db_instance_id,
+      "server_name" : module.postgresql[k].db_instance_identifier,
       "fqdn" : module.postgresql[k].db_instance_address,
       "admin" : module.postgresql[k].db_instance_username,
-      "password" : module.postgresql[k].db_instance_password,
+      "password" : local.postgres_servers[k].administrator_password,
       "server_port" : module.postgresql[k].db_instance_port
       "ssl_enforcement_enabled" : local.postgres_servers[k].ssl_enforcement_enabled,
       "internal" : false

@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 variable "name" {
-  type = string
+  description = "Name to assign the VM"
+  type        = string
 }
 
 variable "tags" {
@@ -12,77 +13,102 @@ variable "tags" {
 }
 
 variable "vm_type" {
-  default = "m5.4xlarge"
+  description = "EC2 instance type"
+  type        = string
+  default     = "m5.4xlarge"
 }
 
 variable "cloud_init" {
-  default = ""
-}
-
-variable "postgres_administrator_login" {
-  description = "The Administrator Login for the PostgreSQL Server. Changing this forces a new resource to be created."
-  default     = "pgadmin"
+  description = "Cloud init script to execute"
+  type        = string
+  default     = ""
 }
 
 variable "vm_admin" {
-  description = "OS Admin User for VMs of AKS Cluster nodes"
+  description = "OS Admin User for VMs of EC2 instance"
+  type        = string
   default     = "azureuser"
 }
 
 variable "ssh_public_key" {
   description = "Path to ssh public key"
+  type        = string
   default     = ""
 }
 
 variable "security_group_ids" {
-  default = []
+  description = "List of security group ids to associate with the EC2 instance"
+  type        = list(string)
+  default     = []
 }
 
 variable "create_public_ip" {
-  default = false
+  description = "Toggle the creation of a public EIP to be associated with the EC2 instance"
+  type        = bool
+  default     = false
 }
 
 variable "data_disk_count" {
-  default = 0
+  description = "Number of disks to attach to the EC2 instance"
+  type        = number
+  default     = 0
 }
 
 variable "data_disk_size" {
-  default = 128
+  description = "Size of disk to attach to the EC2 instance in GiBs"
+  type        = number
+  default     = 128
 }
 
 variable "data_disk_type" {
-  default = "gp2"
+  description = "The type of EBS volume for the data disk"
+  type        = string
+  default     = "gp2"
 }
 
 variable "data_disk_availability_zone" {
-  default = ""
+  description = "The AZ where the EBS volume will exist"
+  type        = string
+  default     = ""
 }
 
 variable "data_disk_iops" {
-  default = 0
+  description = "The amount of IOPS to provision for the data disk"
+  type        = number
+  default     = 0
 }
 
 variable "os_disk_size" {
-  default = 64
+  description = "The size of the OS disk"
+  type        = number
+  default     = 64
 }
 
 variable "os_disk_type" {
-  default = "standard"
+  description = "The type of EBS volume for the OS disk"
+  type        = string
+  default     = "standard"
 }
 
 variable "os_disk_delete_on_termination" {
-  default = true
+  description = "Delete disk on termination"
+  type        = bool
+  default     = true
 }
 
 variable "os_disk_iops" {
-  default = 0
+  description = "The amount of IOPS to provision for the OS disk"
+  type        = number
+  default     = 0
 }
 
 variable "subnet_id" {
-  type = string
+  description = "The VPC Subnet ID to launch in."
+  type        = string
 }
 
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
+  type        = bool
   default     = false
 }

@@ -104,7 +104,7 @@ output "postgres_servers" {
 }
 
 output "nat_ip" {
-  value = module.vpc.nat_public_ips[0]
+  value = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
 }
 
 output "prefix" {
@@ -145,7 +145,7 @@ output "ebs_csi_account" {
 }
 
 output "k8s_version" {
-  value = data.aws_eks_cluster.cluster.version
+  value = module.eks.cluster_version
 }
 
 output "aws_shared_credentials_file" {
@@ -170,7 +170,8 @@ output "storage_type_backend" {
     condition = (var.storage_type == "standard" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "efs"
-    || var.storage_type == "ha" && var.storage_type_backend == "ontap")
+      || var.storage_type == "ha" && var.storage_type_backend == "ontap"
+    || var.storage_type == "none" && var.storage_type_backend == "none")
     error_message = "nfs is the only valid storage_type_backend when storage_type == 'standard'"
   }
 }
@@ -178,4 +179,28 @@ output "storage_type_backend" {
 output "aws_fsx_ontap_fsxadmin_password" {
   value     = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
   sensitive = true
+}
+
+output "byo_network_scenario" {
+  value = module.vpc.byon_scenario
+}
+
+output "validate_subnet_azs" {
+  # validation, no output value needed
+  value = null
+  precondition {
+    # Validation Notes:
+    # Either the user does not define subnet_azs and it defaults to {}, in which case the whole map will be populated
+    # If the user does not define a specific key, that is allowed and we will populate the az list for that subnet
+    # Lastly, if the user does define a specific subnet_azs key, it must be greater than or equal to the matching subnet map list
+    condition = (var.subnet_azs == {} ||
+      (
+        (length(lookup(var.subnet_azs, "private", [])) == 0 || length(lookup(var.subnet_azs, "private", [])) >= length(lookup(var.subnets, "private", []))) &&
+        (length(lookup(var.subnet_azs, "control_plane", [])) == 0 || length(lookup(var.subnet_azs, "control_plane", [])) >= length(lookup(var.subnets, "control_plane", []))) &&
+        (length(lookup(var.subnet_azs, "public", [])) == 0 || length(lookup(var.subnet_azs, "public", [])) >= length(lookup(var.subnets, "public", []))) &&
+        (length(lookup(var.subnet_azs, "database", [])) == 0 || length(lookup(var.subnet_azs, "database", [])) >= length(lookup(var.subnets, "database", [])))
+      )
+    )
+    error_message = "Your subnet_azs keys must have a string list value of AZs greater than or equal to the list of CIDRs in equivalent key in the subnets variable."
+  }
 }

@@ -61,9 +61,15 @@ variable "iac_tooling" {
   default     = "terraform"
 }
 
-## Public Access
+## Public & Private Access
 variable "default_public_access_cidrs" {
-  description = "List of CIDRs to access created resources."
+  description = "List of CIDRs to access created resources - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "default_private_access_cidrs" {
+  description = "List of CIDRs to access created resources - Private."
   type        = list(string)
   default     = null
 }
@@ -80,8 +86,20 @@ variable "cluster_endpoint_private_access_cidrs" {
   default     = null
 }
 
+variable "vpc_endpoint_private_access_cidrs" {
+  description = "List of CIDRs to access VPC endpoints - Private."
+  type        = list(string)
+  default     = null
+}
+
 variable "vm_public_access_cidrs" {
-  description = "List of CIDRs to access jump VM or NFS VM."
+  description = "List of CIDRs to access jump VM or NFS VM - Public."
+  type        = list(string)
+  default     = null
+}
+
+variable "vm_private_access_cidrs" {
+  description = "List of CIDRs to access jump VM or NFS VM - Private."
   type        = list(string)
   default     = null
 }
@@ -338,7 +356,8 @@ variable "subnet_ids" {
   # Example:
   # subnet_ids = {  # only needed if using pre-existing subnets
   #   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
-  #   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  #   "private" : ["existing-private-subnet-id1"],
+  #   "control_plane" : ["existing-control-plane-subnet-id1", "existing-control-plane-subnet-id2"],
   #   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true'
   # }
 }
@@ -353,12 +372,25 @@ variable "subnets" {
   description = "Subnets to be created and their settings - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
   default = {
-    "private" : ["192.168.0.0/18", "192.168.64.0/18"],
+    "private" : ["192.168.0.0/18"],
+    "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
     "public" : ["192.168.129.0/25", "192.168.129.128/25"],
     "database" : ["192.168.128.0/25", "192.168.128.128/25"]
   }
 }
 
+variable "subnet_azs" {
+  description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
+  type        = map(list(string))
+  default     = {}
+  nullable    = false
+
+  # We only support configuring the AZs for the public, private, control_plane, and database subnet
+  validation {
+    condition     = var.subnet_azs == {} || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "control_plane", "database"], subnet)])
+    error_message = "ERROR: public, private, control_plane, and database are the only keys allowed in the subnet_azs map"
+  }
+}
 variable "security_group_id" {
   description = "Pre-existing Security Group id. Leave blank to have one created."
   type        = string
@@ -599,8 +631,23 @@ variable "cluster_api_mode" {
 
 variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declarations
   description = "Endpoints needed for private cluster."
-  type        = list(string)
-  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  type        = map(string)
+  default = {
+    "ec2"                  = "Interface",
+    "ecr.api"              = "Interface",
+    "ecr.dkr"              = "Interface",
+    "s3"                   = "Gateway",
+    "logs"                 = "Interface",
+    "sts"                  = "Interface",
+    "elasticloadbalancing" = "Interface",
+    "autoscaling"          = "Interface"
+  }
+}
+
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
 }
 
 variable "cluster_node_pool_mode" {

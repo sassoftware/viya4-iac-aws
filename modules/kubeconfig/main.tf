@@ -6,11 +6,11 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.20"
+      version = "2.23.0"
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.4"
+      version = "2.4.0"
     }
   }
 }
@@ -42,6 +42,10 @@ locals {
 
 }
 
+data "aws_security_group" "selected" {
+  id = var.sg_id
+}
+
 data "kubernetes_secret" "sa_secret" {
   count = var.create_static_kubeconfig ? 1 : 0
   metadata {
@@ -61,8 +65,12 @@ resource "kubernetes_secret" "sa_secret" {
       "kubernetes.io/service-account.name" = local.service_account_name
     }
   }
-  type       = "kubernetes.io/service-account-token"
-  depends_on = [kubernetes_service_account.kubernetes_sa]
+  type = "kubernetes.io/service-account-token"
+
+  depends_on = [
+    kubernetes_service_account.kubernetes_sa,
+    data.aws_security_group.selected,
+  ]
 }
 
 # Starting K8s v1.24+ hashicorp/terraform-provider-kubernetes issues warning message:
@@ -90,6 +98,10 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
     name      = local.service_account_name
     namespace = var.namespace
   }
+
+  depends_on = [
+    data.aws_security_group.selected,
+  ]
 }
 
 # kube config file generation

@@ -1,20 +1,40 @@
 # Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-variable "azs" {
-  description = "A list of availability zones names or ids in the region"
+variable "public_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the public subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "private_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the private subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "control_plane_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the control plane subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "database_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the database subnets"
   type        = list(string)
   default     = []
 }
 
 variable "vpc_id" {
   description = "Existing vpc id"
+  type        = string
   default     = null
 }
 
 variable "name" {
-  type    = string
-  default = null
+  description = "Prefix used when creating VPC resources"
+  type        = string
+  default     = null
 }
 
 variable "cidr" {
@@ -39,18 +59,6 @@ variable "existing_nat_id" {
   description = "Pre-existing VPC NAT Gateway id"
 }
 
-variable "enable_nat_gateway" {
-  description = "Should be true if you want to provision NAT Gateways for each of your private networks"
-  type        = bool
-  default     = true
-}
-
-variable "single_nat_gateway" {
-  description = "Should be true if you want to provision a single shared NAT Gateway across all of your private networks"
-  type        = bool
-  default     = true
-}
-
 variable "enable_dns_hostnames" {
   description = "Should be true to enable DNS hostnames in the VPC"
   type        = bool
@@ -62,7 +70,6 @@ variable "enable_dns_support" {
   type        = bool
   default     = true
 }
-
 
 variable "tags" {
   description = "The tags to associate with your network and subnets."
@@ -100,6 +107,12 @@ variable "database_subnet_suffix" {
   default     = "db"
 }
 
+variable "control_plane_subnet_suffix" {
+  description = "Suffix to append to control plane subnets name"
+  type        = string
+  default     = "control-plane"
+}
+
 variable "map_public_ip_on_launch" {
   description = "Should be false if you do not want to auto-assign public IP on launch"
   type        = bool
@@ -108,8 +121,23 @@ variable "map_public_ip_on_launch" {
 
 variable "vpc_private_endpoints" {
   description = "Endpoints needed for private cluster"
-  type        = list(string)
-  default     = ["ec2", "ecr.api", "ecr.dkr", "s3", "logs", "sts", "elasticloadbalancing", "autoscaling"]
+  type        = map(string)
+  default = {
+    "ec2"                  = "Interface",
+    "ecr.api"              = "Interface",
+    "ecr.dkr"              = "Interface",
+    "s3"                   = "Gateway",
+    "logs"                 = "Interface",
+    "sts"                  = "Interface",
+    "elasticloadbalancing" = "Interface",
+    "autoscaling"          = "Interface"
+  }
+}
+
+variable "vpc_private_endpoints_enabled" {
+  description = "Enable the creation of vpc private endpoint resources"
+  type        = bool
+  default     = true
 }
 
 variable "region" {
@@ -118,6 +146,21 @@ variable "region" {
 }
 
 variable "security_group_id" {
-  description = "Security Group ID"
+  description = "Security Group ID local variable value"
+  type        = string
+}
+
+variable "raw_sec_group_id" {
+  description = "Security Group ID input variable value"
+  type        = string
+}
+
+variable "cluster_security_group_id" {
+  description = "Cluster Security Group ID input variable value"
+  type        = string
+}
+
+variable "workers_security_group_id" {
+  description = "Workers Security Group ID input variable value"
   type        = string
 }

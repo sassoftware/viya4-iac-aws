@@ -17,12 +17,8 @@ provider "aws" {
 
 }
 
-data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
-}
-
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+  name = module.eks.cluster_name
 }
 
 data "aws_availability_zones" "available" {}
@@ -44,14 +40,14 @@ resource "kubernetes_config_map" "sas_iac_buildinfo" {
   }
 
   data = {
-    git-hash    = lookup(data.external.git_hash.result, "git-hash")
+    git-hash = data.external.git_hash.result["git-hash"]
     timestamp   = chomp(timestamp())
     iac-tooling = var.iac_tooling
     terraform   = <<EOT
-version: ${lookup(data.external.iac_tooling_version.result, "terraform_version")}
-revision: ${lookup(data.external.iac_tooling_version.result, "terraform_revision")}
-provider-selections: ${lookup(data.external.iac_tooling_version.result, "provider_selections")}
-outdated: ${lookup(data.external.iac_tooling_version.result, "terraform_outdated")}
+version: ${data.external.iac_tooling_version.result["terraform_version"]}
+revision: ${data.external.iac_tooling_version.result["terraform_revision"]}
+provider-selections: ${data.external.iac_tooling_version.result["provider_selections"]}
+outdated: ${data.external.iac_tooling_version.result["terraform_outdated"]}
 EOT
   }
 }
@@ -62,7 +58,7 @@ provider "kubernetes" {
   # delay the initialization of the k8s provider until the cluster is ready with a defined endpoint value.
   # It establishes a dependency on the entire EKS cluster being ready and also provides a desired input to
   # the kubernetes provider.
-  host                   = data.aws_eks_cluster.cluster.endpoint
+  host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)
   token                  = data.aws_eks_cluster_auth.cluster.token
 }
@@ -70,15 +66,22 @@ provider "kubernetes" {
 module "vpc" {
   source = "./modules/aws_vpc"
 
-  name                = var.prefix
-  vpc_id              = var.vpc_id
-  region              = var.location
-  security_group_id   = local.security_group_id
-  cidr                = var.vpc_cidr
-  azs                 = data.aws_availability_zones.available.names
-  existing_subnet_ids = var.subnet_ids
-  subnets             = var.subnets
-  existing_nat_id     = var.nat_id
+  name                          = var.prefix
+  vpc_id                        = var.vpc_id
+  region                        = var.location
+  security_group_id             = local.security_group_id
+  raw_sec_group_id              = var.security_group_id
+  cluster_security_group_id     = var.cluster_security_group_id
+  workers_security_group_id     = var.workers_security_group_id
+  cidr                          = var.vpc_cidr
+  public_subnet_azs             = local.public_subnet_azs
+  private_subnet_azs            = local.private_subnet_azs
+  database_subnet_azs           = local.database_subnet_azs
+  control_plane_subnet_azs      = local.control_plane_subnet_azs
+  existing_subnet_ids           = var.subnet_ids
+  subnets                       = var.subnets
+  existing_nat_id               = var.nat_id
+  vpc_private_endpoints_enabled = var.vpc_private_endpoints_enabled
 
   tags                = local.tags
   public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
@@ -88,7 +91,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "18.31.2"
+  version                              = "19.19.1"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = [] # disable cluster control plan logging
@@ -97,6 +100,9 @@ module "eks" {
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
+  # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
+  control_plane_subnet_ids = module.vpc.control_plane_subnets
+  # Specifies the list of subnets in which the worker nodes of the EKS cluster will be launched.
   subnet_ids  = module.vpc.private_subnets
   vpc_id      = module.vpc.vpc_id
   tags        = local.tags
@@ -143,6 +149,12 @@ module "eks" {
       ipv6_cidr_blocks = ["::/0"]
     }
   }
+  # We already set our own rules above, no need to use Amazon's defaults.
+  node_security_group_enable_recommended_rules = false
+
+  # enabled by default in v19, setting to false to preserve original behavior.
+  create_kms_key = false
+  cluster_encryption_config = []
 
   ################################################################################
   # Handle BYO IAM Roles & Policies
@@ -151,9 +163,9 @@ module "eks" {
   create_iam_role = var.cluster_iam_role_arn == null ? true : false
   iam_role_arn    = var.cluster_iam_role_arn
 
-  iam_role_additional_policies = [
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  ]
+  iam_role_additional_policies = {
+    "additional": "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  }
 
   ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {
@@ -208,14 +220,15 @@ module "kubeconfig" {
   region       = var.location
   endpoint     = module.eks.cluster_endpoint
   ca_crt       = local.kubeconfig_ca_cert
+  sg_id        = local.cluster_security_group_id
 
-  depends_on = [module.eks.cluster_id] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
+  depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
-# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/5.9.0
+# Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "5.9.0"
+  version = "6.2.0"
 
   for_each = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
 
@@ -246,7 +259,7 @@ module "postgresql" {
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${each.value.server_version}"
@@ -263,11 +276,11 @@ module "postgresql" {
   options    = each.value.options
 
   # Flags for module to flag if postgres should be created or not.
-  create_db_instance        = true
-  create_db_subnet_group    = true
-  create_db_parameter_group = true
-  create_db_option_group    = true
-  create_random_password    = false
+  create_db_instance          = true
+  create_db_subnet_group      = true
+  create_db_parameter_group   = true
+  create_db_option_group      = true
+  manage_master_user_password = false
 
 }
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html

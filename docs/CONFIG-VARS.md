@@ -11,7 +11,10 @@ Supported configuration variables are listed in the tables below.  All variables
       - [Using Static Credentials](#using-static-credentials)
       - [Using AWS Profile](#using-aws-profile)
   - [Admin Access](#admin-access)
+    - [Public Access CIDRs](#public-access-cidrs)
+    - [Private Access CIDRs](#private-access-cidrs)
   - [Networking](#networking)
+    - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
   - [IAM](#iam)
   - [General](#general)
@@ -41,7 +44,7 @@ Terraform input variables can be set in the following ways:
 
 ### AWS Authentication
 
-The Terraform process manages AWS resources on your behalf. In order to do so, it needs the credentials for an AWS identity with the required permissons.
+The Terraform process manages AWS resources on your behalf. In order to do so, it needs the credentials for an AWS identity with the required permissions.
 
 You can use either static credentials or the name of an AWS profile. If both are specified, the static credentials take precedence. For recommendations on how to set these variables in your environment, see [Authenticating Terraform to Access AWS](./user/TerraformAWSAuthentication.md).
 
@@ -63,7 +66,7 @@ You can use either static credentials or the name of an AWS profile. If both are
 
 ## Admin Access
 
-By default, the pubic endpoints of the AWS resources that are being created are only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
+By default, the public endpoints of the AWS resources that are being created are only accessible through authenticated AWS clients (for example, the AWS Portal, the AWS CLI, etc.).
 To enable access for other administrative client applications (for example `kubectl`, `psql`, etc.), you can set Security Group rules to control access from your source IP addresses.
 
 To set these permissions as part of this Terraform script, specify ranges of IP addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing). Contact your Network Administrator to find the public CIDR range of your network.
@@ -72,30 +75,75 @@ NOTE: When deploying infrastructure into a private network (e.g. a VPN), with no
 
 NOTE: The script will either create a new Security Group, or use an existing Security Group, if specified in the `security_group_id` variable.
 
+### Public Access CIDRs
+
 You can use `default_public_access_cidrs` to set a default range for all created resources. To set different ranges for other resources, define the appropriate variable. Use an empty list [] to disallow access explicitly.
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_public_access_cidrs | IP address ranges that are allowed to access all created cloud resources | list of strings | | Set a default for all resources. |
-| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the AKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
+| cluster_endpoint_public_access_cidrs | IP address ranges that are allowed to access the EKS cluster API | list of strings | | For client admin access to the cluster api (by kubectl, for example). Only used with `cluster_api_mode=public` |
 | vm_public_access_cidrs | IP address ranges that are allowed to access the VMs | list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Security Group. Only used with `create_jump_public_ip=true` or `create_nfs_public_ip=true`. |
-| postgres_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+| postgres_public_access_cidrs | IP address ranges that are allowed to access the AWS PostgreSQL server | list of strings ||	Opens port 5432 by adding Ingress Rule on the Security Group. Only used when creating postgres instances.|
+
+### Private Access CIDRs
+
+For resources accessible at private IP addresses only, it may be necessary, depending upon your networking configuration, to specify additional CIDRs for clients requiring access to those resources.  There are three private access CIDR variables provided so that you may specify distinct IP ranges needing access for each of the three different contexts:
+
+1. Cluster API Server Endpoint is Private - use `cluster_endpoint_private_access_cidrs` to indicate the client IP ranges needing access
+2. Jump or NFS Server VMs have only private IPs - use `vm_private_access_cidrs` to indicate the IP ranges for the DAC client VM needing access. DAC's baseline module will require SSH access to the Jump VM and/or NFS Server VM.
+3. VPC has no public egress - use `vpc_endpoint_private_access_cidrs` to allow access to AWS private link services required to build the cluster, e.g. EC2.
+
+For example, with a cluster API server endpoint that is private, the IAC client VM must have API server endpoint access during cluster creation to perform a health check.  If your IAC client VM is not in your private subnet, its IP or CIDR range should be present in `cluster_endpoint_private_access_cidrs`.
+
+You can also use `default_private_access_cidrs` to apply the same CIDR range to all three private contexts. To set different CIDR ranges for a specific private context, set the appropriate variable. Use an empty list [] to disallow access explicitly.
+
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| default_private_access_cidrs | IP address ranges that are allowed to access all created private cloud resources | list of strings | | Set a list of CIDR ranges that will be applied as a default value for `cluster_endpoint_private_access_cidrs`, `vpc_endpoint_private_access_cidrs` and `vm_private_access_cidrs`.  **Note:** If you need to set distinct IP CIDR ranges for any of these contexts, use the specific variables below rather than this one. |
+| cluster_endpoint_private_access_cidrs | IP address ranges that are allowed to access the EKS cluster API Server endpoint| list of strings | | For clients needing access to the cluster api server endpoint (e.g. for VMs running terraform apply and for VMs where admins will use kubectl). Only used with `cluster_api_mode=private` |
+| vpc_endpoint_private_access_cidrs | IP address ranges that are allowed to access all AWS Services targeted by the VPC endpoints  | list of strings | | Adds an ingress rule to the auxiliary security group (_prefix_-sg) protecting the VPC Endpoints, allowing HTTPS access at port 443. Only used with `vpc_private_endpoints_enabled=true`. |
+| vm_private_access_cidrs | IP address ranges that are allowed to access private IP based Jump or NFS Server VMs.| list of strings | | Opens port 22 for SSH access to the jump server and/or NFS VM by adding Ingress Rule on the Workers Security Group. Only used with `create_jump_public_ip=false` or `create_nfs_public_ip=false`. |
 
 ## Networking
- | Name | Description | Type | Default | Notes |
- | :--- | ---: | ---: | ---: | ---: |
- | vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
- | subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| vpc_cidr | Address space for the VPC | string | "192.168.0.0/16" | This variable is ignored when `vpc_id` is set (AKA bring your own VPC). |
+| subnets | Subnets to be created and their settings | map | See below for default values | This variable is ignored when `subnet_ids` is set (AKA bring your own subnets). All defined subnets must exist within the VPC address space. |
+| subnet_azs | Configure specific AZs you want the subnets to be created in. The values must be distinct | optional map | {} see below for an example | If you wish for the codebase to lookup a list of AZs for you: either don't define subnet_azs to lookup AZs for all subnets, or omit the key for a specific subnet in the map to perform a lookup for it. This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).|
+
+### Subnet requirements
+
+If no values are set for the [`subnet_ids`](#use-existing) configuration variable, `viya4-iac-aws` will create subnet resources for you. By default, a `private` subnet, two `control_plane` subnets, two `public` subnets and two `database` subnets will be created. The CIDR ranges selected for the default subnets are intended to provide sufficient IP address space for the cluster, any nodes and other Kubernetes resources that you expect to create in each subnet. The `private` subnet should provide sufficient IP address space for the maximum expected number of worker nodes and every pod launched within the EKS cluster. For the `control_plane` subnets, [AWS requires](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html) at least two CIDR ranges, each in a different AZ, and recommends that a minimum of 16 IP addresses should be available in each subnet. If an external [postgres server](#postgresql-server) is configured, either two `public` or two `database` subnets, each in a different AZ are required. If public access to an external [postgres server](#postgresql-server) is configured by setting either `postgres_public_access_cidrs` or `default_public_access_cidrs`, the postgres server will use the public subnets, otherwise it will use the database subnets.
+
+For [BYO networking scenarios](../docs/user/BYOnetwork.md#supported-scenarios-and-requirements-for-using-existing-network-resources), existing subnet values are conveyed to `viya4-iac-aws` using the [`subnet_ids`](#use-existing) configuration variable. When configuring an EKS cluster without public access, the minimum subnet requirements include a `private` subnet with a recommended CIDR range of /18, and two `control_plane` subnets with recommended CIDR ranges of /28, each in a separate AZ. If an external postgres server is configured, two `database` subnets with recommended CIDR ranges of /25, each in a separate AZ also need to be provided. Amazon RDS relies on having two subnets in separate AZs to provide database redundancy should a failure occur in one AZ. If public access is required for your postgres server or cluster, supply two `public` subnets in different AZs instead of the `database` subnets.
 
 The default values for the subnets variable are as follows:
 
 ```yaml
 {
-  "private" : ["192.168.0.0/18", "192.168.64.0/18"],
-  "public" : ["192.168.129.0/25", "192.168.129.128/25"],
-  "database" : ["192.168.128.0/25", "192.168.128.128/25"]
+    "private" : ["192.168.0.0/18"],
+    "control_plane" : ["192.168.130.0/28", "192.168.130.16/28"], # AWS recommends at least 16 IP addresses per subnet
+    "public" : ["192.168.129.0/25", "192.168.129.128/25"],
+    "database" : ["192.168.128.0/25", "192.168.128.128/25"]
 }
 ```
+
+Example for `subnet_azs`:
+
+The zones defined below allow you to configure where each subnet in the map above will be created.
+e.g. Looking at the example `subnets` map above, for `"control_plane" : ["192.168.130.0/28", "192.168.130.16/28"]`, the first subnet will be created in `us-east-2c` and the second in `us-east-2b`
+
+```terraform
+subnet_azs = {
+  "private"       : ["us-east-2c"],
+  "control_plane" : ["us-east-2c", "us-east-2b"],
+  "public"        : ["us-east-2a", "us-east-2b"],
+  "database"      : ["us-east-2a", "us-east-2b"]
+}
+```
+
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
 
 ### Use Existing
 If desired, you can deploy into an existing VPC, subnet and NAT gateway, and Security Group.
@@ -108,21 +156,30 @@ The variables in the table below can be used to define the existing resources. R
 | Name | Description | Type | Default | Notes |
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_id | ID of existing VPC | string | null | Only required if deploying into existing VPC. |
- | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. |
- | nat_id | ID of existing AWS NAT gateway | string | null | Only required if deploying into existing VPC and subnets. |
+ | subnet_ids | List of existing subnets mapped to desired usage | map(string) | {} | Only required if deploying into existing subnets. See [Subnet requirements](#subnet-requirements) above.|
+ | nat_id | ID of existing AWS NAT gateway | string | null | Optional if deploying into existing VPC and subnets for [BYON scenarios 2 & 3](./user/BYOnetwork.md#supported-scenarios-and-requirements-for-using-existing-network-resources)|
  | security_group_id | ID of existing Security Group that controls external access to Jump/NFS VMs and Postgres | string | null | Only required if using existing Security Group. See [Security Group](./user/BYOnetwork.md#external-access-security-group) for requirements. |
 | cluster_security_group_id | ID of existing Security Group that controls Pod access to the control plane | string | null | Only required if using existing Cluster Security Group. See [Cluster Security Group](./user/BYOnetwork.md#cluster-security-group) for requirements.|
-| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sourcess (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
+| workers_security_group_id | ID of existing Security Group that allows access between node VMs, Jump VM, and data sources (nfs, efs, postges) | string | null | Only required if using existing Security Group for Node Group VMs. See [Workers Security Group](./user/BYOnetwork.md#workers-security-group) for requirements. |
 
 Example `subnet_ids` variable:
 
-```yaml
+```terraform
 subnet_ids = {
   "public" : ["existing-public-subnet-id1", "existing-public-subnet-id2"],
-  "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
+  "private" : ["existing-private-subnet-id1"],
+  "control_plane" : ["existing-control-plane-subnet-id1", "existing-control-plane-subnet-id2"],
   "database" : ["existing-database-subnet-id1","existing-database-subnet-id2"]
 }
 ```
+
+**Note:** supplying two or more subnets into the `private` list will deploy the node pools in a multi-az configuration, which the [SAS Platform Operations documentation](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopssr&docsetTarget=n098rczq46ffjfn1xbgfzahytnmx.htm#p0vx68bmb3fs88n12d73wwxpsnhu) does not recommend
+
+### VPC Endpoints
+| Name | Description | Type | Default | Notes |
+ | :--- | ---: | ---: | ---: | ---: |
+ | vpc_private_endpoints_enabled | Enable the creation of VPC private endpoints | bool | true | Setting to false prevents IaC from creating and managing VPC private endpoints in the cluster |
+
 
 ## IAM
 
@@ -336,7 +393,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
-| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin passsword must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
+| administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin password must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
 | deletion_protection | Protect from accidental resource deletion | bool | false | |
 | ssl_enforcement_enabled | Enforce SSL on connections to PostgreSQL server instance | bool | true | |
