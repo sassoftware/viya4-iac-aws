@@ -2,5 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 output "kube_config" {
-  value = local_file.kubeconfig.content
+  description = "Kubernetes cluster authentication information for kubectl."
+  value       = local_file.kubeconfig.content
 }
