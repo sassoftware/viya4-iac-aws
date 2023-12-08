@@ -39,7 +39,7 @@ rule "terraform_deprecated_interpolation" {
 
 # Disallow output declarations without description.
 rule "terraform_documented_outputs" {
-  enabled = false
+  enabled = true
 }
 
 # Disallow variable declarations without description.
