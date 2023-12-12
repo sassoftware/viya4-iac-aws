@@ -7,8 +7,9 @@ output "cluster_endpoint" {
 }
 
 output "kube_config" {
-  value     = module.kubeconfig.kube_config
-  sensitive = true
+  description = "Kubernetes cluster authentication information for kubectl."
+  value       = module.kubeconfig.kube_config
+  sensitive   = true
 }
 
 output "cluster_iam_role_arn" {
@@ -25,12 +26,14 @@ output "workers_iam_role_arn" {
 }
 
 output "rwx_filestore_id" {
+  description = "The ID that identifies the file system."
   value = (var.storage_type == "ha" && local.storage_type_backend == "efs"
     ? aws_efs_file_system.efs-fs[0].id
   : var.storage_type == "ha" && local.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null)
 }
 
 output "rwx_filestore_endpoint" {
+  description = "The DNS name for the file system."
   value = (var.storage_type == "none"
     ? null
     : var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
@@ -39,6 +42,7 @@ output "rwx_filestore_endpoint" {
 }
 
 output "rwx_filestore_path" {
+  description = "OS path used for the file system."
   value = (var.storage_type == "none"
     ? null
     : local.storage_type_backend == "efs" ? "/"
@@ -47,30 +51,37 @@ output "rwx_filestore_path" {
 }
 
 output "efs_arn" {
-  value = var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
+  description = "Amazon Resource Name of the file system."
+  value       = var.storage_type == "ha" && local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].arn : null
 }
 
 output "jump_private_ip" {
-  value = var.create_jump_vm ? module.jump[0].private_ip_address : null
+  description = "Private IP address associated with the Jump Server instance."
+  value       = var.create_jump_vm ? module.jump[0].private_ip_address : null
 }
 
 output "jump_public_ip" {
-  value = var.create_jump_vm ? module.jump[0].public_ip_address : null
+  description = "Public IP address associated with the Jump Server instance."
+  value       = var.create_jump_vm ? module.jump[0].public_ip_address : null
 }
 
 output "jump_admin_username" {
-  value = var.create_jump_vm ? module.jump[0].admin_username : null
+  description = "Admin username for the Jump Server instance."
+  value       = var.create_jump_vm ? module.jump[0].admin_username : null
 }
 
 output "jump_private_dns" {
-  value = var.create_jump_vm ? module.jump[0].private_dns : null
+  description = "Private DNS name assigned to the Jump Server instance."
+  value       = var.create_jump_vm ? module.jump[0].private_dns : null
 }
 
 output "jump_public_dns" {
-  value = var.create_jump_vm ? module.jump[0].public_dns : null
+  description = "Public DNS name assigned to the Jump Server instance."
+  value       = var.create_jump_vm ? module.jump[0].public_dns : null
 }
 
 output "jump_rwx_filestore_path" {
+  description = "OS path used in cloud-init for NFS integration."
   value = (var.storage_type != "none"
     ? var.create_jump_vm ? var.jump_rwx_filestore_path : null
     : null
@@ -78,78 +89,96 @@ output "jump_rwx_filestore_path" {
 }
 
 output "nfs_private_ip" {
-  value = var.storage_type == "standard" ? module.nfs[0].private_ip_address : null
+  description = "Private IP address associated with the NFS Server instance."
+  value       = var.storage_type == "standard" ? module.nfs[0].private_ip_address : null
 }
 
 output "nfs_public_ip" {
-  value = var.storage_type == "standard" ? module.nfs[0].public_ip_address : null
+  description = "Public IP address associated with the NFS Server instance."
+  value       = var.storage_type == "standard" ? module.nfs[0].public_ip_address : null
 }
 
 output "nfs_admin_username" {
-  value = var.storage_type == "standard" ? module.nfs[0].admin_username : null
+  description = "Admin username for the NFS Server instance."
+  value       = var.storage_type == "standard" ? module.nfs[0].admin_username : null
 }
 
 output "nfs_private_dns" {
-  value = var.storage_type == "standard" ? module.nfs[0].private_dns : null
+  description = "Private DNS name assigned to the NFS Server instance."
+  value       = var.storage_type == "standard" ? module.nfs[0].private_dns : null
 }
 
 output "nfs_public_dns" {
-  value = var.storage_type == "standard" ? module.nfs[0].public_dns : null
+  description = "Public DNS name assigned to the NFS Server instance."
+  value       = var.storage_type == "standard" ? module.nfs[0].public_dns : null
 }
 
 #postgres
 output "postgres_servers" {
-  value     = length(module.postgresql) != 0 ? local.postgres_outputs : null
-  sensitive = true
+  description = "Map of PostgreSQL server objects."
+  value       = length(module.postgresql) != 0 ? local.postgres_outputs : null
+  sensitive   = true
 }
 
 output "nat_ip" {
-  value = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
+  description = "List of public Elastic IPs created for AWS NAT Gateway."
+  value       = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
 }
 
 output "prefix" {
-  value = var.prefix
+  description = "The prefix used in the name for all cloud resources created by this script."
+  value       = var.prefix
 }
 
 output "cluster_name" {
-  value = local.cluster_name
+  description = "EKS cluster name."
+  value       = local.cluster_name
 }
 
 output "provider" {
-  value = "aws"
+  description = "Public cloud provider infrastructure components are deployed for."
+  value       = "aws"
 }
 
 output "location" {
-  value = var.location
+  description = "AWS Region where all resources in this script were provisioned."
+  value       = var.location
 }
 
 ## Reference for Amazon ECR private registries: https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html
 output "cr_endpoint" {
-  value = "https://${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazonaws.com"
+  description = "The default private registry URL."
+  value       = "https://${data.aws_caller_identity.terraform.account_id}.dkr.ecr.${var.location}.amazonaws.com"
 }
 
 output "cluster_node_pool_mode" {
-  value = var.cluster_node_pool_mode
+  description = "Cluster node configuration."
+  value       = var.cluster_node_pool_mode
 }
 
 output "autoscaler_account" {
-  value = var.autoscaling_enabled ? module.autoscaling[0].autoscaler_account : null
+  description = "ARN of IAM role for cluster-autoscaler."
+  value       = var.autoscaling_enabled ? module.autoscaling[0].autoscaler_account : null
 }
 
 output "cluster_api_mode" {
-  value = var.cluster_api_mode
+  description = "Use Public or Private IP address for the cluster API endpoint."
+  value       = var.cluster_api_mode
 }
 
 output "ebs_csi_account" {
-  value = module.ebs.ebs_csi_account
+  description = "ARN of IAM role for ebs-csi-controller Service Account."
+  value       = module.ebs.ebs_csi_account
 }
 
 output "k8s_version" {
-  value = module.eks.cluster_version
+  description = "Kubernetes master version."
+  value       = module.eks.cluster_version
 }
 
 output "aws_shared_credentials_file" {
-  value = var.aws_shared_credentials_file
+  description = "Path to shared AWS credentials file"
+  value       = var.aws_shared_credentials_file
   precondition {
     condition     = var.aws_shared_credentials_file != null
     error_message = "aws_shared_credentials_file must not be null. aws_shared_credentials_file has been deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
@@ -157,7 +186,8 @@ output "aws_shared_credentials_file" {
 }
 
 output "aws_shared_credentials" {
-  value = local.aws_shared_credentials
+  description = "Path to shared AWS credentials file"
+  value       = local.aws_shared_credentials
   precondition {
     condition     = length(var.aws_shared_credentials_file) == 0 || var.aws_shared_credentials_files == null
     error_message = "Set either aws_shared_credentials_files or aws_shared_credentials_file, but not both. aws_shared_credentials_file is deprecated and will be removed in a future release, use aws_shared_credentials_files instead."
@@ -165,7 +195,8 @@ output "aws_shared_credentials" {
 }
 
 output "storage_type_backend" {
-  value = local.storage_type_backend != null ? local.storage_type_backend : null
+  description = "The storage backend employed for the chosen storage_type."
+  value       = local.storage_type_backend != null ? local.storage_type_backend : null
   precondition {
     condition = (var.storage_type == "standard" && var.storage_type_backend == "nfs"
       || var.storage_type == "ha" && var.storage_type_backend == "nfs"
@@ -177,15 +208,18 @@ output "storage_type_backend" {
 }
 
 output "aws_fsx_ontap_fsxadmin_password" {
-  value     = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
-  sensitive = true
+  description = "The ONTAP administrative password for the fsxadmin user."
+  value       = (local.storage_type_backend == "ontap" ? var.aws_fsx_ontap_fsxadmin_password : null)
+  sensitive   = true
 }
 
 output "byo_network_scenario" {
-  value = module.vpc.byon_scenario
+  description = "BYON Scenario Number"
+  value       = module.vpc.byon_scenario
 }
 
 output "validate_subnet_azs" {
+  description = "Validation for user inputted subnet_azs"
   # validation, no output value needed
   value = null
   precondition {
