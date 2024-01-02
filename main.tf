@@ -40,7 +40,7 @@ resource "kubernetes_config_map" "sas_iac_buildinfo" {
   }
 
   data = {
-    git-hash = data.external.git_hash.result["git-hash"]
+    git-hash    = data.external.git_hash.result["git-hash"]
     timestamp   = chomp(timestamp())
     iac-tooling = var.iac_tooling
     terraform   = <<EOT
@@ -153,7 +153,7 @@ module "eks" {
   node_security_group_enable_recommended_rules = false
 
   # enabled by default in v19, setting to false to preserve original behavior.
-  create_kms_key = false
+  create_kms_key            = false
   cluster_encryption_config = []
 
   ################################################################################
@@ -164,7 +164,7 @@ module "eks" {
   iam_role_arn    = var.cluster_iam_role_arn
 
   iam_role_additional_policies = {
-    "additional": "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
 
   ## Use this to define any values that are common and applicable to all Node Groups
