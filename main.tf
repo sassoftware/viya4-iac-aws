@@ -91,7 +91,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "19.19.1"
+  version                              = "~> 19.0"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = [] # disable cluster control plan logging
@@ -228,7 +228,7 @@ module "kubeconfig" {
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "6.2.0"
+  version = "~> 6.0"
 
   for_each = local.postgres_servers != null ? length(local.postgres_servers) != 0 ? local.postgres_servers : {} : {}
 
