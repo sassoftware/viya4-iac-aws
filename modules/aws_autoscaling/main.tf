@@ -60,7 +60,7 @@ resource "aws_iam_policy" "worker_autoscaling" {
 
 module "iam_assumable_role_with_oidc" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version = "5.30.2"
+  version = "~> 5.0"
 
   create_role                   = true
   role_name                     = "${var.prefix}-cluster-autoscaler"
