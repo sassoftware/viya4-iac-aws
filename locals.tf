@@ -146,6 +146,11 @@ locals {
         http_tokens                 = var.default_nodepool_metadata_http_tokens
         http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
       }
+
+      placement = {
+        group_name = aws_placement_group.sas.name
+      }
+
       # Launch Template
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
