@@ -68,8 +68,10 @@ module "iam_assumable_role_with_oidc" {
   role_policy_arns              = [aws_iam_policy.worker_autoscaling.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler"]
 
-  tags = {
-    Role = "${var.prefix}-cluster-autoscaler"
-  }
-
+  tags = merge(
+    {
+      Role = "${var.prefix}-cluster-autoscaler"
+    },
+    var.tags
+  )
 }
