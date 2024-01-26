@@ -105,7 +105,7 @@ resource "aws_eip" "eip" {
   count    = var.create_public_ip ? 1 : 0
   domain   = "vpc"
   instance = aws_instance.vm.id
-  tags     = merge({ Name : "${var.name}-eip" }, var.tags)
+  tags = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
