@@ -81,7 +81,12 @@ resource "aws_instance" "vm" {
     delete_on_termination = var.os_disk_delete_on_termination
     iops                  = var.os_disk_iops
     encrypted             = var.enable_ebs_encryption
-    tags                  = merge(var.tags, tomap({ Name : "${var.name}-root-vol" }))
+    tags                  = merge(
+                              {
+                                Name : "${var.name}-root-vol"
+                              },
+                              var.tags
+                            )
   }
 
   tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
@@ -100,7 +105,7 @@ resource "aws_eip" "eip" {
   count    = var.create_public_ip ? 1 : 0
   domain   = "vpc"
   instance = aws_instance.vm.id
-  tags     = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
+  tags     = merge({ Name : "${var.name}-eip" }, var.tags)
 }
 
 resource "aws_volume_attachment" "data-volume-attachment" {
