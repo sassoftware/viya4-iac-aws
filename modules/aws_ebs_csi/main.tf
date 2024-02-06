@@ -167,10 +167,12 @@ module "iam_assumable_role_with_oidc" {
   oidc_fully_qualified_audiences = ["sts.amazonaws.com"]
   oidc_fully_qualified_subjects  = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 
-  tags = {
-    Role = "${var.prefix}-ebs-csi-role"
-  }
-
+  tags = merge(
+    {
+      Role = "${var.prefix}-ebs-csi-role"
+    },
+    var.tags
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_attachment" {
