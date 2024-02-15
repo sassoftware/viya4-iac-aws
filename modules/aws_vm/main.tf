@@ -81,6 +81,12 @@ resource "aws_instance" "vm" {
     delete_on_termination = var.os_disk_delete_on_termination
     iops                  = var.os_disk_iops
     encrypted             = var.enable_ebs_encryption
+    tags                  = merge(
+                              {
+                                Name : "${var.name}-root-vol"
+                              },
+                              var.tags
+                            )
   }
 
   tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
