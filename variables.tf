@@ -74,6 +74,13 @@ variable "default_private_access_cidrs" {
   default     = null
 }
 
+variable "cluster_enabled_log_types" {
+  description = "List of audit to record from EKS cluster in CloudWatch"
+  type        = list(string)
+  default     = null
+  # Example value: ["audit","api","authenticator"] 
+}
+
 variable "cluster_endpoint_public_access_cidrs" {
   description = "List of CIDRs to access Kubernetes cluster - Public."
   type        = list(string)
