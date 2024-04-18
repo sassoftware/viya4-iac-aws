@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 locals {
@@ -102,7 +102,8 @@ locals {
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
+
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-default-eks-node-group"
@@ -151,7 +152,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { key = "k8s.io/cluster-autoscaler/${local.cluster_name}", value = "owned", propagate_at_launch = true }, { key = "k8s.io/cluster-autoscaler/enabled", value = "true", propagate_at_launch = true }) : local.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"

@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 ## Global
@@ -149,7 +149,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.27"
+  default     = "1.28"
 }
 
 variable "tags" {
@@ -532,7 +532,7 @@ variable "postgres_server_defaults" {
     deletion_protection     = false
     administrator_login     = "pgadmin"
     administrator_password  = "my$up3rS3cretPassw0rd"
-    server_version          = "13"
+    server_version          = "15"
     server_port             = "5432"
     ssl_enforcement_enabled = true
     parameters              = []

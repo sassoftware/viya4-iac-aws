@@ -257,7 +257,7 @@ Custom policy:
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | true | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
-| kubernetes_version | The EKS cluster Kubernetes version | string | "1.27" | |
+| kubernetes_version | The EKS cluster Kubernetes version | string | "1.28" | |
 | create_jump_vm | Create bastion host (jump VM) | bool | true| |
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
@@ -387,7 +387,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| server_version | The version of the PostgreSQL server | string | "13" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
+| server_version | The version of the PostgreSQL server | string | "15" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
 | instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
 | storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
@@ -418,7 +418,7 @@ postgres_servers = {
     deletion_protection          = false
     administrator_login          = "cdsadmin"
     administrator_password       = "1tsAB3aut1fulDay"
-    server_version               = "13"
+    server_version               = "15"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
     parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
