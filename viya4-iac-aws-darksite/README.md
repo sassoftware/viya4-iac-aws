@@ -28,7 +28,7 @@ This documentation contains procedures that can be used to successfully complete
 2.  **Create Custom AMI for Jumpserver/NFSServer**
     - The standard base AMI image used by `viya4-iac-aws` does not include the required NFS related Linux distributution packages.  Normally, `viya4-iac-aws` will attempt to install the NFS packages as part of the VM initialization.  In a Dark Site without access to Internet based resources, installation from an Internet based repository will not be possible.  To mitigate that issue, we'll need to create a custom AMI and then modify the local copy of our `viya4-iac-aws` repository to add references to that custom AMI as well as remove some of the initialization steps in the cloud-init files (for jumpserver and nfs-server). 
 
-    - Instructions to complete the custom AMI creation steps can be found [here](https://github.com/sassoftware/viya4-iac-aws/tree/feat/iac-1117/viya4-aws-darksite/custom-ami/) [here](https://github.com/sassoftware/viya4-iac-aws/tree/main/viya4-aws-darksite/custom-ami/).
+    - Instructions to complete the custom AMI creation steps can be found [here](https://github.com/sassoftware/viya4-iac-aws/tree/feat/iac-1117/viya4-iac-aws-darksite/custom-ami/) [here](https://github.com/sassoftware/viya4-iac-aws/tree/main/viya4-aws-darksite/custom-ami/).
 
 3.  **Build tfvars:**
     - The Terraform scripts create the necessary BYON subnet_ids, `viya4-iac-aws` can be configured to use those subnets for all the subnet_ids map BYON variables in the tfvars file (public, private, control_plane and database).
