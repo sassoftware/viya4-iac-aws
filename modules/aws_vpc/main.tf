@@ -54,6 +54,9 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   vpc_endpoint_type   = each.value
   security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
   private_dns_enabled = each.value == "Interface" ? true : null
+  dns_options {
+    private_dns_only_for_inbound_resolver_endpoint = each.value == "Gateway" ? true : null
+  }
 
   tags = merge(
     {
