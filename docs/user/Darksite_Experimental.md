@@ -7,8 +7,8 @@ An AWS "air-gapped site" would be a deployment scenario in which neither the clu
 ### Notes
 
 Information provided here has been tested with:
-- viya4-iac-aws:8.1.1
-- viya4-deployment:6.17.0
+- viya4-iac-aws:8.2.0
+- viya4-deployment:6.19.0
 
 ### Acknowledgments
 
