@@ -72,9 +72,9 @@ In the diagram, the private VPC has no route to the public IGW, so ALL Viya comp
 The cloudformation-darksite-lab-deploy-machine.yaml sets up a deployment machine in the public VPC, installs pre-req software, creates some deployment folder structure, and mounts the s3 bucket (which was created in the VPC CF).  Additionally, it creates an AWS role with role policy from our IAC example roles (for the deployment), and the policy is attached to the deployment machine via an instance profile such that you do not need to provide IAC with any credentials.  If this is not acceptable in your lab subscription, you'll need to make the appropriate changes here.
 
 
-## How to Use the helper scripts
+# How to Use the Helper Scripts
 
-# Steps for How to use ?
+## Steps for How to use ?
 
 1. Start by creating or noting the AWS resources that constitute your AWS Dark Site network configuration.
 
@@ -123,8 +123,11 @@ Step 4 - Deployment fun:
 - Deploy DaC. I have provided a helper script for this /home/ec2-user/viya/02_dac_deploy.sh (simply automates the docker commands)
 
 
-## Steps for using viya4-iac-aws project in a Dark Site scenario (Experimental)
+### Continue With Steps for Using viya4-iac-aws GitHub Project in a Dark Site Deployment Scenario (Experimental)
 
-## Steps for using viya4-deployment project in a Dark Site scenario (Experimental)
+https://github.com/sassoftware/viya4-iac-aws/blob/darksite-experimental/viya4-iac-aws-darksite/IAC-README.md
 
+### Continue With Steps to Deploy to AWS EKS in a Dark Site or Air-Gapped Site Scenario (Experimental)
+
+https://github.com/sassoftware/viya4-iac-aws/blob/darksite-experimental/viya4-iac-aws-darksite/DAC-README.md
 
