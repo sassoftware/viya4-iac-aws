@@ -17,14 +17,14 @@ commandTests:
   - name: "terraform version"
     command: "terraform"
     args: ["--version"]
-    expectedOutput: ["Terraform v1.6.6"]
+    expectedOutput: ["Terraform v1.8.3"]
   - name: "aws-cli version"
     command: "sh"
     args:
       - -c
       - |
         aws --version
-    expectedOutput: ["aws-cli/2.13.33"]
+    expectedOutput: ["aws-cli/2.15.46"]
 
 metadataTest:
   workdir: "/viya4-iac-aws"
