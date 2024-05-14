@@ -24,7 +24,7 @@ The dark site deployment guidelines within this document were tested with the IA
 
 ## Using these guidelines
 
-These guidelines outline the AWS resources that comprise a hypothetical Dark Site configuration and provide the instructions for using IAC and DAC to create an EKS private cluster and deploy Viya to that cluster.
+These guidelines describe the AWS resources that comprise an example Dark Site configuration and provide the instructions for using IAC and DAC to create an EKS private cluster and deploy the Viya Platform to that cluster.
 
 ## Creating a Dark Site environment
 
@@ -57,16 +57,14 @@ While there are multiple ways to configure an AWS Dark Site, the textual descrip
 ### Dark Site Network Configuration
 
 There are many different networking configurations that can constitute a Dark Site deployment.
-The diagram below illustrates a Dark Site configuration with 2 VPCs, one public and one private
+The diagram below illustrates a Dark Site configuration with 2 VPCs, one public and one private.
 
 Two VPCs serve to separate (the cluster, PostgresSQL instance (if external PG is required), and storage) the private VPC from the deployment machine/user ingress which exist in the Public VPC.  The VPCs are then connected via a Peering connection.  The peering connection simulates some other link mechanism you might find in a customer site, such as a Transit Gateway or other traffic routing mechanism, which would be used to route user traffic to Viya.
 
 !["Two VPCs Dark Site network architecture"](darksite_two_vpcs.png)
 *Diagram 1: Two VPCs Dark Site network architecture*
 
-### viya4-aws-darksite README.md mods
-
-In the diagram, the private VPC has no route to the public IGW, so ALL Viya components remain truly private because it can only communicate to the public subnet via the VPC Peering Connection.  The public VPC has a default route to the Internet via a NAT and IGW, and also has a route to the private VPC (and subnets) via the VPC Peering connection.  The public VPC serves as the home for the deployment VM, and could also be used to house "user" VMs to simulate user traffic into Viya.  If want to simulate an "air-gapped" scenario or turn off Internet access once the deployment succeeds, remove the default outbound route (0.0.0.0/0) in the public VPC.
+In the diagram above, the private VPC has no route to the public IGW, so ALL Viya components remain truly private because it can only communicate to the public subnet via the VPC Peering Connection.  The public VPC has a default route to the Internet via a NAT and IGW, and also has a route to the private VPC (and subnets) via the VPC Peering connection.  The public VPC serves as the home for the deployment VM, and could also be used to house "user" VMs to simulate user traffic into Viya.
 
 # How to Use the Dark Site Helper Scripts
 
