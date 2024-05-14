@@ -14,62 +14,6 @@ then
   git clone --branch $IAC_VERSION https://github.com/sassoftware/viya4-iac-aws.git
 fi
 
-# mod to remove IGW and NAT GW?
-echo
-read -p "Would you like to mod local viya4-iac-aws clone to remove NAT and IGW (y/n)? " -n 1 -r REPLY
-echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  ## override file for viya4-iac-aws/modules/aws_vpc/
-  tee viya4-iac-aws/modules/aws_vpc/main_override.tf > /dev/null <<EOF
-## Override file to NOT deploy IGW and NAT GW
-resource "aws_internet_gateway" "this" {
-  count =  0
-}
-
-resource "aws_route" "public_internet_gateway" {
-  count = 0
-}
-
-resource "aws_eip" "nat" {
-  count = 0
-}
-
-data "aws_nat_gateway" "nat_gateway" {
-  count = 0
-}
-
-resource "aws_nat_gateway" "nat_gateway" {
-  count = 0
-}
-
-resource "aws_route" "private_nat_gateway" {
-  count = 0
-}
-EOF
-
-## override file for viya4-iac-aws/outputs.tf
-tee viya4-iac-aws/outputs_override.tf > /dev/null <<EOF
-## Override file to NOT deploy IGW and NAT GW
-output "nat_ip" {
-  value = null # no nat installed
-}
-EOF
-
-  echo -e "\n+++Mod complete!"
-fi
-
-# mod to remove VPC Private Endpoints?
-echo
-read -p "Would you like to mod local viya4-iac-aws clone to remove deployment of VPC Private Endpoints (y/n)? " -n 1 -r REPLY
-echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "" >> viya4-iac-aws/modules/aws_vpc/main_override.tf
-  echo 'resource "aws_vpc_endpoint" "private_endpoints" {' >> viya4-iac-aws/modules/aws_vpc/main_override.tf
-  echo '  count = 0' >> viya4-iac-aws/modules/aws_vpc/main_override.tf
-  echo '}' >> viya4-iac-aws/modules/aws_vpc/main_override.tf
-  echo -e "\n+++Mod complete!"
-fi
-
 echo
 read -p "Would you like to mod local viya4-iac-aws to add your custom AMI for jump and nfs servers (y/n)? " -n 1 -r REPLY
 echo
