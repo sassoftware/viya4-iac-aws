@@ -68,31 +68,23 @@ Two VPCs serve to separate (the cluster, PostgresSQL instance (if external PG is
 
 In the diagram above, the private VPC has no route to the public IGW, so ALL Viya components remain truly private because it can only communicate to the public subnet via the VPC Peering Connection.  The public VPC has a default route to the Internet via a NAT and IGW, and also has a route to the private VPC (and subnets) via the VPC Peering connection.  The public VPC serves as the home for the deployment VM, and could also be used to house "user" VMs to simulate user traffic into Viya.
 
-# How to Use the Dark Site Helper Scripts
 
-## What is a Dark Site Network Configuration ?
+### What is a Dark Site Network Configuration ?
 
 1. Start by creating or noting the AWS resources that constitute your AWS Dark Site network configuration.
 
-    A Dark Site configuration can take different forms including:
+    A Dark Site configuration can take different forms, some examples are:
       - Two VPCs, one public (for the deployment VM) and one private (for the EKS cluster) that utilizes a VPC Peering Connection to permit traffic flow between the public and private VPCs. This configuration is depicted in Diagram 1.
       - A single private VPC that utilizes an AWS Transit Gateway to interconnect two or more VPCs.
     
-You can connect other VPCs to the VPC with an interface endpoint using an AWS Transit Gateway or VPC peering. VPC peering is a networking connection between two VPCs. You can establish a VPC peering connection between your VPCs, or with a VPC in another account. The VPCs can be in different AWS Regions. Traffic between peered VPCs stays on the AWS network. The traffic doesn't traverse the public Internet. A Transit Gateway is a network transit hub that you can use to interconnect VPCs. Traffic between a VPC and a Transit Gateway remains on the AWS global private network. The traffic isn't exposed to the public Internet.
+   You can connect other VPCs to the VPC with an interface endpoint using an AWS Transit Gateway or VPC peering. VPC peering is a networking connection between two VPCs. You can establish a VPC peering connection between your VPCs, or with a VPC in another account. The VPCs can be in different AWS Regions. Traffic between peered VPCs stays on the AWS network. The traffic doesn't traverse the public Internet. A Transit Gateway is a network transit hub that you can use to interconnect VPCs. Traffic between a VPC and a Transit Gateway remains on the AWS global private network. The traffic isn't exposed to the public Internet.
 
+## How to Use the Dark Site Helper Scripts
 
-Step 2 - Run cloudformation-darksite-lab-deploy-machine.yaml:
-- If you don't already have a public key loaded in AWS EC2 > Key Pairs... load your SSH public key there.  Select your public key name during the cloudformation.  The provided SSH public key will be loaded in the "~/.ssh/authorized_keys" file for the ec2-user (to allow you SSH access to the VM).
-- This CF template will also automatically create a keypair for the jumpserver (and nfs-server) located at: /home/ec2-user/viya/infrastructure/ssh/id_rsa
-- Note: review the CloudFormation outputs for the deployment IP (for SSH) and reminder of client init log: /tmp/clientVM_init.log
-- Note: the darksite-lab-bucket is mounted to /home/ec2-user/viya/darksite-lab-bucket
+- Copy deployment-machine-assets to deployment machine:
+  - Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the "/home/ec2-user/viya/" directory created by you on your deployment VM. 
 
-
-Step 3 - Copy deployment-machine-assets to deployment machine:
-- Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the "/home/ec2-user/viya/" directory. 
-
-**TODO-FIX-LINK-TO-SCRIPT, missing script needs to be added to viya4-iac-aws**  
-- Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mod/darksite-openldap-mod.sh) script to the "/home/ec2-user/viya/gitrepos/" directory.
+- Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script to the "/home/ec2-user/viya/gitrepos/" directory created by you on your deployment VM.
 - Copy (scp or rsync) the ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) directories to "/home/ec2-user/viya/" directory.
 - Manually download and copy your Viya deployment assets,license, and certs files into: "/home/ec2-user/viya/software/viya_assets/" directory. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
 - (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) to the "/home/ec2-user/gitrepos/" directory.
