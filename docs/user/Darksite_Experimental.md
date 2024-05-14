@@ -1,10 +1,10 @@
 # AWS Dark Site Guidelines for IAC and DAC
 
-A Dark Site presents a deployment scenario where the deployment machine is allowed Internet access (to obtain necessary Viya assets and baseline container images), but the Viya infrastructure (jumpserver VM, NFS server, EKS cluster, etc.) is not.  An AWS Dark Site deployment scenario is the focus of these guidelines. This documentation focuses on using the `viya4-iac-aws` project for a Dark Site deployment. Additional Dark Site documentation pertaining to use of the viya4-deployment project for a Dark Site deployment can be found [here](https://github.com/sassoftware/viya4-deployment/tree/main/docs/user/Darksite_Experimental.md).
+A Dark Site presents a deployment scenario where the deployment machine is allowed Internet access (to obtain necessary Viya assets and baseline container images), but the Viya infrastructure (Jumpserver VM, NFS server VM, EKS cluster, etc.) is not.  An AWS Dark Site deployment scenario is the focus of these guidelines. This documentation focuses on using the `viya4-iac-aws`  and `viya4-deployment` project to perform a Dark Site deployment. Additional Dark Site documentation pertaining to use of the viya4-deployment project for a Dark Site deployment can be found [here](https://github.com/sassoftware/viya4-deployment/tree/main/docs/user/Darksite_Experimental.md).
 
-An AWS "air-gapped site" would be a deployment scenario in which neither the cluster nor the deployment machine have inbound or outbound Internet access.  An air-gapped scenario would require the guidelines presented here plus additional considerations: a mechanism to get all the requisite software/tooling installed on the deployment machine and a mechanism or process to get images and helm charts into an internal repository accessible by the cluster.
+An AWS "air-gapped site" is a deployment scenario in which neither the cluster nor the deployment machine have inbound or outbound Internet access.  An air-gapped scenario would require the guidelines presented here plus additional considerations: a mechanism to get all the requisite software/tooling installed on the deployment machine and a mechanism or process to get images and helm charts into an internal repository accessible by the cluster.
 
-### Notes
+### :memo: Notes
 
 Information provided here has been tested with:
 - viya4-iac-aws:8.2.0
@@ -16,15 +16,15 @@ The following individuals have contributed documentation and code that provided 
 - Josh Coburn
 - Matthias Ender
 
-## viya4-aws-darksite Instructions
+## Dark Site Deployment Instructions
 
-This project contains documentation and helper scripts to facilitate a Dark Site (Air-Gapped) deployment of Viya to an AWS EKS Kubernetes cluster.  A checklist for the steps that are necessary to successfully deploy Viya in a dark site environment is provided. The documentation provides guidance on how to perform a Viya deployment using additional tools and procedures not present in the base viya4-aws-iac project, so it leverages the viya4-iac-aws (IAC) and viya4-deployment (DAC) GitHub projects for most of the heavy lifting.
+This project contains documentation and helper scripts to facilitate a Dark Site deployment of Viya to an AWS EKS Kubernetes cluster.  A checklist for the steps that are necessary to successfully deploy Viya in a dark site environment is provided. The documentation provides guidance on how to perform a Viya deployment using additional tools and procedures not present in the base `viya4-aws-iac` project. This documentation is intended to add to the existing project documentation and provide some additional instructions required to succeed with a Viya 4 deployment in a Dark Site scenario.
 
-The dark site deployment guidelines within this document were tested with the IAC And DAC versions noted.  Keep in mind that behavior can change if using a newer version of IAC or DAC so you may need to adapt these instructions to adjust for different behavior.
+The dark site deployment guidelines within this document were tested with the IAC And DAC versions noted above.  Keep in mind that behavior can change if using a newer version of IAC or DAC so you may need to adapt these instructions to adjust for any different behavior.
 
 ## Using these guidelines
 
-These guidelines outline the AWS resources that comprise an example Dark Site configuration and provide the instructions for using IAC and DAC to create and EKS private cluster and deploy Viya to that cluster.
+These guidelines outline the AWS resources that comprise a hypothetical Dark Site configuration and provide the instructions for using IAC and DAC to create an EKS private cluster and deploy Viya to that cluster.
 
 ## Creating a Dark Site environment
 
@@ -68,26 +68,17 @@ Two VPCs serve to separate (the cluster, PostgresSQL instance (if external PG is
 
 In the diagram, the private VPC has no route to the public IGW, so ALL Viya components remain truly private because it can only communicate to the public subnet via the VPC Peering Connection.  The public VPC has a default route to the Internet via a NAT and IGW, and also has a route to the private VPC (and subnets) via the VPC Peering connection.  The public VPC serves as the home for the deployment VM, and could also be used to house "user" VMs to simulate user traffic into Viya.  If want to simulate an "air-gapped" scenario or turn off Internet access once the deployment succeeds, remove the default outbound route (0.0.0.0/0) in the public VPC.
 
-## This para does not apply since we will not supply VPC or deploy VM creation scripts
-The cloudformation-darksite-lab-deploy-machine.yaml sets up a deployment machine in the public VPC, installs pre-req software, creates some deployment folder structure, and mounts the s3 bucket (which was created in the VPC CF).  Additionally, it creates an AWS role with role policy from our IAC example roles (for the deployment), and the policy is attached to the deployment machine via an instance profile such that you do not need to provide IAC with any credentials.  If this is not acceptable in your lab subscription, you'll need to make the appropriate changes here.
+# How to Use the Dark Site Helper Scripts
 
-
-# How to Use the Helper Scripts
-
-## Steps for How to use ?
+## What is a Dark Site Network Configuration ?
 
 1. Start by creating or noting the AWS resources that constitute your AWS Dark Site network configuration.
 
     A Dark Site configuration can take different forms including:
       - Two VPCs, one public (for the deployment VM) and one private (for the EKS cluster) that utilizes a VPC Peering Connection to permit traffic flow between the public and private VPCs. This configuration is depicted in Diagram 1.
       - A single private VPC that utilizes an AWS Transit Gateway to interconnect two or more VPCs.
-
     
 You can connect other VPCs to the VPC with an interface endpoint using an AWS Transit Gateway or VPC peering. VPC peering is a networking connection between two VPCs. You can establish a VPC peering connection between your VPCs, or with a VPC in another account. The VPCs can be in different AWS Regions. Traffic between peered VPCs stays on the AWS network. The traffic doesn't traverse the public Internet. A Transit Gateway is a network transit hub that you can use to interconnect VPCs. Traffic between a VPC and a Transit Gateway remains on the AWS global private network. The traffic isn't exposed to the public Internet.
-
-Step 1 - Run cloudformation-darksite-lab-vpc.yaml:
-- PublicVPCAccessCIDRs should correspond to your public IP or CIDR range.  This will only allow SSH ingress from the CIDR range specified, so that you can SSH to the deployment machine.
-- Take note of the CloudFormation outputs (these will be used for your ansible-vars-iac.yaml)
 
 
 Step 2 - Run cloudformation-darksite-lab-deploy-machine.yaml:
@@ -98,20 +89,25 @@ Step 2 - Run cloudformation-darksite-lab-deploy-machine.yaml:
 
 
 Step 3 - Copy deployment-machine-assets to deployment machine:
-- Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/darksite-lab/deployment-machine-assets) directory to the "/home/ec2-user/viya/" directory.
-- Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script to the "/home/ec2-user/viya/gitrepos/" directory.
-- Copy (scp or rsync) the ["baseline-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/mirrormgr-to-ecr) directories to "/home/ec2-user/viya/" directory.
+- Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the "/home/ec2-user/viya/" directory. 
+
+**TODO-FIX-LINK-TO-SCRIPT, missing script needs to be added to viya4-iac-aws**  
+- Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mod/darksite-openldap-mod.sh) script to the "/home/ec2-user/viya/gitrepos/" directory.
+- Copy (scp or rsync) the ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) directories to "/home/ec2-user/viya/" directory.
 - Manually download and copy your Viya deployment assets,license, and certs files into: "/home/ec2-user/viya/software/viya_assets/" directory. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
-- (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/darksite-openldap-mod.sh) to the "/home/ec2-user/gitrepos/" directory.
+- (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) to the "/home/ec2-user/gitrepos/" directory.
 
-
+**FIX gitlab LINKS**  
 Step 4 - Create Custom AMI for the jumpserver and nfs-server:
 - The base image used by IAC does not include the required nfs related packages.  During initialization, IAC installs the nfs packages as part of the VM initialization.  In a darksite, this will not be possible.  To correct this, we'll need to create our own custom AMI and then slightly mod our viya4-iac-aws repo to add refernces for our AMI as well as remove the initialization steps in the cloud-init files (for jumpserver and nfs-server).  Instructions to complete these steps can be found [here](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/custom-ami/).
 
+**FIX gitlab LINKS**  
 Step 4 - Deployment fun:
 - Mod your viya4-iac-aws clone. ["darksite-iac-aws-mods.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh).  If you completed Step 3 - it should be located in the "/home/ec2-user/viya/gitrepos/" directory on the deployment machine.  Use it to also build the modded container (or build it manually if you'd like).
 - Update your terraform.tfvars (/home/ec2-user/viya/infrastructure/).  I've tried to make this as dummy proof as possible..
 - Deploy IaC.  I have provided a helper script for this /home/ec2-user/viya/01_iac_deploy.sh (simply automates the docker commands)
+
+**FIX gitlab LINKS**  
 - Push helm charts and images (baseline and Viya) to ECR. Helper scripts: ["baseline-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/mirrormgr-to-ecr) should be located in "/home/ec2-user/viya/" directory (if completed in Step 3)
 - (Optional) Run the viya4-deployment-openldap-mod and build the corresponding container.  ["darksite-openldap-mod.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/darksite-openldap-mod.sh) should be in "/home/ec2-user/gitrepos/" directory (if complete in Step 3).
 - Update ansible-vars-iac.yaml (/home/ec2-user/viya/software/).  I've tried to make this as dummy proof as possible.. you'll need to overwrite ALL of the following parameteres:
@@ -127,7 +123,7 @@ Step 4 - Deployment fun:
 
 https://github.com/sassoftware/viya4-iac-aws/blob/darksite-experimental/viya4-iac-aws-darksite/IAC-README.md
 
-### Continue With Steps to Deploy to AWS EKS in a Dark Site or Air-Gapped Site Scenario (Experimental)
+### Continue With Steps to Deploy to AWS EKS in a Dark Site Scenario (Experimental)
 
 https://github.com/sassoftware/viya4-iac-aws/blob/darksite-experimental/viya4-iac-aws-darksite/DAC-README.md
 
