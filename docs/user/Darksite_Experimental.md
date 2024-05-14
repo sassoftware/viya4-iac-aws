@@ -81,34 +81,36 @@ In the diagram above, the private VPC has no route to the public IGW, so ALL Viy
 
 ## How to Use the Dark Site Helper Scripts
 
-- Copy deployment-machine-assets to deployment machine:
-  - Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the "/home/ec2-user/viya/" directory created by you on your deployment VM. 
+- Step 1 - First, create these folders on your deployment virtual machine:
+    - `/home/ec2-user/viya/` 
+    - `/home/ec2-user/viya/gitrepos/`
+    
+- Step 2- Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the `/home/ec2-user/viya/` directory. 
 
-- Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script to the "/home/ec2-user/viya/gitrepos/" directory created by you on your deployment VM.
-- Copy (scp or rsync) the ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) directories to "/home/ec2-user/viya/" directory.
-- Manually download and copy your Viya deployment assets,license, and certs files into: "/home/ec2-user/viya/software/viya_assets/" directory. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
-- (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) to the "/home/ec2-user/gitrepos/" directory.
+- Step 3 - Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script to the `/home/ec2-user/viya/gitrepos/` directory.
+- Step 4 - Copy (scp or rsync) the ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) directories to the `/home/ec2-user/viya/` directory.
+- Step 5 - Manually download and copy your Viya deployment assets,license, and certs files into: "/home/ec2-user/viya/software/viya_assets/" directory created by you on your deployment VM. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
+- Step 6 - (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) to the `/home/ec2-user/gitrepos/` directory.
 
-**FIX gitlab LINKS**  
-Step 4 - Create Custom AMI for the jumpserver and nfs-server:
-- The base image used by IAC does not include the required nfs related packages.  During initialization, IAC installs the nfs packages as part of the VM initialization.  In a darksite, this will not be possible.  To correct this, we'll need to create our own custom AMI and then slightly mod our viya4-iac-aws repo to add refernces for our AMI as well as remove the initialization steps in the cloud-init files (for jumpserver and nfs-server).  Instructions to complete these steps can be found [here](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/custom-ami/).
+:memo: Note: The "Create Custom AMI" step below is only necessary if you intend to use either the Jumpserver VM or NFS Server VM created by `viya4-iac-aws`. If you do not allow IAC to create a Jumpserver and you are using EFS storage instead of allowing IAC to create the NFS server VM, then you can skip the "Create Custom AMI" step.
+- Step 7 - Create Custom AMI for the jumpserver and nfs-server:
+  - The base image used by IAC does not include the required nfs related packages.  During initialization, IAC installs the nfs packages as part of the VM initialization.  In a darksite, this will not be possible.  To correct this, we'll need to create our own custom AMI and then slightly mod our viya4-iac-aws repo to add references for our AMI as well as remove the initialization steps in the cloud-init files (for jumpserver and nfs-server).  Instructions to complete these steps can be found [here](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/custom-ami/) [here](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/custom-ami/).
 
-**FIX gitlab LINKS**  
-Step 4 - Deployment fun:
-- Mod your viya4-iac-aws clone. ["darksite-iac-aws-mods.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh).  If you completed Step 3 - it should be located in the "/home/ec2-user/viya/gitrepos/" directory on the deployment machine.  Use it to also build the modded container (or build it manually if you'd like).
-- Update your terraform.tfvars (/home/ec2-user/viya/infrastructure/).  I've tried to make this as dummy proof as possible..
-- Deploy IaC.  I have provided a helper script for this /home/ec2-user/viya/01_iac_deploy.sh (simply automates the docker commands)
+- Step 8 - Deployment:
+  - Mod your viya4-iac-aws clone. ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) If you completed Step 3 - it should be located in the `/home/ec2-user/viya/gitrepos/` directory on the deployment machine.  Use it to also build the modded container (or build it manually if you'd like).
+  - Update your terraform.tfvars (/home/ec2-user/viya/infrastructure/).  I've tried to make this as dummy proof as possible..
+  - Deploy IaC.  I have provided a helper script for this /home/ec2-user/viya/01_iac_deploy.sh (simply automates the docker commands)
 
-**FIX gitlab LINKS**  
-- Push helm charts and images (baseline and Viya) to ECR. Helper scripts: ["baseline-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/mirrormgr-to-ecr) should be located in "/home/ec2-user/viya/" directory (if completed in Step 3)
-- (Optional) Run the viya4-deployment-openldap-mod and build the corresponding container.  ["darksite-openldap-mod.sh"](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-deployment/darksite-openldap-mod.sh) should be in "/home/ec2-user/gitrepos/" directory (if complete in Step 3).
-- Update ansible-vars-iac.yaml (/home/ec2-user/viya/software/).  I've tried to make this as dummy proof as possible.. you'll need to overwrite ALL of the following parameteres:
+- Step 9 - Push helm charts and images (baseline and Viya) to ECR. Helper scripts: ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/)  and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) should be located in `/home/ec2-user/viya/` directory (if completed in Step 4)
+- Step 10 - (Optional) Run the viya4-deployment-openldap-mod and build the corresponding container. ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) should be in `/home/ec2-user/gitrepos/` directory (if complete in Step 3).
+- Step 11 - Update ansible-vars-iac.yaml (/home/ec2-user/viya/software/).  
+**You will need to overwrite ALL of the following parameters:**
     - {{ AWS_ACCT_ID }}
     - {{ AWS_REGION }}
     - {{ CONTROLLER_ECR_IMAGE_DIGEST }} - nginx requires the digest to match for this image (you can get this from ECR)
     - {{ WEBHOOK_ECR_IMAGE_DIGEST }} - nginx requires the digest to match for this image (you can get this from ECR)
-- Optional: update sitedefault.yaml (/home/ec2-user/viya/software/)
-- Deploy DaC. I have provided a helper script for this /home/ec2-user/viya/02_dac_deploy.sh (simply automates the docker commands)
+- Step 12 - Optional: update sitedefault.yaml (/home/ec2-user/viya/software/)
+- Step 13 - Deploy DaC. I have provided a helper script for this /home/ec2-user/viya/02_dac_deploy.sh (simply automates the docker commands)
 
 
 ### Continue With Steps for Using viya4-iac-aws GitHub Project in a Dark Site Deployment Scenario (Experimental)
