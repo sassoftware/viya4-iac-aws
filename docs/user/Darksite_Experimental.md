@@ -2,7 +2,9 @@
 
 A Dark Site presents a deployment scenario where the deployment machine is allowed Internet access (to obtain necessary Viya assets and baseline container images), but the Viya infrastructure (Jumpserver VM, NFS server VM, EKS cluster, etc.) is not.  An AWS Dark Site deployment scenario is the focus of these guidelines. This documentation focuses on using the `viya4-iac-aws`  and `viya4-deployment` project to perform a Dark Site deployment. Additional Dark Site documentation pertaining to use of the viya4-deployment project for a Dark Site deployment can be found [here](https://github.com/sassoftware/viya4-deployment/tree/main/docs/user/Darksite_Experimental.md).
 
-An AWS "air-gapped site" is a deployment scenario in which neither the cluster nor the deployment machine have inbound or outbound Internet access.  An air-gapped scenario would require the guidelines presented here plus additional considerations: a mechanism to get all the requisite software/tooling installed on the deployment machine and a mechanism or process to get images and helm charts into an internal repository accessible by the cluster.
+An AWS "air-gapped site" is a deployment scenario in which neither the cluster nor the deployment machine have inbound or outbound Internet access.  An air-gapped scenario would require the guidelines presented here plus additional considerations: a mechanism to get all the requisite software/tooling installed on the deployment machine and a mechanism or process to get images and helm charts into an internal repository accessible by the cluster.   
+
+:memo: Note: The current release of the `viya-deployment` project does **not** support deploying Viya in an air-gapped environment
 
 ### :memo: Notes
 
