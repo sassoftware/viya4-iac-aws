@@ -1,10 +1,10 @@
 ## AWS Darksite Custom AMI
-By default, viya4-iac-aws uses the base Canonical Ubuntu Server image, which does not have the required nfs-kernel-server package.  IAC installs these packages as part of the cloud-init process, however this is not possible in a dark site which has no outbound internet access.  Below are instructions for creating a custom AMI which will ensure that nfs-kernel-server packages are installed for both the jumpserver and NFS server.
+By default, `viya4-iac-aws` uses the base Canonical Ubuntu Server image, which does not have the required `nfs-kernel-server` package.  IAC installs these packages as part of the `cloud-init` process, however this is not possible in a Dark Site which has no outbound Internet access.  Below are instructions for creating a custom AMI which will ensure that `nfs-kernel-server` packages are installed for both the jumpserver and NFS server.
 
-Once the AMI is created, you can then apply the mod to viya4-iac-aws by running the [darksite-iac-aws-mods.sh](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script.
+Once the AMI is created, you can then apply the modified AMI to `viya4-iac-aws` by running the ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script.
 
 ## Notes
-This information was provided by [Frederik Vandenberghe](https://gitlab.sas.com/sbxfrv).  
+This information was provided by Frederik Vandenberghe.  
 
 ## Launch EC2-instance based on the current AMI in use
 First thing to do is launch an EC2-instance based on the AMI that's in use as AWS-base image for the nfs-server and the jump-server.  You can see which AMI that is in https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_vm/main.tf
@@ -26,7 +26,7 @@ Give the new instance a name that you will remember.  I choosed m5.xlarge as ins
 
 ![](img/img5.png)
 
-For the keypair, you'll want to use a keypair you own and the same keypair you plan on using for viya4-iac-aws and viya4-deployment.  If the public key you'd like to use isn't in EC2 already.. import it now (EC2 > key pairs > import key pair).  In the screenshot below, I've already added it named "aws-key".
+For the keypair, you'll want to use a keypair you own and the same keypair you plan on using for viya4-iac-aws and viya4-deployment.  If the public key you'd like to use isn't in EC2 already.. import it now (EC2 > key pairs > import key pair).  In the screenshot below, the key pair has been named "aws-key".
 
 <img src="img/img6.png" style="zoom:60%;" />
 
@@ -96,7 +96,7 @@ Search for private images. Initially it will have status pending.
 
 
 
-Wait till it become available.
+Wait until the `Status` column indicates it is available.
 
 
 
@@ -104,9 +104,10 @@ Wait till it become available.
 
 
 
-## Clone viya4-iac-aws and mod so it's using private owned AMI as AWS base image for NFS and JUMP server
+## Clone viya4-iac-aws and modify it so that it's using private owned AMI as AWS base image for NFS and JUMP server
 
-I've provided a [helper script](https://gitlab.sas.com/jocobu/viya4-aws-darksite/-/tree/main/viya4-iac-aws/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) to automatically mod the viya4-iac-aws clone.  However if you'd like to do this manually, here are the proceedures:
+A helper script is provided at [helper script](https://github.com/sassoftware/viya4-iac-aws/-/tree/main/viya4-iac-aws-darksite/custom-ami/) [helper script](https://github.com/sassoftware/viya4-iac-aws/tree/feat/iac-1117/viya4-iac-aws-darksite/custom-ami/) to automatically mod the viya4-iac-aws clone.  However if you'd like to do this manually, here are the proceedures:
+
 
 
 Clone viya4-iac-aws
