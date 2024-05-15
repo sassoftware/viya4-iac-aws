@@ -26,7 +26,7 @@ The dark site deployment guidelines within this document were tested with the IA
 
 ## Using these guidelines
 
-These guidelines describe the AWS resources that comprise an example Dark Site configuration and provide the instructions for using IAC and DAC to create an EKS private cluster and deploy the Viya Platform to that cluster.
+These guidelines describe the AWS resources that comprise an example Dark Site configuration and provide the instructions for using IAC and DAC to create an EKS private cluster and then deploy the Viya Platform to that cluster.
 
 ## Creating a Dark Site environment
 
@@ -84,12 +84,13 @@ In the diagram above, the private VPC has no route to the public IGW, so ALL Viy
 - Step 1 - First, create these folders on your deployment virtual machine:
     - `/home/ec2-user/viya/` 
     - `/home/ec2-user/viya/gitrepos/`
+    - `/home/ec2-user/viya/software/viya_assets` 
     
 - Step 2- Copy (scp or rsync) the contents of the ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets) ["deployment-machine-assets/"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets) directory to the `/home/ec2-user/viya/` directory. 
 
 - Step 3 - Copy (scp or rsync) the ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) script to the `/home/ec2-user/viya/gitrepos/` directory.
 - Step 4 - Copy (scp or rsync) the ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/) and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) directories to the `/home/ec2-user/viya/` directory.
-- Step 5 - Manually download and copy your Viya deployment assets,license, and certs files into: "/home/ec2-user/viya/software/viya_assets/" directory created by you on your deployment VM. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
+- Step 5 - Manually download and copy your Viya deployment assets, license, and certs files into the `/home/ec2-user/viya/software/viya_assets/` directory created by you on your deployment VM. We will bypass the SAS Viya Orders API during deployment, by manually providing these in our ansible-vars.yaml.
 - Step 6 - (Optional) If you want to use OpenLDAP, you'll also need to copy (scp or rsync) the ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) to the `/home/ec2-user/gitrepos/` directory.
 
 :memo: Note: The "Create Custom AMI" step below is only necessary if you intend to use either the Jumpserver VM or NFS Server VM created by `viya4-iac-aws`. If you do not allow IAC to create a Jumpserver and you are using EFS storage instead of allowing IAC to create the NFS server VM, then you can skip the "Create Custom AMI" step.
