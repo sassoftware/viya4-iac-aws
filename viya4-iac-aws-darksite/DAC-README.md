@@ -1,4 +1,4 @@
-# Deploy to AWS EKS in a Dark Site or Air-Gapped Site Scenario
+# Deploy to AWS EKS in a Dark Site Scenario
 
 ### Contributors
 
@@ -15,7 +15,7 @@ This file describes procedures, helper scripts, and example files to assist with
 Choose the deployment scenario that describes your Dark Site or Air-Gapped configuration:
 
 1. The deployment virtual machine has Internet access but the EKS cluster cannot reach the Internet (Dark Site) - Follow procedures 1, 2, 4, and 6.
-2. The deployment virtual machine and cluster has no Internet access (air-gapped site) - Follow procedures 1, 2, 5, and 6.  Note: you'll still need to somehow push all the images and Helm charts to ECR from a machine with Internet access, and the deployment machine will use the private ECR endpoint in the VPC to pull these during install, so the deployment virtual machine won't need Internet access.
+2. The deployment virtual machine and cluster has no Internet access (Air-Gapped) - Follow procedures 1, 2, 5, and 6.  Note: you'll still need to somehow push all the images and Helm charts to ECR from a machine with Internet access, and the deployment machine will use the private ECR endpoint in the VPC to pull these during install, so the deployment virtual machine won't need Internet access.
 
 **Notes:**
 - The following procedures assume that the `viya4-iac-aws` project was used to deploy the EKS infrastructure.  Refer to the `viya4-iac-aws-darksite` folder within the `viya4-iac-aws` [github repo](https://github.com/sassoftware/viya4-iac-aws) for the procedures to follow pertaining to IaC use with an AWS Dark Site configuration.
