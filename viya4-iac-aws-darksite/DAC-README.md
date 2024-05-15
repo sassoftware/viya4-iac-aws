@@ -31,15 +31,15 @@ Confirm that:
     - refer to the `viya4-deployment-darksite/mirrormgr-to-ecr` folder in this repository for helper scripts
 
 2. **Push 3rd party baseline images to ECR:**
-    - refer to the `viya4-deployment-darksite/baseline-to-ecr` folder in this repository for helper scripts
-    - note: OpenLDAP is only required if you are planning to use OpenLDAP for your deployment.  Script to automate this is located [here](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/openldap.sh) [here](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/openldap.sh).
+    - Refer to the `viya4-deployment-darksite/baseline-to-ecr` folder in this repository for helper scripts
+    - :memo: Note: OpenLDAP is only required if you are planning to use OpenLDAP for your deployment.  Script to automate this is located [here](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/openldap.sh) [here](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/openldap.sh).
 
 3. **(Optional) If OpenLDAP is needed, follow instructions to modify a local viya4-deployment image clone**
     - Refer to the [`viya4-deployment-darksite/darksite-openldap-mod`](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-aws-darksite/darksite-openldap-mod) [`viya4-deployment-darksite/darksite-openldap-mod`](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-aws-darksite/darksite-openldap-mod) folder for procedures.  You can build the container using the script or do it manually.
 
-4. **Deployment machine has Internet access - use viya4-deployment for baseline,install**
+4. **Use viya4-deployment for "baseline,install"**
 
-    1. Use built in variables for baseline configurations in your `ansible-vars.yaml` file:
+   1. Use built in variables for baseline configurations in your `ansible-vars.yaml` file:
         - Example `ansible-vars.yaml` provided [here](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/deployment-machine-assets/software/ansible-vars-iac.yaml) [here](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/deployment-machine-assets/software/ansible-vars-iac.yaml)
         - The goal here is to change the image references to point to ECR versus an Internet facing repository and add cluster subnet ID annotations for the nginx load balancers:
             - Replace `{{ AWS_ACCT_ID }}` with your AWS account ID
@@ -48,10 +48,11 @@ Confirm that:
             - Replace `{{ WEBHOOK_ECR_IMAGE_DIGEST }}` with image digest from ECR
             - If your VPC contains multiple subnets (unrelated to viya), you may need to add annotations to force the NLB to associate with the Viya subnets. More on that topic [here](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/deploy/subnet_discovery/).
 
-    2. Deploy viya4-deployment baseline,install.  Note: the deployment virtual machine will pull the Helm charts from the Internet during this step.
+   2. Deploy viya4-deployment "baseline,install".  
+    :memo: Note: the deployment virtual machine will pull the Helm charts from the Internet during this step.
 
 6. **viya4-deployment "viya,install"**
-    - **Note:** As of the `viya4-deployment` release v6.0.0, the project uses the Deployment Operator as the default.  The deployment operator has additional considerations in a Dark Site deployment because the repository warehouse for the metadata will not be available without Internet access (as it is pulled from ses.sas.com).  
+    - :memo: Note: As of the `viya4-deployment` release v6.0.0, the project uses the Deployment Operator as the default.  The deployment operator has additional considerations in a Dark Site deployment because the repository warehouse for the metadata will not be available without Internet access (as it is pulled from ses.sas.com).  
     
     - There are multiple options to mitigate the issue created by using the Deployment operator:
 
