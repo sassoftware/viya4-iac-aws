@@ -100,7 +100,7 @@ In the diagram above, the private VPC has no route to the public IGW, so ALL Viy
 - Step 8 - Deployment:
   - Mod your viya4-iac-aws clone. ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/feat/iac-1117/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) ["darksite-iac-aws-mods.sh"](https://github.com/sassoftware/viya4-iac-aws/blob/main/viya4-iac-aws-darksite/darksite-iac-aws-mods/darksite-iac-aws-mods.sh) If you completed Step 3 - it should be located in the `/home/ec2-user/viya/gitrepos/` directory on the deployment machine.  Use it to also build the modded container (or build it manually if you'd like).
   - Update your terraform.tfvars (/home/ec2-user/viya/infrastructure/).
-  - Deploy IAC.  I have provided a helper script for this /home/ec2-user/viya/01_iac_deploy.sh (simply automates the docker commands)
+  - Deploy IAC.  A helper script for this is provided in /home/ec2-user/viya/01_iac_deploy.sh (simply automates the docker commands)
 
 - Step 9 - Push helm charts and images (baseline and Viya) to ECR. Helper scripts: ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/baseline-to-ecr/) ["baseline-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/baseline-to-ecr/)  and ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/mirrormgr-to-ecr)  ["mirrormgr-to-ecr"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/mirrormgr-to-ecr) should be located in `/home/ec2-user/viya/` directory (if completed in Step 4)
 - Step 10 - (Optional) Run the viya4-deployment-openldap-mod and build the corresponding container. ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/feat/iac-1117/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) ["darksite-openldap-mod.sh"](https://github.com/sassoftware/viya4-deployment/blob/main/viya4-deployment-darksite/darksite-openldap-mod/darksite-openldap-mod.sh) should be in `/home/ec2-user/gitrepos/` directory (if complete in Step 3).
@@ -111,7 +111,7 @@ In the diagram above, the private VPC has no route to the public IGW, so ALL Viy
     - {{ CONTROLLER_ECR_IMAGE_DIGEST }} - nginx requires the digest to match for this image (you can get this from ECR)
     - {{ WEBHOOK_ECR_IMAGE_DIGEST }} - nginx requires the digest to match for this image (you can get this from ECR)
 - Step 12 - Optional: update sitedefault.yaml (/home/ec2-user/viya/software/)
-- Step 13 - Deploy DAC. I have provided a helper script for this /home/ec2-user/viya/02_dac_deploy.sh (simply automates the docker commands)
+- Step 13 - Deploy DAC. A helper script for this is provided in /home/ec2-user/viya/02_dac_deploy.sh (simply automates the docker commands)
 
 
 ### Continue With Steps for Using viya4-iac-aws GitHub Project in a Dark Site Deployment Scenario (Experimental)
