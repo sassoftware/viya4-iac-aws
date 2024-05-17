@@ -23,8 +23,6 @@ This documentation contains procedures that can be used to successfully complete
 
     - Background Information - AWS Reference documentation with details on how to create a VPC for any EKS cluster: https://docs.aws.amazon.com/eks/latest/userguide/creating-a-vpc.html
 
-    - For the cluster VPC ranges, `viya4-iac-aws` defaults to using a CIDR of /16. The `viya4-iac-aws` project creates a /21 VPC with both /22 and /28 sized subnets.  Excluding the `control_plane` subnets, the sizes were chosen by estimating the number of pods (doubling that number to account for viya updates), services, AWS overhead, and then adding a few hundred as a buffer.  
-
 2.  **Create Custom AMI for Jumpserver/NFSServer**
     - The standard base AMI image used by `viya4-iac-aws` does not include the required NFS related Linux distributution packages.  Normally, `viya4-iac-aws` will attempt to install the NFS packages as part of the VM initialization.  In a Dark Site without access to Internet based resources, installation from an Internet based repository will not be possible.  To mitigate that issue, we'll need to create a custom AMI and then modify the local copy of our `viya4-iac-aws` repository to add references to that custom AMI as well as remove some of the initialization steps in the cloud-init files (for jumpserver and nfs-server). 
 
