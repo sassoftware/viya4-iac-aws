@@ -17,6 +17,9 @@ data "aws_iam_policy_document" "worker_autoscaling" {
       "autoscaling:DescribeTags",
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeLaunchTemplateVersions",
+      "ec2:DescribeImages",
+      "ec2:GetInstanceTypesFromInstanceRequirements",
+      "eks:DescribeNodegroup"
     ]
 
     resources = ["*"]
@@ -29,25 +32,23 @@ data "aws_iam_policy_document" "worker_autoscaling" {
     actions = [
       "autoscaling:SetDesiredCapacity",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "autoscaling:UpdateAutoScalingGroup",
-      "ec2:DescribeImages",
-      "ec2:GetInstanceTypesFromInstanceRequirements",
-      "eks:DescribeNodegroup"
+      "autoscaling:UpdateAutoScalingGroup"
     ]
 
     resources = ["*"]
 
-    condition {
-      test     = "StringEquals"
-      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${var.cluster_name}"
-      values   = ["owned"]
-    }
+    # Remove the following conditions that are incorrect for eks:DescribeNodegroup
+    # condition {
+    #   test     = "StringEquals"
+    #   variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/${var.cluster_name}"
+    #   values   = ["owned"]
+    # }
 
-    condition {
-      test     = "StringEquals"
-      variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled"
-      values   = ["true"]
-    }
+    # condition {
+    #   test     = "StringEquals"
+    #   variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled"
+    #   values   = ["true"]
+    # }
   }
 }
 
@@ -75,3 +76,4 @@ module "iam_assumable_role_with_oidc" {
     var.tags
   )
 }
+
