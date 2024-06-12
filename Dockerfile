@@ -17,7 +17,7 @@ RUN yum -y install git openssh jq which \
   && chmod 755 ./kubectl /viya4-iac-aws/docker-entrypoint.sh \
   && mv ./kubectl /usr/local/bin/kubectl \
   && chmod g=u -R /etc/passwd /etc/group /viya4-iac-aws \
-  && git config --system --add safe.directory /viya4-iac-aws ||: \
+  && git config --system --add safe.directory /viya4-iac-aws \
   && terraform init
 
 ENV TF_VAR_iac_tooling=docker
