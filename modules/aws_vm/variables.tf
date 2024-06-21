@@ -112,3 +112,9 @@ variable "enable_ebs_encryption" {
   type        = bool
   default     = false
 }
+
+variable "enable_nist_features" {
+  description = "A flag to enable NIST features under development for this project"
+  type        = bool
+  default     = false
+}
