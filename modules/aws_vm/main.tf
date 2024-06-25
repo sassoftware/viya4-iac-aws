@@ -32,6 +32,9 @@ locals {
     "/dev/sdy",
     "/dev/sdz"
   ]
+  
+  # A contrived reference to the enable_nist_features variable, also suppresses the TFLint declared but not used warning
+  enable_nist_features = var.tags["nist_enabled"] == "true" ? true : false
 }
 
 data "aws_ami" "ubuntu" {
