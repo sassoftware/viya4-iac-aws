@@ -32,9 +32,6 @@ locals {
     "/dev/sdy",
     "/dev/sdz"
   ]
-  
-  # A contrived reference to the enable_nist_features variable, also suppresses the TFLint declared but not used warning
-  enable_nist_features = var.tags["nist_enabled"] == "true" ? true : false
 }
 
 data "aws_ami" "ubuntu" {
@@ -126,4 +123,12 @@ resource "aws_ebs_volume" "raid_disk" {
   iops              = var.data_disk_iops
   tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   encrypted         = var.enable_ebs_encryption
+}
+
+# Reference the feature flag variable name, an example reference to suppress TFLint warning
+resource "terraform_data" "example" {
+
+  provisioner "local-exec" {
+    command = "echo The enable_nist_features flag value is: ${var.enable_nist_features}"
+  }
 }
