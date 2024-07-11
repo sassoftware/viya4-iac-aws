@@ -8,8 +8,7 @@
 # For more information on TFlint Ruleset for AWS, see https://github.com/terraform-linters/tflint-ruleset-aws/blob/master/docs/rules/README.md
 
 config {
-  call_module_type = "local"
-  force = false
+  module = false
 }
 
 plugin "aws" {
