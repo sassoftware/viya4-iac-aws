@@ -124,3 +124,11 @@ resource "aws_ebs_volume" "raid_disk" {
   tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   encrypted         = var.enable_ebs_encryption
 }
+
+# Reference the feature flag variable name, an example reference to suppress TFLint warning
+resource "terraform_data" "example" {
+
+  provisioner "local-exec" {
+    command = "echo The enable_nist_features flag value is: ${var.enable_nist_features}"
+  }
+}

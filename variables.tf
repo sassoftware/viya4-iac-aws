@@ -713,3 +713,9 @@ variable "aws_fsx_ontap_file_system_throughput_capacity" {
     error_message = "Valid values for `aws_fsx_ontap_file_system_throughput_capacity` are 128, 256, 512, 1024, 2048 and 4096."
   }
 }
+
+variable "enable_nist_features" {
+  description = "A flag to enable NIST features under development for this project"
+  type        = bool
+  default     = false
+}

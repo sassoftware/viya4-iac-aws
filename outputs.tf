@@ -238,3 +238,8 @@ output "validate_subnet_azs" {
     error_message = "Your subnet_azs keys must have a string list value of AZs greater than or equal to the list of CIDRs in equivalent key in the subnets variable."
   }
 }
+
+output "enable_nist_features" {
+  description = "Flag to enable NIST features."
+  value       = var.enable_nist_features
+}
