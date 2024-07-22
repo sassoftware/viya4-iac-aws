@@ -636,7 +636,7 @@ variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declaration
     "ec2"                  = "Interface",
     "ecr.api"              = "Interface",
     "ecr.dkr"              = "Interface",
-    "s3"                   = "Gateway",
+    "s3"                   = "Interface",
     "logs"                 = "Interface",
     "sts"                  = "Interface",
     "elasticloadbalancing" = "Interface",
