@@ -3,7 +3,7 @@ ARG AWS_CLI_VERSION=2.16.5
 FROM hashicorp/terraform:$TERRAFORM_VERSION as terraform
 
 FROM amazon/aws-cli:$AWS_CLI_VERSION
-ARG KUBECTL_VERSION=1.28.11
+ARG KUBECTL_VERSION=1.29.7
 
 WORKDIR /viya4-iac-aws
 
