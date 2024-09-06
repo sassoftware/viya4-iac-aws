@@ -225,6 +225,16 @@ module "kubeconfig" {
   depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
+# Restore the gp2 storage class as the default storage class for EKS 1.30 and later clusters
+resource "terraform_data" "run_command" {
+  count = var.kubernetes_version >= "1.30" ? 1 : 0
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${local.kubeconfig_path} patch storageclass gp2 --patch '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}' "
+  }
+
+  depends_on = [module.kubeconfig] 
+}
+
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
