@@ -225,7 +225,8 @@ module "kubeconfig" {
   depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
-# Restore the gp2 storage class as the default storage class for EKS 1.30 and later clusters
+# Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
+# In the near future, adopting a newer version of the aws-ebs-csi-driver will create a new gp3-based storage class which will become the default storage class.
 resource "terraform_data" "run_command" {
   count = var.kubernetes_version >= "1.30" ? 1 : 0
   provisioner "local-exec" {
