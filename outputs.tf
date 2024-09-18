@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 output "cluster_endpoint" {
@@ -237,4 +237,9 @@ output "validate_subnet_azs" {
     )
     error_message = "Your subnet_azs keys must have a string list value of AZs greater than or equal to the list of CIDRs in equivalent key in the subnets variable."
   }
+}
+
+output "enable_nist_features" {
+  description = "Flag to enable NIST features."
+  value       = var.enable_nist_features
 }

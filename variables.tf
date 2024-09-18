@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 ## Global
@@ -156,7 +156,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.27"
+  default     = "1.29"
 }
 
 variable "tags" {
@@ -539,7 +539,7 @@ variable "postgres_server_defaults" {
     deletion_protection     = false
     administrator_login     = "pgadmin"
     administrator_password  = "my$up3rS3cretPassw0rd"
-    server_version          = "13"
+    server_version          = "15"
     server_port             = "5432"
     ssl_enforcement_enabled = true
     parameters              = []
@@ -643,7 +643,7 @@ variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declaration
     "ec2"                  = "Interface",
     "ecr.api"              = "Interface",
     "ecr.dkr"              = "Interface",
-    "s3"                   = "Gateway",
+    "s3"                   = "Interface",
     "logs"                 = "Interface",
     "sts"                  = "Interface",
     "elasticloadbalancing" = "Interface",
@@ -719,4 +719,10 @@ variable "aws_fsx_ontap_file_system_throughput_capacity" {
     condition     = contains([128, 256, 512, 1024, 2048, 4096], var.aws_fsx_ontap_file_system_throughput_capacity)
     error_message = "Valid values for `aws_fsx_ontap_file_system_throughput_capacity` are 128, 256, 512, 1024, 2048 and 4096."
   }
+}
+
+variable "enable_nist_features" {
+  description = "A flag to enable NIST features under development for this project"
+  type        = bool
+  default     = false
 }

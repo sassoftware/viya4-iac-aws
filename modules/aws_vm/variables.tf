@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 variable "name" {
@@ -109,6 +109,12 @@ variable "subnet_id" {
 
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
+  type        = bool
+  default     = false
+}
+
+variable "enable_nist_features" {
+  description = "A flag to enable NIST features under development for this project"
   type        = bool
   default     = false
 }

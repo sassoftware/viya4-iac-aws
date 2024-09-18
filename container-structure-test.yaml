@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 schemaVersion: "2.0.0"
@@ -17,14 +17,14 @@ commandTests:
   - name: "terraform version"
     command: "terraform"
     args: ["--version"]
-    expectedOutput: ["Terraform v1.6.6"]
+    expectedOutput: ["Terraform v1.8.5"]
   - name: "aws-cli version"
     command: "sh"
     args:
       - -c
       - |
         aws --version
-    expectedOutput: ["aws-cli/2.13.33"]
+    expectedOutput: ["aws-cli/2.16.5"]
 
 metadataTest:
   workdir: "/viya4-iac-aws"

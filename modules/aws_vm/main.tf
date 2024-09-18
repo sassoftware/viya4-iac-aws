@@ -1,4 +1,4 @@
-# Copyright © 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 # Reference: https://github.com/terraform-providers/terraform-provider-aws
@@ -123,4 +123,12 @@ resource "aws_ebs_volume" "raid_disk" {
   iops              = var.data_disk_iops
   tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   encrypted         = var.enable_ebs_encryption
+}
+
+# Reference the feature flag variable name, an example reference to suppress TFLint warning
+resource "terraform_data" "example" {
+
+  provisioner "local-exec" {
+    command = "echo The enable_nist_features flag value is: ${var.enable_nist_features}"
+  }
 }
