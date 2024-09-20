@@ -225,6 +225,17 @@ module "kubeconfig" {
   depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
 }
 
+# Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
+# PSKD-667 will track the move to a newer version of the aws-ebs-csi-driver creating a gp3 storage class which will then become the default storage class.
+resource "terraform_data" "run_command" {
+  count = var.kubernetes_version >= "1.30" ? 1 : 0
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${local.kubeconfig_path} patch storageclass gp2 --patch '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}' "
+  }
+
+  depends_on = [module.kubeconfig] 
+}
+
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
