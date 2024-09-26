@@ -68,6 +68,7 @@ resource "kubernetes_service_account" "kubernetes_sa" {
     name      = local.service_account_name
     namespace = var.namespace
   }
+  depends_on = [ kubernetes_cluster_role_binding.kubernetes_crb ]
 }
 
 resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
@@ -88,7 +89,6 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
 
   depends_on = [
     data.aws_security_group.selected,
-    local_file.kubeconfig
   ]
 }
 
