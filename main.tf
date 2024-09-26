@@ -91,7 +91,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "~> 19.0"
+  version                              = "~> 20.0"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = [] # disable cluster control plan logging
