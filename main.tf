@@ -50,6 +50,8 @@ provider-selections: ${data.external.iac_tooling_version.result["provider_select
 outdated: ${data.external.iac_tooling_version.result["terraform_outdated"]}
 EOT
   }
+
+  depends_on = [module.kubeconfig.kube_config]
 }
 
 # EKS Provider
