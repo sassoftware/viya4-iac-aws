@@ -50,6 +50,8 @@ provider-selections: ${data.external.iac_tooling_version.result["provider_select
 outdated: ${data.external.iac_tooling_version.result["terraform_outdated"]}
 EOT
   }
+
+  depends_on = [module.kubeconfig.kube_config]
 }
 
 # EKS Provider
@@ -233,7 +235,7 @@ resource "terraform_data" "run_command" {
     command = "kubectl --kubeconfig=${local.kubeconfig_path} patch storageclass gp2 --patch '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}' "
   }
 
-  depends_on = [module.kubeconfig] 
+  depends_on = [module.kubeconfig.kube_config]
 }
 
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
