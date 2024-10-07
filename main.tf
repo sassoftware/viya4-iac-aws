@@ -102,6 +102,10 @@ module "eks" {
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
+  # Cluster access entry
+  # To add the current caller identity as an administrator
+  enable_cluster_creator_admin_permissions = true
+
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
   control_plane_subnet_ids = module.vpc.control_plane_subnets
   # Specifies the list of subnets in which the worker nodes of the EKS cluster will be launched.
