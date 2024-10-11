@@ -53,7 +53,7 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   service_name        = "com.amazonaws.${var.region}.${each.key}"
   vpc_endpoint_type   = each.value
   security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
-  private_dns_enabled = each.value == "Interface" ? true : null
+  private_dns_enabled = each.value == "Interface" ? each.key != "s3" ? true : null : false
 
   tags = merge(
     {
