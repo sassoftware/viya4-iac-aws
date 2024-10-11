@@ -102,10 +102,6 @@ module "eks" {
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
 
-  # Cluster access entry
-  # To add the current caller identity as an administrator
-  enable_cluster_creator_admin_permissions = true
-
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
   control_plane_subnet_ids = module.vpc.control_plane_subnets
   # Specifies the list of subnets in which the worker nodes of the EKS cluster will be launched.
@@ -168,6 +164,44 @@ module "eks" {
   # BYO - EKS Cluster IAM Role
   create_iam_role = var.cluster_iam_role_arn == null ? true : false
   iam_role_arn    = var.cluster_iam_role_arn
+
+  # Cluster access entry
+  # To add the current caller identity as an administrator
+  enable_cluster_creator_admin_permissions = true
+
+  access_entries = {
+    # access entries with a policy associated
+    console_access = {
+      kubernetes_groups = []
+      principal_arn     = "arn:aws:iam::203918876413:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_7a114f4a1db191fc"
+      user_name = "iacauto_terraform"
+      type      = "STANDARD"
+
+      policy_associations = {
+        example = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type       = "cluster"
+          }
+        }
+      }
+    },
+    cluster_creator = {
+      kubernetes_groups = []
+      principal_arn     = "arn:aws:iam::203918876413:user/iacauto_terraform"
+      user_name = "iacauto_terraform"
+      type      = "STANDARD"
+
+      policy_associations = {
+        example = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type       = "cluster"
+          }
+        }
+      }
+    },
+  }
 
   iam_role_additional_policies = {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
