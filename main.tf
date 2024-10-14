@@ -174,11 +174,12 @@ module "eks" {
     console_access = {
       kubernetes_groups = []
       principal_arn     = "arn:aws:iam::203918876413:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_7a114f4a1db191fc"
-      user_name = "iacauto_terraform"
+      #user_name = "iacauto_terraform"
+      user_name = local.aws_caller_identity_user_name
       type      = "STANDARD"
 
       policy_associations = {
-        example = {
+        console_policy_assoc = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type       = "cluster"
@@ -187,19 +188,28 @@ module "eks" {
       }
     },
     cluster_creator = {
-      kubernetes_groups = []
-      principal_arn     = "arn:aws:iam::203918876413:user/iacauto_terraform"
-      user_name = "iacauto_terraform"
+      kubernetes_groups = ["rbac.authorization.k8s.io"]
+      principal_arn     = data.aws_caller_identity.terraform.arn
+      user_name = local.aws_caller_identity_user_name
       type      = "STANDARD"
 
       policy_associations = {
-        example = {
+        cluster_creator_assoc = {
           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type       = "cluster"
           }
         }
-      }
+      },
+      policy_associations = {
+        namespace_creator_assoc = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+          access_scope = {
+            type       = "namespace"
+            namespaces = ["kube-system"]
+          }
+        }
+      },
     },
   }
 
