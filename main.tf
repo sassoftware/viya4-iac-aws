@@ -170,22 +170,7 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   access_entries = {
-    # access entries with a policy associated
-    console_access = {
-      kubernetes_groups = []
-      principal_arn     = "arn:aws:iam::203918876413:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_7a114f4a1db191fc"
-      user_name         = local.aws_caller_identity_user_name
-      type              = "STANDARD"
-
-      policy_associations = {
-        console_policy_assoc = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    },
+    # access entry with cluster and namespace scoped policies
     cluster_creator = {
       kubernetes_groups = ["rbac.authorization.k8s.io"]
       principal_arn     = data.aws_caller_identity.terraform.arn

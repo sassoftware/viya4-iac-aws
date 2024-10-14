@@ -7,13 +7,13 @@ locals {
   vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
   existing_subnets = length(var.existing_subnet_ids) > 0 ? true : false
 
-  existing_public_subnets   = local.existing_subnets && contains(keys(var.existing_subnet_ids), "public") ? (length(var.existing_subnet_ids["public"]) > 0 ? true : false) : false
-  existing_private_subnets  = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
-  existing_database_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
+  existing_public_subnets        = local.existing_subnets && contains(keys(var.existing_subnet_ids), "public") ? (length(var.existing_subnet_ids["public"]) > 0 ? true : false) : false
+  existing_private_subnets       = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
+  existing_database_subnets      = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
   existing_control_plane_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "control_plane") ? (length(var.existing_subnet_ids["control_plane"]) > 0 ? true : false) : false
 
   #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
-  private_subnets = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
+  private_subnets       = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
   control_plane_subnets = local.existing_control_plane_subnets ? data.aws_subnet.control_plane : aws_subnet.control_plane
 
   # Use private subnets if we are not creating db subnets and there are no existing db subnets
