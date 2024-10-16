@@ -254,7 +254,7 @@ module "kubeconfig" {
   ca_crt       = local.kubeconfig_ca_cert
   sg_id        = local.cluster_security_group_id
 
-  depends_on = [module.eks] # Will block on EKS cluster creation until the cluster is really ready.
+  depends_on = [module.eks] # Will block on EKS cluster creation until the cluster is completely ready.
 }
 
 # Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
