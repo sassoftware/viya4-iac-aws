@@ -59,7 +59,11 @@ jobs:
     - name: Initializing modules
       run: |
        terraform -chdir=modules/aws_autoscaling init
+       terraform -chdir=modules/aws_fsx_ontap init
        terraform -chdir=modules/aws_ebs_csi init
+       terraform -chdir=modules/aws_vm init
+       terraform -chdir=modules/aws_vpc init
+       terraform -chdir=modules/kubeconfig init
 
     - name: Initializing TFLint
       run: TFLINT_LOG=info tflint --init -c "$(pwd)/linting-configs/.tflint.hcl"
