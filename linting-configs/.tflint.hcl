@@ -14,12 +14,13 @@ config {
 
 plugin "aws" {
   enabled = true
-  version = "0.27.0"
+  version = "0.34.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
 
 plugin "terraform" {
   enabled = true
+  preset = "recommended"
 }
 
 # Disallow // comments in favor of #.
@@ -55,39 +56,13 @@ rule "terraform_module_pinned_source" {
 # Checks that Terraform modules sourced from a registry specify a version.
 rule "terraform_module_version" {
   enabled = true
+  preset = "recommended"
 }
 
-# Enforces naming conventions
+## Enforces naming conventions
 rule "terraform_naming_convention" {
-  enabled = true
-  custom = "^([a-zA-Z0-9])+([_-][a-zA-Z0-9]+)*$"
-
-#Require specific naming structure
-
-# variable {
-# format = "snake_case"
-# }
-
-# locals {
-# format = "snake_case"
-# }
-
-# output {
-# format = "snake_case"
-# }
-
-#Allow any format
-# resource {
-#   format = "none"
-# }
-
-# module {
-#   format = "none"
-# }
-
-# data {
-#   format = "none"
-# }
+  enabled = false
+#  custom = "^([a-zA-Z0-9])+([_-][a-zA-Z0-9]+)*$"
 
 }
 
