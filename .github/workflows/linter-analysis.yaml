@@ -58,6 +58,7 @@ jobs:
       # with the plugin, not needed for regular project use.
     - name: Initializing modules
       run: |
+       terraform init
        terraform -chdir=modules/aws_autoscaling init
        terraform -chdir=modules/aws_fsx_ontap init
        terraform -chdir=modules/aws_ebs_csi init
