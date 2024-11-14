@@ -96,8 +96,8 @@ module "eks" {
   version                              = "~> 20.0"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
-  cluster_enabled_log_types            = [] # disable cluster control plan logging
-  create_cloudwatch_log_group          = false
+  cluster_enabled_log_types            = var.cluster_enabled_log_types == null ? [] : var.cluster_enabled_log_types
+  create_cloudwatch_log_group          = var.cluster_enabled_log_types == null ? false : true
   cluster_endpoint_private_access      = true
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
