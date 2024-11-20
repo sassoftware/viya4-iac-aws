@@ -127,7 +127,9 @@ module "jump" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.cloudinit_config.jump[0].rendered
+  cloud_init           = data.cloudinit_config.jump[0].rendered
+  ebs_cmk_key          = lookup(local.kms_keys, "ebs_key", null)
+  enable_nist_features = var.enable_nist_features
 
   depends_on = [module.nfs]
 

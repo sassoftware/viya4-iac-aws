@@ -75,12 +75,21 @@ resource "aws_instance" "vm" {
   subnet_id                   = var.subnet_id
   associate_public_ip_address = var.create_public_ip
 
+   metadata_options {
+    http_endpoint               = var.enable_nist_features == true ? "enabled" : "disabled"
+    http_tokens                 = var.enable_nist_features == true ? "required" : "optional"
+    http_put_response_hop_limit = 1
+    http_protocol_ipv6          = var.enable_nist_features == true ? "enabled" : "disabled"
+    instance_metadata_tags      = var.enable_nist_features == true ? "enabled" : "disabled"
+  }
+
   root_block_device {
     volume_type           = var.os_disk_type
     volume_size           = var.os_disk_size
     delete_on_termination = var.os_disk_delete_on_termination
     iops                  = var.os_disk_iops
     encrypted             = var.enable_ebs_encryption
+    kms_key_id            = var.ebs_cmk_key
     tags = merge(
       {
         Name : "${var.name}-root-vol"
@@ -123,6 +132,7 @@ resource "aws_ebs_volume" "raid_disk" {
   iops              = var.data_disk_iops
   tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   encrypted         = var.enable_ebs_encryption
+  kms_key_id            = var.ebs_cmk_key
 }
 
 # Reference the feature flag variable name, an example reference to suppress TFLint warning
