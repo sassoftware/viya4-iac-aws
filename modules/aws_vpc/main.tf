@@ -411,3 +411,29 @@ resource "aws_route" "private_core_network" {
     create = "5m"
   }
 }
+
+#################
+# Resolver config 
+#################
+
+resource "aws_route53_resolver_dnssec_config" "config" {
+  count       = var.enable_nist_features == true ? 1 : 0
+  resource_id = aws_vpc.vpc[0].id
+}
+
+#################
+# Fetching the resolver Rules 
+#################
+data "aws_route53_resolver_rule" "rule" {
+  count = var.enable_nist_features == true ? 1 : 0
+  name = "${var.hub}-sasng-${var.hub_environment}-r53-resolver-rule"
+}
+
+#################
+# Associating the resolver rules to VPC 
+#################
+resource "aws_route53_resolver_rule_association" "rule" {
+  count            = var.enable_nist_features == true ? 1 : 0
+  resolver_rule_id = data.aws_route53_resolver_rule.rule[0].id
+  vpc_id = aws_vpc.vpc[0].id
+}
