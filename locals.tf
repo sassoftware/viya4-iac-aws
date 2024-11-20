@@ -179,5 +179,4 @@ locals {
       "internal" : false
     }
   } : {}
-
 }

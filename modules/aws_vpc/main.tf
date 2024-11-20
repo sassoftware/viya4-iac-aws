@@ -47,6 +47,15 @@ resource "aws_vpc" "vpc" {
   )
 }
 
+######
+# Additional CIDR association
+######
+resource "aws_vpc_ipv4_cidr_block_association" "additional_cidr" {
+  count      = var.enable_nist_features == true ? 4 : 0
+  vpc_id     = aws_vpc.vpc[0].id
+  cidr_block = element(var.additional_cidr_ranges, count.index)
+}
+
 resource "aws_vpc_endpoint" "private_endpoints" {
   for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
   vpc_id              = local.vpc_id

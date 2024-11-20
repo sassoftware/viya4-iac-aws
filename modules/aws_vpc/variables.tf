@@ -164,3 +164,14 @@ variable "workers_security_group_id" {
   description = "Workers Security Group ID input variable value"
   type        = string
 }
+
+variable "additional_cidr_ranges" {
+  description = "Number of additional CIDR ranges to be attached to VPC"
+  type        = list(string)
+}
+
+variable "enable_nist_features" {
+  description = "Enables NIST complaint code if set to true"
+  type        = bool
+  default     = false
+}
