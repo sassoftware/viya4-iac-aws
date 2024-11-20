@@ -46,6 +46,8 @@ locals {
   private_subnet_azs       = can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
   database_subnet_azs      = can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
   control_plane_subnet_azs = can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
+  # ENI subnets as per AWS NG architecture
+  eni_subnet_azs = can(var.subnet_azs["eni"]) ? var.subnet_azs["eni"] : data.aws_availability_zones.available.names
 
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)

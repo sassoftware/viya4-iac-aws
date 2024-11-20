@@ -80,15 +80,17 @@ module "vpc" {
   private_subnet_azs            = local.private_subnet_azs
   database_subnet_azs           = local.database_subnet_azs
   control_plane_subnet_azs      = local.control_plane_subnet_azs
+  eni_subnet_azs                = local.eni_subnet_azs
   existing_subnet_ids           = var.subnet_ids
   subnets                       = var.subnets
   existing_nat_id               = var.nat_id
   vpc_private_endpoints_enabled = var.vpc_private_endpoints_enabled
 
-  tags                = local.tags
-  public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
-  private_subnet_tags = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
-  additional_cidr_ranges        = var.additional_cidr_ranges
+  tags                   = local.tags
+  public_subnet_tags     = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  private_subnet_tags    = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  additional_cidr_ranges = var.additional_cidr_ranges
+  enable_nist_features   = var.enable_nist_features
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks

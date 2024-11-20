@@ -165,6 +165,7 @@ variable "workers_security_group_id" {
   type        = string
 }
 
+#### Newly added variables for enchance NIST code ####
 variable "additional_cidr_ranges" {
   description = "Number of additional CIDR ranges to be attached to VPC"
   type        = list(string)
@@ -174,4 +175,10 @@ variable "enable_nist_features" {
   description = "Enables NIST complaint code if set to true"
   type        = bool
   default     = false
+}
+
+variable "eni_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the eni subnets"
+  type        = list(string)
+  default     = []
 }

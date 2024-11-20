@@ -387,8 +387,8 @@ variable "subnet_azs" {
 
   # We only support configuring the AZs for the public, private, control_plane, and database subnet
   validation {
-    condition     = var.subnet_azs == {} || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "control_plane", "database"], subnet)])
-    error_message = "ERROR: public, private, control_plane, and database are the only keys allowed in the subnet_azs map"
+    condition     = var.subnet_azs == {} || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "control_plane", "database", "eni"], subnet)])
+    error_message = "ERROR: public, private, control_plane, database, and eni are the only keys allowed in the subnet_azs map"
   }
 }
 variable "security_group_id" {

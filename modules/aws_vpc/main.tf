@@ -105,6 +105,7 @@ resource "aws_subnet" "public" {
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
   availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
   map_public_ip_on_launch = var.map_public_ip_on_launch
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
 
   tags = merge(
     {
@@ -205,7 +206,7 @@ resource "aws_subnet" "private" {
   cidr_block           = element(var.subnets["private"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
@@ -249,7 +250,7 @@ resource "aws_subnet" "database" {
   cidr_block           = element(var.subnets["database"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
@@ -268,7 +269,7 @@ resource "aws_db_subnet_group" "database" {
   name        = lower(var.name)
   description = "Database subnet group for ${var.name}"
   subnet_ids  = aws_subnet.database[*].id
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format("%s", var.name)
@@ -286,7 +287,7 @@ resource "aws_subnet" "control_plane" {
   cidr_block           = element(var.subnets["control_plane"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) > 0 ? element(var.control_plane_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) == 0 ? element(var.control_plane_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
@@ -351,4 +352,33 @@ resource "aws_route" "private_nat_gateway" {
   timeouts {
     create = "5m"
   }
+}
+
+#################
+# ENI subnets creation as per AWS NG architecture
+#################
+resource "aws_subnet" "eni" {
+  count      = var.enable_nist_features == true ? 2 : 0
+  vpc_id     = local.vpc_id
+  cidr_block = element(var.subnets["eni"], count.index)
+  #availability_zone       = element(var.availability_zones, count.index)
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.eni_subnet_azs, count.index))) > 0 ? element(var.eni_subnet_azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.eni_subnet_azs, count.index))) == 0 ? element(var.eni_subnet_azs, count.index) : null
+  depends_on           = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-eni-${count.index}"),
+      "type" = var.enable_nist_features == true ? "awsng-spoke-eni" : null
+    },
+    var.tags
+  )
+}
+
+#################
+# ENI subnets association with private route table #####
+#################
+resource "aws_route_table_association" "eni" {
+  count = var.enable_nist_features == true ? length(aws_subnet.eni) : 0
+  subnet_id      = element(aws_subnet.eni[*].id, count.index)
+  route_table_id = element(aws_route_table.private[*].id, 0)
 }
