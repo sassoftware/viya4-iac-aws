@@ -76,6 +76,29 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   ] : null
 }
 
+######
+### Additional private endpoints required for HUB integration 
+######
+resource "aws_vpc_endpoint" "nist_endpoints" {
+  for_each            = var.enable_nist_features == true ? var.vpc_nist_endpoints : {}
+  vpc_id              = local.vpc_id
+  service_name        = "com.amazonaws.${var.region}.${each.key}"
+  vpc_endpoint_type   = each.value
+  security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
+  private_dns_enabled = each.value == "Interface" ? true : null
+
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-private-endpoint-${each.key}")
+    },
+    var.tags
+  )
+
+  subnet_ids = each.value == "Interface" ? [
+    for subnet in local.private_subnets : subnet.id
+  ] : null
+}
+
 data "aws_subnet" "public" {
   count = local.existing_public_subnets ? length(var.existing_subnet_ids["public"]) : 0
   id    = element(var.existing_subnet_ids["public"], count.index)

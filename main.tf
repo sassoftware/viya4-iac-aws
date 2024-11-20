@@ -95,6 +95,7 @@ module "vpc" {
   core_network_arn       = var.core_network_arn
   hub_environment        = var.hub_environment
   hub                    = var.hub
+  vpc_nist_endpoints     = var.vpc_nist_endpoints
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks

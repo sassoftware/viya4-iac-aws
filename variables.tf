@@ -747,3 +747,13 @@ variable "core_network_arn" {
   type        = string
 }
 
+variable "vpc_nist_endpoints" {
+  description = "Endpoints needed for private cluster with WAN"
+  type        = map(string)
+  default = {
+    "ssm"         = "Interface",
+    "ssmmessages" = "Interface",
+    "ec2messages" = "Interface"
+  }
+}
+
