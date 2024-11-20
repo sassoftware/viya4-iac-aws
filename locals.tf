@@ -197,7 +197,18 @@ locals {
     if contains(keys(aws_kms_key.cmk), key)
   }
 
+  ####### Fetching EFS and FSx id for alarm creation ######
+
   fsx_id = var.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null
   efs_id = var.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].id : null
+
+  ####### Postgres NIST enhancements ######
+
+  copy_tags_snapshot               = var.enable_nist_features == true ? true : false
+  rds_enhanced_monitoring          = var.enable_nist_features == true ? module.monitoring_role.rds_monitoring_role : null
+  rds_storage_encryption           = var.enable_nist_features == true ? true : false
+  rds_monitoring_interval          = var.enable_nist_features == true ? 30 : 0
+  rds_performance_insight          = var.enable_nist_features == true ? true : false
+  rds_performance_retention_period = var.enable_nist_features == true ? 7 : 0
 
 }

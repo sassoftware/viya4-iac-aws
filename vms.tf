@@ -180,4 +180,5 @@ module "nfs" {
   enable_ebs_encryption = var.enable_ebs_encryption
 
   cloud_init = data.cloudinit_config.nfs[0].rendered
+  ebs_cmk_key          = lookup(local.kms_keys, "ebs_key", null)
 }

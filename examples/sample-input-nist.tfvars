@@ -4,8 +4,8 @@
 
 # ****************  REQUIRED VARIABLES  ****************
 # These required variables' values MUST be provided by the User
-prefix   = "<prefix-value>"
-location = "<aws-location-value>" # e.g., "us-east-1"
+prefix   = "test"
+location = "us-east-1" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
@@ -13,19 +13,27 @@ location = "<aws-location-value>" # e.g., "us-east-1"
 
 #***************** CIDR Range for Spoke VPC **************
 
-cidr     = "10.80.16.0/22"
+vpc_cidr     = "10.80.16.0/22"
 core_network_id    = "core-network-0febf425a0504df84"
 hub          = "CustomerSpokeUS"
 hub_environment = "dev"
 core_network_arn   = "arn:aws:networkmanager::654654181786:core-network/core-network-0febf425a0504df84"
 
 # ********* Set to true to enable NIST complaint code ***********
-enable_nist_features = false
+enable_nist_features = true
 backup_account_id = "992382826079"
 
 #***************** Additional CIDR ranges for Spoke VPC *************
 
 additional_cidr_ranges = ["10.88.4.0/24", "10.89.1.0/26", "10.90.0.128/27", "10.91.0.128/27"]
+
+subnets = {
+  "private" : ["10.80.16.0/23"],
+  "control_plane" : ["10.90.0.128/28", "10.90.0.144/28"], # AWS recommends at least 16 IP addresses per subnet
+  "public" : ["10.89.1.0/27", "10.89.1.32/27"],
+  "database" : ["10.88.4.0/25", "10.88.4.128/25"],
+  "eni" : ["10.91.0.128/28", "10.91.0.144/28"]
+}
 
 # **************  RECOMMENDED  VARIABLES  ***************
 default_public_access_cidrs = [] # e.g., ["123.45.6.89/32"]

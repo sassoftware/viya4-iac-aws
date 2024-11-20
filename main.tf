@@ -306,11 +306,11 @@ module "postgresql" {
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
 
-  tags = local.tags
+  tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
-  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets : module.vpc.database_subnets
+  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? false : true
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.database_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${each.value.server_version}"
@@ -332,6 +332,15 @@ module "postgresql" {
   create_db_parameter_group   = true
   create_db_option_group      = true
   manage_master_user_password = false
+  ### NIST enhancements
+  kms_key_id                            = lookup(local.kms_keys, "rds_key", null)
+  performance_insights_enabled          = local.rds_performance_insight
+  performance_insights_retention_period = local.rds_performance_retention_period
+  performance_insights_kms_key_id       = lookup(local.kms_keys, "rds_key", null)
+  copy_tags_to_snapshot                 = local.copy_tags_snapshot
+  monitoring_interval                   = local.rds_monitoring_interval
+  monitoring_role_arn                   = local.rds_enhanced_monitoring
+  enabled_cloudwatch_logs_exports       = ["postgresql", "upgrade"]
 
 }
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
