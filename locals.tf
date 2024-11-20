@@ -197,4 +197,7 @@ locals {
     if contains(keys(aws_kms_key.cmk), key)
   }
 
+  fsx_id = var.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null
+  efs_id = var.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].id : null
+
 }

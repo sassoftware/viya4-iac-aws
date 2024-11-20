@@ -361,3 +361,13 @@ module "monitoring_role" {
   source               = "./modules/aws_rds_iam"
   enable_nist_features = var.enable_nist_features
 }
+
+module "cloudwatch" {
+  depends_on           = [module.postgresql]
+  count                = var.enable_nist_features == true ? 1 : 0
+  source               = "./modules/aws_cloudwatch"
+  prefix               = var.prefix
+  storage_type_backend = var.storage_type_backend
+  efs_id               = local.efs_id
+  fsx_id               = local.fsx_id
+}
