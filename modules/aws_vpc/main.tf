@@ -324,7 +324,7 @@ resource "aws_subnet" "control_plane" {
 }
 
 resource "aws_eip" "nat" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : 0
 
   domain = "vpc"
 
@@ -346,7 +346,7 @@ data "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : 0
 
   allocation_id = element(aws_eip.nat[*].id, 0)
   subnet_id     = local.existing_public_subnets ? element(data.aws_subnet.public[*].id, 0) : element(aws_subnet.public[*].id, 0)
@@ -366,7 +366,7 @@ resource "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : null
 
   route_table_id         = element(aws_route_table.private[*].id, count.index)
   destination_cidr_block = "0.0.0.0/0"
