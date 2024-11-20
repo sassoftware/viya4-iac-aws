@@ -198,3 +198,7 @@ variable "hub" {
   type        = string
 }
 
+variable "core_network_arn" {
+  description = "Core network ARN"
+  type        = string
+}

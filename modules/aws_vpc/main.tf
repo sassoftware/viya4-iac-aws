@@ -396,3 +396,18 @@ resource "aws_networkmanager_vpc_attachment" "vpc_attach" {
     Name    = "${var.name}-${var.hub_environment}"
   }
 }
+
+#################
+# Route to Core network device from Private route table #####
+#################
+resource "aws_route" "private_core_network" {
+  count                  = var.enable_nist_features == true ? 1 : 0
+  route_table_id         = aws_route_table.private[0].id
+  destination_cidr_block = "0.0.0.0/0"
+  core_network_arn       = var.core_network_arn
+  depends_on             = [aws_networkmanager_vpc_attachment.vpc_attach]
+
+  timeouts {
+    create = "5m"
+  }
+}

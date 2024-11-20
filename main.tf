@@ -92,6 +92,7 @@ module "vpc" {
   additional_cidr_ranges = var.additional_cidr_ranges
   enable_nist_features   = var.enable_nist_features
   core_network_id        = var.core_network_id
+  core_network_arn       = var.core_network_arn
   hub_environment        = var.hub_environment
   hub                    = var.hub
 }

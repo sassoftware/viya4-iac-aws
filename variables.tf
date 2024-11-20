@@ -741,3 +741,9 @@ variable "hub" {
   description = "Name of the Hub: for e.g, CustomerSpokeUS or CustomerSpokeEU "
   type        = string
 }
+
+variable "core_network_arn" {
+  description = "Core network ARN"
+  type        = string
+}
+

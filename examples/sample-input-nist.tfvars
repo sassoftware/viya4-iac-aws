@@ -17,6 +17,7 @@ cidr     = "10.80.16.0/22"
 core_network_id    = "core-network-0febf425a0504df84"
 hub          = "CustomerSpokeUS"
 hub_environment = "dev"
+core_network_arn   = "arn:aws:networkmanager::654654181786:core-network/core-network-0febf425a0504df84"
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = false
