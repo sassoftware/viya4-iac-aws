@@ -354,3 +354,10 @@ resource "aws_resourcegroups_group" "aws_rg" {
 JSON
 }
 }
+
+########## Monitoring role for RDS   #########
+
+module "monitoring_role" {
+  source               = "./modules/aws_rds_iam"
+  enable_nist_features = var.enable_nist_features
+}
