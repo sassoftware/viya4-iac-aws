@@ -757,3 +757,8 @@ variable "vpc_nist_endpoints" {
   }
 }
 
+variable "backup_account_id" {
+  type        = string
+  description = "Central backup account number for backup and logging"
+}
+

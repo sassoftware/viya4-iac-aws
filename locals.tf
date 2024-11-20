@@ -181,4 +181,20 @@ locals {
       "internal" : false
     }
   } : {}
+
+  ####### Create and associate KMS keys only if NIST code is enabled ######
+  key_names = {
+    "rds_key" = "${var.prefix}-rds-key"
+    "fsx_key" = "${var.prefix}-fsx-key"
+    "efs_key" = "${var.prefix}-efs-key"
+    "ebs_key" = "${var.prefix}-ebs-key"
+    "eks_key" = "${var.prefix}-eks-key"
+  }
+
+  kms_keys = {
+    for key in keys(local.key_names) :
+    key => aws_kms_key.cmk[key].arn
+    if contains(keys(aws_kms_key.cmk), key)
+  }
+
 }

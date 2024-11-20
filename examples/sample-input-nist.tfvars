@@ -21,6 +21,7 @@ core_network_arn   = "arn:aws:networkmanager::654654181786:core-network/core-net
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = false
+backup_account_id = "992382826079"
 
 #***************** Additional CIDR ranges for Spoke VPC *************
 
