@@ -42,6 +42,7 @@ resource "aws_vpc" "vpc" {
   tags = merge(
     {
       "Name" = format("%s", "${var.name}-vpc")
+      "type" = var.enable_nist_features == true ? "awsng-spoke-vpc" : null
     },
     var.tags,
   )
@@ -236,7 +237,8 @@ resource "aws_subnet" "private" {
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
         element(var.private_subnet_azs, count.index),
-      )
+      ),
+      "nlb"  = "yes"
     },
     var.tags,
     var.private_subnet_tags,
@@ -258,7 +260,8 @@ resource "aws_route_table" "private" {
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
         element(var.private_subnet_azs, count.index),
-      )
+      ),
+      "type" = var.enable_nist_features == true ? "awsng-spoke-private-rt" : null
     },
     var.tags,
   )
