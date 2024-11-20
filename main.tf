@@ -91,6 +91,9 @@ module "vpc" {
   private_subnet_tags    = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
   additional_cidr_ranges = var.additional_cidr_ranges
   enable_nist_features   = var.enable_nist_features
+  core_network_id        = var.core_network_id
+  hub_environment        = var.hub_environment
+  hub                    = var.hub
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks

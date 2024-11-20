@@ -382,3 +382,17 @@ resource "aws_route_table_association" "eni" {
   subnet_id      = element(aws_subnet.eni[*].id, count.index)
   route_table_id = element(aws_route_table.private[*].id, 0)
 }
+
+#################
+# VPC attachment for HUB integration #####
+#################
+resource "aws_networkmanager_vpc_attachment" "vpc_attach" {
+  count           = var.enable_nist_features == true ? 1 : 0
+  subnet_arns     = aws_subnet.eni[*].arn
+  core_network_id = var.core_network_id
+  vpc_arn         = aws_vpc.vpc[0].arn
+  tags = {
+    segment = var.hub
+    Name    = "${var.name}-${var.hub_environment}"
+  }
+}

@@ -14,6 +14,9 @@ location = "<aws-location-value>" # e.g., "us-east-1"
 #***************** CIDR Range for Spoke VPC **************
 
 cidr     = "10.80.16.0/22"
+core_network_id    = "core-network-0febf425a0504df84"
+hub          = "CustomerSpokeUS"
+hub_environment = "dev"
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = false

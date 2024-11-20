@@ -182,3 +182,19 @@ variable "eni_subnet_azs" {
   type        = list(string)
   default     = []
 }
+
+variable "hub_environment" {
+  description = "name of the hub_environment"
+  type        = string
+}
+
+variable "core_network_id" {
+  description = "Cloud WAN: Core network ID from Global networking account"
+  type        = string
+}
+
+variable "hub" {
+  description = "Name of the Hub: for e.g, CustomerSpokeUS or CustomerSpokeEU "
+  type        = string
+}
+
