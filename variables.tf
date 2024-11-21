@@ -762,3 +762,25 @@ variable "backup_account_id" {
   description = "Central backup account number for backup and logging"
 }
 
+
+### Logging and backup module varaibles ####
+
+variable "spoke_account_id" {
+  description = "spoke account id for s3 deployment"
+  type        = string
+  default     = ""
+}
+
+variable "analyzer_name" {
+  type    = string
+  default = ""
+}
+
+variable "central_logging_bucket" {
+  type        = string
+  description = "Centralized logging bucket"
+  default = ""
+}
+
+
+

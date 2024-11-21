@@ -59,7 +59,7 @@ default_nodepool_custom_data = ""
 ## General
 efs_performance_mode = "maxIO"
 storage_type          = "ha"
-storage_type_backend  = "efs"
+storage_type_backend  = "ontap"
 enable_efs_encryption = true
 
 ## Cluster Node Pools config

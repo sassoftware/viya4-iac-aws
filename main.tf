@@ -15,7 +15,6 @@ provider "aws" {
   secret_key               = var.aws_secret_access_key
   token                    = var.aws_session_token
 
-
 }
 
 data "aws_eks_cluster_auth" "cluster" {
@@ -372,6 +371,7 @@ module "monitoring_role" {
   enable_nist_features = var.enable_nist_features
 }
 
+########## Cloud watch alarms #########
 module "cloudwatch" {
   depends_on           = [module.postgresql]
   count                = var.enable_nist_features == true ? 1 : 0
@@ -380,4 +380,15 @@ module "cloudwatch" {
   storage_type_backend = var.storage_type_backend
   efs_id               = local.efs_id
   fsx_id               = local.fsx_id
+}
+
+##########Spoke bucket for centralized logging########
+module "spoke_logging_bucket" {
+  count                  = var.enable_nist_features == true  ? 1 : 0
+  source                 = "./modules/aws_s3"
+  central_logging_bucket = var.central_logging_bucket
+  location               = var.location
+  spoke_account_id       = var.spoke_account_id
+  tags                   = local.tags
+  hub_environment        = var.hub_environment
 }
