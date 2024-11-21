@@ -66,18 +66,3 @@ data "aws_iam_policy_document" "fsx_ontap" {
   }
 }
 
-resource "aws_iam_policy" "fsx_ontap" {
-  name_prefix = "${var.prefix}-fsx-ontap"
-  description = "FSx policy for user ${data.aws_iam_user.terraform.user_name}"
-  policy      = data.aws_iam_policy_document.fsx_ontap.json
-  tags        = var.tags
-}
-
-data "aws_iam_user" "terraform" {
-  user_name = var.iam_user_name
-}
-
-resource "aws_iam_user_policy_attachment" "attachment" {
-  user       = data.aws_iam_user.terraform.user_name
-  policy_arn = aws_iam_policy.fsx_ontap.arn
-}

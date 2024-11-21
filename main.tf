@@ -15,6 +15,7 @@ provider "aws" {
   secret_key               = var.aws_secret_access_key
   token                    = var.aws_session_token
 
+
 }
 
 data "aws_eks_cluster_auth" "cluster" {
