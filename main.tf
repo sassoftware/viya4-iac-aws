@@ -413,3 +413,16 @@ module "iam_access_analyzer" {
   tags                   = local.tags
 
 }
+
+######### WAF & WAF LOGGING #########
+module "spoke_waf" {
+  count      = var.enable_nist_features == true ? 1 : 0
+  depends_on = [ module.spoke_logging_bucket]
+  source     = "./modules/aws_waf"
+  local_s3_bucket_arn = var.enable_nist_features == false ? null : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  spoke_account_id    = var.spoke_account_id
+  location            = var.location
+  tags                = local.tags
+
+}
+
