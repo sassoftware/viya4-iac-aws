@@ -426,3 +426,22 @@ module "spoke_waf" {
 
 }
 
+# ####Backup#####
+module "spoke_backup" {
+  count                    = var.enable_nist_features == true ? 1 : 0
+  source                   = "./modules/aws_backup"
+  location                 = var.location
+  spoke_account_id         = var.spoke_account_id
+  backup_account_id        = var.backup_account_id
+  org_id                   = var.org_id
+  tags                     = local.tags
+  spoke_backup_rules       = var.spoke_backup_rules
+  central_backup_operator  = var.central_backup_operator
+  central_restore_operator = var.central_restore_operator
+  central_backup_vault_us  = var.central_backup_vault_us
+  central_backup_vault_eu  = var.central_backup_vault_eu
+  hub_environment          = var.hub_environment
+
+}
+
+

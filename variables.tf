@@ -795,3 +795,76 @@ variable "custom_conformance_pack_name" {
 }
 
 
+
+variable "central_backup_operator" {
+  type        = string
+  description = "IAM role for backup module "
+  # default     = "arn:aws:iam::992382826079:role/sascloud-awsng-central-backup-iam-role-dev"
+  default = ""
+}
+
+variable "central_restore_operator" {
+  type        = string
+  description = "IAM role for restoration"
+  # default     = "arn:aws:iam::992382826079:role/sascloud-awsng-central-restore-iam-role-dev"
+  default = ""
+}
+
+variable "central_backup_vault_us" {
+  type        = string
+  description = "Backup vault"
+  # default     = "arn:aws:backup:us-east-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-dev"
+  default = ""
+}
+
+variable "central_backup_vault_eu" {
+  type        = string
+  description = "Backup vault"
+  # default     = "arn:aws:backup:eu-central-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-dev"
+  default = ""
+}
+
+variable "spoke_backup_rules" {
+  description = "Backup control rules: Schedule indicates the time frame of backup"
+  type = list(object({
+    name                     = string
+    schedule                 = optional(string)
+    enable_continuous_backup = optional(bool)
+    start_window             = optional(number)
+    completion_window        = optional(number)
+    recovery_point_tags      = optional(map(string))
+    lifecycle = optional(object({
+      cold_storage_after                        = optional(number)
+      delete_after                              = optional(number)
+      opt_in_to_archive_for_supported_resources = optional(bool)
+    }))
+    copy_action = optional(object({
+      destination_vault_arn = optional(string)
+      lifecycle = optional(object({
+        cold_storage_after                        = optional(number)
+        delete_after                              = optional(number)
+        opt_in_to_archive_for_supported_resources = optional(bool)
+      }))
+    }))
+  }))
+  default = [{
+    "name" : "backup_rule",
+    "schedule" : "cron(30 16 ? * * *)"
+    lifecycle = {
+      delete_after = "21"
+    }
+  }]
+
+}
+
+
+variable "org_id" {
+  type        = string
+  description = "organization ID required to enable the conformance pack"
+  # default     = "o-03y3m4pkl8"
+  default = ""
+}
+
+
+
+

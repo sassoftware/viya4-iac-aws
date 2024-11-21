@@ -4,8 +4,8 @@
 
 # ****************  REQUIRED VARIABLES  ****************
 # These required variables' values MUST be provided by the User
-prefix   = "test"
-location = "us-east-1" # e.g., "us-east-1"
+prefix   = "prd"
+location = "ap-northeast-1" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
@@ -14,10 +14,19 @@ location = "us-east-1" # e.g., "us-east-1"
 #***************** CIDR Range for Spoke VPC **************
 
 vpc_cidr     = "10.80.16.0/22"
-core_network_id    = "core-network-0febf425a0504df84"
 hub          = "CustomerSpokeUS"
-hub_environment = "dev"
-core_network_arn   = "arn:aws:networkmanager::654654181786:core-network/core-network-0febf425a0504df84"
+hub_environment = "prod"
+
+
+ org_id = "o-03y3m4pkl8"
+ central_restore_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-restore-iam-role-prod"
+ central_backup_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-backup-iam-role-prod"
+ central_backup_vault_us = "arn:aws:backup:us-east-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
+ central_backup_vault_eu = "arn:aws:backup:eu-central-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
+ central_logging_bucket =  "arn:aws:s3:::sascloud-awsng-centralized-prod-logging-bkt"  
+ core_network_id = "core-network-0f5411afa03340169"
+ core_network_arn = "arn:aws:networkmanager::396608809900:core-network/core-network-0f5411afa03340169"
+
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = true
@@ -47,7 +56,11 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 #                   need an external database server remove the 'postgres_servers'
 #                   block below.
 postgres_servers = {
-  default = {},
+  default = {
+      "storage_encrypted": true,
+      "deletion_protection": true,
+      "multi_az": true
+},
 }
 
 ## Cluster config
@@ -61,6 +74,18 @@ efs_performance_mode = "maxIO"
 storage_type          = "ha"
 storage_type_backend  = "ontap"
 enable_efs_encryption = true
+
+# Jump Server
+create_jump_vm = true
+##### NIST Enablement####
+
+create_public_ip      = false ### Set false if enable_nist_feature is set to true
+create_jump_public_ip = false ### Set false if enable_nist_feature is set to true
+enable_ebs_encryption = true
+
+#template_s3_uri       = "s3://sascloud-awsng-conformance-pack/Operational-Best-Practices-for-NIST-800-53-rev-5.yaml"
+conformance_pack_name = "Operational-Best-Practices-for-NIST-800-53-rev-5"
+spoke_account_id         = "296062556962"
 
 ## Cluster Node Pools config
 node_pools = {
@@ -134,6 +159,3 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   }
 }
-
-# Jump Server
-create_jump_vm = true
