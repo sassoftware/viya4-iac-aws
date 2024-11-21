@@ -9,13 +9,11 @@
 
 provider "aws" {
   region                   = var.location
-  # profile                  = var.aws_profile
-  # shared_credentials_files = local.aws_shared_credentials
+  profile                  = var.aws_profile
+  shared_credentials_files = local.aws_shared_credentials
   access_key               = var.aws_access_key_id
   secret_key               = var.aws_secret_access_key
   token                    = var.aws_session_token
-  shared_config_files      = ["\\Users\\viddeshmukh\\.aws\\credentials"]
-  profile                  = "221082210704_AdministratorAccess"
 
 }
 

@@ -122,7 +122,7 @@ output "postgres_servers" {
 
 output "nat_ip" {
   description = "List of public Elastic IPs created for AWS NAT Gateway."
-  value       = module.vpc.create_nat_gateway ? module.vpc.nat_public_ips[0] : null
+  value       = var.enable_nist_features == true ?  null : module.vpc.nat_public_ips[0]
 }
 
 output "prefix" {
@@ -242,4 +242,12 @@ output "validate_subnet_azs" {
 output "enable_nist_features" {
   description = "Flag to enable NIST features."
   value       = var.enable_nist_features
+}
+
+output "kms_key_arns" {
+  description = "KMS key arns's"
+  value = {
+    for key in keys(local.kms_keys) :
+    key => aws_kms_key.cmk[key].arn if contains(keys(aws_kms_key.cmk), key)
+  }
 }
