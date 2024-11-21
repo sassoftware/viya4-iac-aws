@@ -402,3 +402,14 @@ module "nist_pack" {
   hub_environment              = var.hub_environment
   tags                         = local.tags
 }
+
+###################### IAM Analyser ############################
+module "iam_access_analyzer" {
+  count                  = var.enable_nist_features == true ? 1 : 0
+  source                 = "./modules/aws_iam_analyzer"
+  location               = var.location
+  analyzer_type_external = "ACCOUNT"
+  analyzer_type_unused   = "ACCOUNT_UNUSED_ACCESS"
+  tags                   = local.tags
+
+}
