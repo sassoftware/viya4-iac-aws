@@ -32,7 +32,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
-
+  kms_key_id          = lookup(local.kms_keys, "fsx_key", null)
   depends_on = [module.ontap]
 }
 
@@ -66,6 +66,7 @@ resource "aws_efs_file_system" "efs-fs" {
   provisioned_throughput_in_mibps = var.efs_throughput_mode == "provisioned" ? var.efs_throughput_rate : null
   tags                            = merge(local.tags, { "Name" : "${var.prefix}-efs" })
   encrypted                       = var.enable_efs_encryption
+  kms_key_id                      = lookup(local.kms_keys, "efs_key", null)
 }
 
 # EFS Mount Target - https://www.terraform.io/docs/providers/aws/r/efs_mount_target.html

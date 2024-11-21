@@ -188,7 +188,6 @@ locals {
     "fsx_key" = "${var.prefix}-fsx-key"
     "efs_key" = "${var.prefix}-efs-key"
     "ebs_key" = "${var.prefix}-ebs-key"
-    "eks_key" = "${var.prefix}-eks-key"
   }
 
   kms_keys = {
