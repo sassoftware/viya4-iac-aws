@@ -782,5 +782,16 @@ variable "central_logging_bucket" {
   default = ""
 }
 
+variable "conformance_pack_name" {
+  type        = string
+  description = "name for aws config"
+  default     = "Operational-Best-Practices-for-NIST-800-53-rev-5"
+  # default = ""
+}
+variable "custom_conformance_pack_name" {
+  type        = string
+  description = "name for aws config"
+  default     = "SAS-Custom-Conformance-Pack"
+}
 
 

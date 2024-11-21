@@ -392,3 +392,13 @@ module "spoke_logging_bucket" {
   tags                   = local.tags
   hub_environment        = var.hub_environment
 }
+
+###################################Config Conformance Pack############################
+module "nist_pack" {
+  count = var.enable_nist_features == true ? 1 : 0
+  source                       = "./modules/aws_config"
+  conformance_pack_name        = var.conformance_pack_name
+  custom_conformance_pack_name = var.custom_conformance_pack_name
+  hub_environment              = var.hub_environment
+  tags                         = local.tags
+}
