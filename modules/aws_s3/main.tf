@@ -3,6 +3,7 @@
 data "aws_caller_identity" "current" {}
 
 
+
 resource "aws_s3_bucket" "local_s3_bucket" {
   bucket              = "aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
   force_destroy       = var.force_destroy
@@ -100,7 +101,7 @@ data "aws_iam_policy_document" "replication_json" {
     resources = [
       "${aws_s3_bucket.local_s3_bucket.arn}/*",
       "aws_s3_bucket.local_s3_bucket.arn",
-      "var.central_logging_bucket/*",
+      "${var.central_logging_bucket}/*",
       "var.central_logging_bucket"
     ]
   }
@@ -185,7 +186,7 @@ resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
                 "AWS": "arn:aws:iam::${local.account_id}:root"
             },
             "Action": "s3:PutObject",
-            "Resource": "aws_s3_bucket.local_s3_bucket.arn/*"
+            "Resource": "${aws_s3_bucket.local_s3_bucket.arn}/*"
         }
     ]
 }

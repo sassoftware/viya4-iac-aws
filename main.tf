@@ -98,6 +98,7 @@ module "vpc" {
   hub                    = var.hub
   vpc_nist_endpoints     = var.vpc_nist_endpoints
   local_s3_bucket_arn = var.enable_nist_features == false ? null : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  depends_on          = [module.spoke_logging_bucket]
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
