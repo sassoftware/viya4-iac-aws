@@ -15,6 +15,7 @@ provider "aws" {
   secret_key               = var.aws_secret_access_key
   token                    = var.aws_session_token
 
+
 }
 
 data "aws_eks_cluster_auth" "cluster" {
@@ -96,6 +97,7 @@ module "vpc" {
   hub_environment        = var.hub_environment
   hub                    = var.hub
   vpc_nist_endpoints     = var.vpc_nist_endpoints
+  local_s3_bucket_arn = var.enable_nist_features == false ? null : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks

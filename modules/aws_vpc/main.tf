@@ -463,3 +463,30 @@ resource "aws_route53_resolver_rule_association" "rule" {
   resolver_rule_id = data.aws_route53_resolver_rule.rule[0].id
   vpc_id = aws_vpc.vpc[0].id
 }
+
+#################
+# Enabling VPC flow logs
+#################
+resource "aws_flow_log" "flow_logs" {
+  count                = var.enable_nist_features == true ? 1 : 0
+  vpc_id               = aws_vpc.vpc[0].id
+  log_destination      = "${var.local_s3_bucket_arn}/vpc-flow"
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+}
+
+#################
+# Enabling DNS query logging
+#################
+resource "aws_route53_resolver_query_log_config" "log_create" {
+  count           = var.enable_nist_features == true ? 1 : 0
+  name            = "sas-awsng-${var.hub_environment}-query-logging-${var.region}"
+  destination_arn = "${var.local_s3_bucket_arn}/dns-query"
+}
+
+#### To be enabled per VPC
+resource "aws_route53_resolver_query_log_config_association" "log_association" {
+  count                        = var.enable_nist_features == true ? 1 : 0
+  resolver_query_log_config_id = aws_route53_resolver_query_log_config.log_create[0].id
+  resource_id                  = local.vpc_id
+}

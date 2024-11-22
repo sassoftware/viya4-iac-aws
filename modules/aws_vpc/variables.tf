@@ -212,3 +212,8 @@ variable "vpc_nist_endpoints" {
     "ec2messages" = "Interface"
   }
 }
+
+variable "local_s3_bucket_arn" {
+  description = "Local Spoke S3 Bucket ARN"
+  type        = string
+}
