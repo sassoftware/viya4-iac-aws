@@ -97,7 +97,7 @@ module "vpc" {
   hub_environment        = var.hub_environment
   hub                    = var.hub
   vpc_nist_endpoints     = var.vpc_nist_endpoints
-  local_s3_bucket_arn = var.enable_nist_features == false ? null : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
   depends_on          = [module.spoke_logging_bucket]
 }
 
@@ -387,13 +387,14 @@ module "cloudwatch" {
 
 ##########Spoke bucket for centralized logging########
 module "spoke_logging_bucket" {
-  count                  = var.enable_nist_features == true  ? 1 : 0
+  count                  = var.enable_nist_features == true && local.bucket_exists == "false" ? 1 : 0
   source                 = "./modules/aws_s3"
   central_logging_bucket = var.central_logging_bucket
   location               = var.location
   spoke_account_id       = var.spoke_account_id
   tags                   = local.tags
   hub_environment        = var.hub_environment
+  depends_on = [module.resource_checker]
 }
 
 ###################################Config Conformance Pack############################
@@ -408,21 +409,22 @@ module "nist_pack" {
 
 ###################### IAM Analyser ############################
 module "iam_access_analyzer" {
-  count                  = var.enable_nist_features == true ? 1 : 0
+  count                  = var.enable_nist_features == true && local.analyzer_exists == "false" ? 1 : 0
   source                 = "./modules/aws_iam_analyzer"
   location               = var.location
   analyzer_type_external = "ACCOUNT"
   analyzer_type_unused   = "ACCOUNT_UNUSED_ACCESS"
   tags                   = local.tags
+  depends_on = [module.resource_checker]
 
 }
 
 ######### WAF & WAF LOGGING #########
 module "spoke_waf" {
-  count      = var.enable_nist_features == true ? 1 : 0
-  depends_on = [ module.spoke_logging_bucket]
+  count      = var.enable_nist_features == true && local.waf_exists == "false" ? 1 : 0
+  depends_on = [ module.spoke_logging_bucket , module.resource_checker]
   source     = "./modules/aws_waf"
-  local_s3_bucket_arn = var.enable_nist_features == false ? null : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
   spoke_account_id    = var.spoke_account_id
   location            = var.location
   tags                = local.tags
@@ -431,7 +433,7 @@ module "spoke_waf" {
 
 # ####Backup#####
 module "spoke_backup" {
-  count                    = var.enable_nist_features == true ? 1 : 0
+  count                    = var.enable_nist_features == true && local.backup_exists == "false" ? 1 : 0
   source                   = "./modules/aws_backup"
   location                 = var.location
   spoke_account_id         = var.spoke_account_id
@@ -444,7 +446,20 @@ module "spoke_backup" {
   central_backup_vault_us  = var.central_backup_vault_us
   central_backup_vault_eu  = var.central_backup_vault_eu
   hub_environment          = var.hub_environment
+  depends_on               = [module.resource_checker]
 
 }
 
+########## Resource Checker #########
+
+module "resource_checker" {
+  count                 = var.enable_nist_features == true ? 1 : 0
+  source                = "./modules/resource_checker"
+  location              = var.location
+  spoke_account_id      = var.spoke_account_id
+  aws_access_key_id     = var.aws_access_key_id
+  aws_secret_access_key = var.aws_secret_access_key
+  aws_session_token     = var.aws_session_token
+  analyzer_name         = var.analyzer_name
+}
 
