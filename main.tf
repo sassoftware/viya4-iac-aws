@@ -312,7 +312,7 @@ module "postgresql" {
   tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
-  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == true ? false : true
+  publicly_accessible =  var.enable_nist_features == true ? false : true
   subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.database_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
