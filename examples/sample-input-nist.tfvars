@@ -4,7 +4,7 @@
 
 # ****************  REQUIRED VARIABLES  ****************
 # These required variables' values MUST be provided by the User
-prefix   = "prd"
+prefix   = "dev"
 location = "ap-northeast-1" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
 
@@ -85,7 +85,7 @@ enable_ebs_encryption = true
 
 #template_s3_uri       = "s3://sascloud-awsng-conformance-pack/Operational-Best-Practices-for-NIST-800-53-rev-5.yaml"
 conformance_pack_name = "Operational-Best-Practices-for-NIST-800-53-rev-5"
-spoke_account_id         = "296062556962"
+spoke_account_id         = "637423594384"
 
 ## Cluster Node Pools config
 node_pools = {

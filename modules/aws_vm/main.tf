@@ -92,13 +92,14 @@ resource "aws_instance" "vm" {
     kms_key_id            = var.ebs_cmk_key
     tags = merge(
       {
-        Name : "${var.name}-root-vol"
+        Name : "${var.name}-root-vol",
+        "Backup" = var.enable_nist_features == true ? "Enabled" : null
       },
       var.tags
     )
   }
 
-  tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
+  tags = merge(var.tags, tomap({ Name : "${var.name}-vm", "Backup" = var.enable_nist_features == true ? "Enabled" : null }))
 
   lifecycle {
     ignore_changes = [
@@ -130,7 +131,7 @@ resource "aws_ebs_volume" "raid_disk" {
   size              = var.data_disk_size
   type              = var.data_disk_type
   iops              = var.data_disk_iops
-  tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
+  tags              = merge(var.tags, tomap({ Name : "${var.name}-vm", "Backup" = var.enable_nist_features == true ? "Enabled" : null }))
   encrypted         = var.enable_ebs_encryption
   kms_key_id            = var.ebs_cmk_key
 }

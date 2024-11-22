@@ -31,7 +31,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
   throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
-  tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
+  tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs", "Backup" = var.enable_nist_features == true ? "Enabled" : null })
   kms_key_id          = lookup(local.kms_keys, "fsx_key", null)
   depends_on = [module.ontap]
 }
@@ -42,7 +42,7 @@ resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
   count          = local.storage_type_backend == "ontap" ? 1 : 0
   file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
   name           = "${var.prefix}-ontap-svm"
-  tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
+  tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm", "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 }
 
 # A default volume gets created with the svm, we may want another
@@ -54,7 +54,7 @@ resource "aws_fsx_ontap_volume" "ontap-vol" {
   size_in_megabytes          = aws_fsx_ontap_file_system.ontap-fs[0].storage_capacity * 1024 # any whole number in the range of 20–314572800 to specify the size in mebibytes (MiB)
   storage_efficiency_enabled = true
   storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].id
-  tags                       = merge(local.tags, { "Name" : "${var.prefix}-ontap-vol" })
+  tags                       = merge(local.tags, { "Name" : "${var.prefix}-ontap-vol", "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 }
 
 # EFS File System - https://www.terraform.io/docs/providers/aws/r/efs_file_system.html
@@ -64,7 +64,7 @@ resource "aws_efs_file_system" "efs-fs" {
   performance_mode                = var.efs_performance_mode
   throughput_mode                 = var.efs_throughput_mode
   provisioned_throughput_in_mibps = var.efs_throughput_mode == "provisioned" ? var.efs_throughput_rate : null
-  tags                            = merge(local.tags, { "Name" : "${var.prefix}-efs" })
+  tags                            = merge(local.tags, { "Name" : "${var.prefix}-efs", "Backup" = var.enable_nist_features == true ? "Enabled" : null })
   encrypted                       = var.enable_efs_encryption
   kms_key_id                      = lookup(local.kms_keys, "efs_key", null)
 }

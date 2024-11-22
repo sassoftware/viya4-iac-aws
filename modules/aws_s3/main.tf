@@ -100,9 +100,9 @@ data "aws_iam_policy_document" "replication_json" {
     ]
     resources = [
       "${aws_s3_bucket.local_s3_bucket.arn}/*",
-      "aws_s3_bucket.local_s3_bucket.arn",
+      "${aws_s3_bucket.local_s3_bucket.arn}",
       "${var.central_logging_bucket}/*",
-      "var.central_logging_bucket"
+      "${var.central_logging_bucket}"
     ]
   }
   statement {
