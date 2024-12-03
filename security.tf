@@ -28,8 +28,8 @@ resource "aws_vpc_security_group_egress_rule" "sg" {
   security_group_id = local.security_group_id
 
   description = "Allow all outbound traffic."
-  ip_protocol    = "-1"
-  cidr_ipv4 = "0.0.0.0/0"
+  ip_protocol = "-1"
+  cidr_ipv4   = "0.0.0.0/0"
 
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
@@ -41,11 +41,11 @@ resource "aws_vpc_security_group_ingress_rule" "sg" {
   for_each = var.security_group_id == null && var.vpc_private_endpoints_enabled ? toset(local.vpc_endpoint_private_access_cidrs) : toset([])
 
   security_group_id = local.security_group_id
-  description = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
-  ip_protocol = "tcp"
-  from_port   = 443
-  to_port     = 443
-  cidr_ipv4   = each.key
+  description       = "Allow tcp port 443 ingress to all AWS Services targeted by the VPC endpoints"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = each.key
 
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
@@ -53,33 +53,33 @@ resource "aws_vpc_security_group_ingress_rule" "sg" {
 resource "aws_vpc_security_group_ingress_rule" "vms" {
 
   for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm)) ? toset(local.vm_public_access_cidrs) : toset([])
-  
+
   security_group_id = local.security_group_id
 
-  description       = "Allow SSH from source"
-  from_port         = 22
-  to_port           = 22
-  ip_protocol       = "tcp"
-  cidr_ipv4         = each.key
+  description = "Allow SSH from source"
+  from_port   = 22
+  to_port     = 22
+  ip_protocol = "tcp"
+  cidr_ipv4   = each.key
 }
 
 resource "aws_vpc_security_group_ingress_rule" "all" {
   security_group_id = local.security_group_id
 
-  description       = "Allow internal security group communication."
-  ip_protocol       = "-1"
+  description                  = "Allow internal security group communication."
+  ip_protocol                  = "-1"
   referenced_security_group_id = local.security_group_id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "postgres_internal" {
 
-  for_each          = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
+  for_each = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
 
-  description       = "Allow Postgress within network"
-  from_port         = each.key
-  to_port           = each.key
-  ip_protocol       = "tcp"
-  security_group_id = local.security_group_id
+  description                  = "Allow Postgress within network"
+  from_port                    = each.key
+  to_port                      = each.key
+  ip_protocol                  = "tcp"
+  security_group_id            = local.security_group_id
   referenced_security_group_id = local.security_group_id
 }
 
@@ -104,11 +104,11 @@ resource "aws_security_group" "cluster_security_group" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
 
-  name   = "${var.prefix}-eks_cluster_sg"
-  vpc_id = module.vpc.vpc_id
+  name        = "${var.prefix}-eks_cluster_sg"
+  vpc_id      = module.vpc.vpc_id
   description = "EKS cluster security group."
-  
-  tags   = merge(local.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
+
+  tags = merge(local.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
 
 }
 
@@ -116,11 +116,11 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
 
-  description = "Allow all outbound traffic."
-  ip_protocol    = "-1"
-  cidr_ipv4 = "0.0.0.0/0"
+  description       = "Allow all outbound traffic."
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
   security_group_id = local.cluster_security_group_id
-  }
+}
 
 resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
 
@@ -132,19 +132,19 @@ resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
   ip_protocol       = "tcp"
   cidr_ipv4         = each.key
   security_group_id = local.cluster_security_group_id
-  }
+}
 
 
 resource "aws_vpc_security_group_ingress_rule" "cluster_ingress" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
 
-  description              = "Allow pods to communicate with the EKS cluster API."
-  from_port                = 443
-  to_port                  = 443
-  ip_protocol                 = "tcp"
+  description                  = "Allow pods to communicate with the EKS cluster API."
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
   referenced_security_group_id = local.workers_security_group_id
-  security_group_id        = local.cluster_security_group_id
+  security_group_id            = local.cluster_security_group_id
 }
 
 resource "aws_security_group" "workers_security_group" {
@@ -152,22 +152,22 @@ resource "aws_security_group" "workers_security_group" {
   count = var.workers_security_group_id == null ? 1 : 0
 
   description = "Security group for all nodes in the cluster."
-  name   = "${var.prefix}-eks_worker_sg"
-  vpc_id = module.vpc.vpc_id
+  name        = "${var.prefix}-eks_worker_sg"
+  vpc_id      = module.vpc.vpc_id
   tags = merge(local.tags,
     { "Name" : "${var.prefix}-eks_worker_sg" },
     { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
   )
 }
-  
+
 resource "aws_vpc_security_group_egress_rule" "workers_security_group" {
-  
+
   count = var.workers_security_group_id == null ? 1 : 0
 
-  cidr_ipv4 = "0.0.0.0/0"
-  security_group_id  = local.workers_security_group_id
-  description      = "Allow cluster egress access to the Internet."
-  ip_protocol         = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = local.workers_security_group_id
+  description       = "Allow cluster egress access to the Internet."
+  ip_protocol       = "-1"
 
 }
 
@@ -175,34 +175,34 @@ resource "aws_vpc_security_group_ingress_rule" "worker_self" {
 
   count = var.workers_security_group_id == null ? 1 : 0
 
-  description          = "Allow node to communicate with each other."
-  ip_protocol          = "-1"
+  description                  = "Allow node to communicate with each other."
+  ip_protocol                  = "-1"
   referenced_security_group_id = aws_security_group.workers_security_group[0].id
-  security_group_id = aws_security_group.workers_security_group[0].id
+  security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api" {
 
   count = var.workers_security_group_id == null ? 1 : 0
 
-  description              = "Allow worker pods to receive communication from the cluster control plane."
-  from_port                = 1025
-  to_port                  = 65535
-  ip_protocol                 = "tcp"
+  description                  = "Allow worker pods to receive communication from the cluster control plane."
+  from_port                    = 1025
+  to_port                      = 65535
+  ip_protocol                  = "tcp"
   referenced_security_group_id = local.cluster_security_group_id
-  security_group_id        = aws_security_group.workers_security_group[0].id
+  security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api_443" {
 
   count = var.workers_security_group_id == null ? 1 : 0
 
-  description              = "Allow pods running extension API servers on port 443 to receive communication from cluster control plane."
-  from_port                = 443
-  to_port                  = 443
-  ip_protocol                 = "tcp"
+  description                  = "Allow pods running extension API servers on port 443 to receive communication from cluster control plane."
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
   referenced_security_group_id = local.cluster_security_group_id
-  security_group_id        = aws_security_group.workers_security_group[0].id
+  security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
 # TODO: Make sure tags are applied to all resources
@@ -212,7 +212,7 @@ resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22" {
   for_each = (length(local.vm_private_access_cidrs) > 0
     && var.workers_security_group_id == null
     && ((var.create_jump_public_ip == false && var.create_jump_vm)
-      || (var.create_nfs_public_ip == false && var.storage_type == "standard")) ? toset(local.vm_private_access_cidrs) : toset([])
+    || (var.create_nfs_public_ip == false && var.storage_type == "standard")) ? toset(local.vm_private_access_cidrs) : toset([])
   )
 
   description       = "Allow SSH to a private IP based Jump VM per var.vm_private_access_cidrs. Required for DAC baseline client VM."
