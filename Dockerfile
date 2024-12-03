@@ -7,7 +7,7 @@ WORKDIR /app
 USER root
 ARG KUBECTL_VERSION=1.30.6
 ARG KUBECTL_CHECKSUM=7a3adf80ca74b1b2afdfc7f4570f0005ca03c2812367ffb6ee2f731d66e45e61
-RUN set -eux \
+RUN /bin/bash -eux \
   && curl -fSLO https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
   && chmod 755 ./kubectl \
   && sha256sum --check --strict <(echo ${KUBECTL_CHECKSUM}  kubectl)
