@@ -9,7 +9,7 @@
 
 config {
   # Enables module inspection
-  call_module_type = "all"
+  call_module_type = "none"
 }
 
 plugin "aws" {
