@@ -7,7 +7,6 @@ locals {
   aws_caller_identity_user_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
 
   # General
-  #sec_group                 = (length(aws_security_group.sg_a) == 0 && length(aws_security_group.sg_b) == 0) ? null : coalescelist(aws_security_group.sg_a, aws_security_group.sg_b)
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
