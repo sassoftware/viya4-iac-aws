@@ -165,7 +165,7 @@ locals {
   postgres_servers = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge(var.postgres_server_defaults, v, ) }
   postgres_sgr_ports = var.postgres_servers != null ? length(local.postgres_servers) != 0 ? [for k, v in local.postgres_servers :
     v.server_port
-  ] : [] : null
+  ] : [] : []
   postgres_cidr_port_pairs = setproduct(local.postgres_sgr_ports, local.postgres_public_access_cidrs)
   
   ingress_pairs = length(local.postgres_cidr_port_pairs) != 0 ? { for pair in local.postgres_cidr_port_pairs :
