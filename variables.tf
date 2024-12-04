@@ -779,7 +779,7 @@ variable "analyzer_name" {
 variable "central_logging_bucket" {
   type        = string
   description = "Centralized logging bucket"
-  default = ""
+  default     = ""
 }
 
 variable "conformance_pack_name" {
@@ -865,6 +865,10 @@ variable "org_id" {
   default = ""
 }
 
+variable "logging_account" {
+  description = "Central logging accoutn ID"
+  type        = string
+}
 
 
 

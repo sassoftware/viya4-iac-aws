@@ -76,7 +76,7 @@ data "aws_iam_policy_document" "assume_role_local" {
     }
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::730335345263:role/sascloud-awsng-logging-cross-account-iam-role"]
+      identifiers = ["arn:aws:iam::${var.logging_account}:role/sascloud-awsng-logging-cross-account-iam-role"]
     }
     actions = ["sts:AssumeRole"]
   }

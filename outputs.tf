@@ -122,7 +122,7 @@ output "postgres_servers" {
 
 output "nat_ip" {
   description = "List of public Elastic IPs created for AWS NAT Gateway."
-  value       = var.enable_nist_features == true ?  null : module.vpc.nat_public_ips[0]
+  value       = var.enable_nist_features == true ? null : module.vpc.nat_public_ips[0]
 }
 
 output "prefix" {

@@ -33,7 +33,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
   security_group_ids  = [local.workers_security_group_id]
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs", "Backup" = var.enable_nist_features == true ? "Enabled" : null })
   kms_key_id          = lookup(local.kms_keys, "fsx_key", null)
-  depends_on = [module.ontap]
+  depends_on          = [module.ontap]
 }
 
 # ONTAP storage virtual machine and volume resources
@@ -180,6 +180,6 @@ module "nfs" {
   ssh_public_key        = local.ssh_public_key
   enable_ebs_encryption = var.enable_ebs_encryption
 
-  cloud_init = data.cloudinit_config.nfs[0].rendered
-  ebs_cmk_key          = lookup(local.kms_keys, "ebs_key", null)
+  cloud_init  = data.cloudinit_config.nfs[0].rendered
+  ebs_cmk_key = lookup(local.kms_keys, "ebs_key", null)
 }

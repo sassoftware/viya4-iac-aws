@@ -210,7 +210,7 @@ locals {
   rds_performance_insight          = var.enable_nist_features == true ? true : false
   rds_performance_retention_period = var.enable_nist_features == true ? 7 : 0
 
-    ###nist-resource-chcker
+  ###nist-resource-chcker
   bucket_exists   = try(module.resource_checker[0].bucket_external["exists"], "false")
   waf_exists      = try(module.resource_checker[0].waf_external["exists"], "false")
   waf_arn         = try(module.resource_checker[0].waf_external["arn"], "")

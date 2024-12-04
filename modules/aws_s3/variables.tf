@@ -41,3 +41,8 @@ variable "prefixes" {
   default = ["vpc-flow", "alb-nlb", "dns-query"]
 }
 
+variable "logging_account" {
+  description = "Central logging accoutn ID"
+  type        = string
+}
+

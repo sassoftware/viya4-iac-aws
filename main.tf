@@ -97,8 +97,8 @@ module "vpc" {
   hub_environment        = var.hub_environment
   hub                    = var.hub
   vpc_nist_endpoints     = var.vpc_nist_endpoints
-  local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
-  depends_on          = [module.spoke_logging_bucket]
+  local_s3_bucket_arn    = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  depends_on             = [module.spoke_logging_bucket]
 
 }
 
@@ -313,7 +313,7 @@ module "postgresql" {
   tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
-  publicly_accessible =  length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == false ? true : false
+  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == false ? true : false
   subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.database_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
@@ -395,12 +395,13 @@ module "spoke_logging_bucket" {
   spoke_account_id       = var.spoke_account_id
   tags                   = local.tags
   hub_environment        = var.hub_environment
-  depends_on = [module.resource_checker]
+  logging_account        = var.logging_account
+  depends_on             = [module.resource_checker]
 }
 
 ###################################Config Conformance Pack############################
 module "nist_pack" {
-  count = var.enable_nist_features == true ? 1 : 0
+  count                        = var.enable_nist_features == true ? 1 : 0
   source                       = "./modules/aws_config"
   conformance_pack_name        = var.conformance_pack_name
   custom_conformance_pack_name = var.custom_conformance_pack_name
@@ -416,15 +417,15 @@ module "iam_access_analyzer" {
   analyzer_type_external = "ACCOUNT"
   analyzer_type_unused   = "ACCOUNT_UNUSED_ACCESS"
   tags                   = local.tags
-  depends_on = [module.resource_checker]
+  depends_on             = [module.resource_checker]
 
 }
 
 ######### WAF & WAF LOGGING #########
 module "spoke_waf" {
-  count      = var.enable_nist_features == true && local.waf_exists == "false" ? 1 : 0
-  depends_on = [ module.spoke_logging_bucket , module.resource_checker]
-  source     = "./modules/aws_waf"
+  count               = var.enable_nist_features == true && local.waf_exists == "false" ? 1 : 0
+  depends_on          = [module.spoke_logging_bucket, module.resource_checker]
+  source              = "./modules/aws_waf"
   local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
   spoke_account_id    = var.spoke_account_id
   location            = var.location
