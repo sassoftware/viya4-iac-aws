@@ -4,8 +4,8 @@
 
 # ****************  REQUIRED VARIABLES  ****************
 # These required variables' values MUST be provided by the User
-prefix   = "dev"
-location = "ap-northeast-1" # e.g., "us-east-1"
+prefix   = "<prefix-value>"
+location = "<aws-location-value>" # e.g., "us-east-1"
 # ****************  REQUIRED VARIABLES  ****************
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
@@ -14,23 +14,24 @@ location = "ap-northeast-1" # e.g., "us-east-1"
 #***************** CIDR Range for Spoke VPC **************
 
 vpc_cidr     = "10.80.16.0/22"
-hub          = "CustomerSpokeUS"
-hub_environment = "prod"
+hub          = "<hub_value>"
+hub_environment = "<environment>"  #  dev or prod
 
 
- org_id = "o-03y3m4pkl8"
- central_restore_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-restore-iam-role-prod"
- central_backup_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-backup-iam-role-prod"
- central_backup_vault_us = "arn:aws:backup:us-east-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
- central_backup_vault_eu = "arn:aws:backup:eu-central-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
- central_logging_bucket =  "arn:aws:s3:::sascloud-awsng-centralized-prod-logging-bkt"  
- core_network_id = "core-network-0f5411afa03340169"
- core_network_arn = "arn:aws:networkmanager::396608809900:core-network/core-network-0f5411afa03340169"
+ org_id = "<org_id>"
+ central_restore_operator = "<restore_role_arn>"
+ central_backup_operator = "<backup_role_arn>"
+ central_backup_vault_us = "<us_vault_arn>"
+ central_backup_vault_eu = "<eu_vault_arn>"
+ central_logging_bucket =  "<logging_bucket_arn>"  
+ core_network_id = "<core_network_id>"
+ core_network_arn = "<core_network_arn>"
 
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = true
-backup_account_id = "992382826079"
+backup_account_id = "<backup_aws_account_id>"
+logging_account = "<logging_aws_account_id>"
 
 #***************** Additional CIDR ranges for Spoke VPC *************
 
@@ -85,7 +86,7 @@ enable_ebs_encryption = true
 
 #template_s3_uri       = "s3://sascloud-awsng-conformance-pack/Operational-Best-Practices-for-NIST-800-53-rev-5.yaml"
 conformance_pack_name = "Operational-Best-Practices-for-NIST-800-53-rev-5"
-spoke_account_id         = "637423594384"
+spoke_account_id         = "<aws_account_id>"
 
 ## Cluster Node Pools config
 node_pools = {
