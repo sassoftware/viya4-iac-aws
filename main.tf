@@ -99,6 +99,7 @@ module "vpc" {
   vpc_nist_endpoints     = var.vpc_nist_endpoints
   local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
   depends_on          = [module.spoke_logging_bucket]
+
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
@@ -312,7 +313,7 @@ module "postgresql" {
   tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
-  publicly_accessible =  var.enable_nist_features == true ? false : true
+  publicly_accessible =  length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == false ? true : false
   subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.database_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
