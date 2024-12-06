@@ -172,7 +172,7 @@ output "ebs_csi_account" {
 }
 
 output "k8s_version" {
-  description = "Kubernetes master version."
+  description = "Kubernetes server version."
   value       = module.eks.cluster_version
 }
 
