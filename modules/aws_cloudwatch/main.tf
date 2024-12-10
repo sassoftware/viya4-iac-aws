@@ -1,13 +1,125 @@
 # # SNS Notification
 resource "aws_sns_topic" "user_updates" {
   name              = "SAS-AWS-NextGen-SNS-topic"
-  kms_master_key_id = "alias/aws/sns"
+  kms_master_key_id = aws_kms_alias.sns_kms.target_key_id
+  tags              = var.tags
 }
+ 
+data "aws_iam_policy_document" "sns_topic_policy" {
+  policy_id = "__default_policy_ID"
+ 
+  statement {
+    actions = [
+      "SNS:GetTopicAttributes",
+      "SNS:SetTopicAttributes",
+      "SNS:AddPermission",
+      "SNS:RemovePermission",
+      "SNS:DeleteTopic",
+      "SNS:Subscribe",
+      "SNS:ListSubscriptionsByTopic",
+      "SNS:Publish",
+      "SNS:Receive"
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+      values = [
+        var.spoke_account_id
+      ]
+    }
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    resources = [
+      aws_sns_topic.user_updates.arn
+    ]
+    sid = "__default_statement_ID"
+  }
+ 
+  statement {
+    actions = ["sns:Publish"]
+    sid     = "SNSEncryptionIntegrationWithCloudWatch"
+    effect  = "Allow"
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+      values = [
+        var.spoke_account_id
+      ]
+    }
+    principals {
+      type        = "Service"
+      identifiers = ["cloudwatch.amazonaws.com"]
+    }
+ 
+    resources = [
+      aws_sns_topic.user_updates.arn
+    ]
+  }
+}
+ 
+resource "aws_sns_topic_policy" "policy_attachment" {
+  arn = aws_sns_topic.user_updates.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
+}
+ 
 resource "aws_sns_topic_subscription" "user_updates_email_target" {
   topic_arn = aws_sns_topic.user_updates.arn
   protocol  = "https"
-  endpoint  = "https://srvc_azure_monitor:Za7zlnEMLLHckpE@sasdev.service-now.com/api/sn_em_connector/em/inbound_event?source=aws"
+  endpoint  =  var.hub_environment == "prod" ? "https://srvc_em_aws_cloudwatch:5_SAtJEy9LuYTb)UKC9rHXvM@sas.service-now.com/api/sn_em_connector/em/inbound_event?source=aws" : "https://srvc_azure_monitor:Za7zlnEMLLHckpE@sasdev.service-now.com/api/sn_em_connector/em/inbound_event?source=aws"
 }
+ 
+resource "aws_kms_key" "cloudwatch_to_sns" {
+  enable_key_rotation     = true
+  rotation_period_in_days = 90
+  description             = "KMS CMK key for CloudWatch to SNS Integration"
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Id" : "kms-sns-${var.hub_environment}-${var.location}",
+      "Statement" : [
+        {
+          "Sid" : "Allow access through for all principals in the account that are authorized to use the key",
+          "Effect" : "Allow",
+          "Principal" : {
+            "AWS" : [
+              "arn:aws:iam::${var.spoke_account_id}:root"
+            ]
+          },
+          "Action" : "kms:*",
+          "Resource" : "*"
+        },
+        {
+          "Sid" : "SNSEncryptionIntegrationWithCloudWatch",
+          "Effect" : "Allow",
+          "Principal" : {
+            "Service" : [
+              "cloudwatch.amazonaws.com"
+            ]
+          },
+          "Action" : [
+            "kms:GenerateDataKey*",
+            "kms:DescribeKey",
+            "kms:Decrypt"
+          ],
+          "Resource" : "*"
+        }
+      ]
+    }
+  )
+ 
+  tags = {
+    managedBy = "Terraform"
+  }
+}
+ 
+resource "aws_kms_alias" "sns_kms" {
+  name          = "alias/${var.prefix}-sns-key"
+  target_key_id = aws_kms_key.cloudwatch_to_sns.key_id
+}
+ 
 
 # ########## RDS Postgres Instances #########
 # # CloudWatch Alarm for RDS CPU Utilization
@@ -21,7 +133,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_utilization" {
   statistic           = "Average"
   threshold           = var.cpu_threshold
   actions_enabled     = true
-  alarm_description   = "Alarm if CPU utilization exceeds threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The CPU Utilization for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
     DBInstanceIdentifier = "${var.prefix}-default-pgsql" //var.instance_id
@@ -38,7 +150,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_write_iops" {
   period              = 900
   statistic           = "Average"
   threshold           = 1000 # Adjust the threshold based on your requirements
-  alarm_description   = "Alarm when RDS write IOPS exceeds the threshold"
+  alarm_description   = "Severity-02- CloudWatch Alert : [AWS] [NextGen] on RDS : The read IOPS  for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
@@ -56,7 +168,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_read_iops" {
   period              = 900
   statistic           = "Average"
   threshold           = 1000 # Adjust the threshold based on your requirements
-  alarm_description   = "Alarm when RDS read IOPS exceeds the threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The write IOPS  for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
@@ -74,7 +186,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_network_receive_throughput" {
   period              = 900
   statistic           = "Average"
   threshold           = 1000000 # Adjust the threshold based on your requirements
-  alarm_description   = "Alarm when RDS network receive throughput exceeds the threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The Network receive throughput for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
@@ -93,7 +205,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_network_transmit_throughput" {
   period              = 900
   statistic           = "Average"
   threshold           = 1000000 # Adjust the threshold based on your requirements
-  alarm_description   = "Alarm when RDS network transmit throughput exceeds the threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The Network transmit throughput for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
@@ -111,7 +223,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_freeable_memory" {
   period              = 900
   statistic           = "Average"
   threshold           = 500000000 # Adjust the threshold based on your requirements (in bytes)
-  alarm_description   = "Alarm when RDS free memory is below the threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The Free memory for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn]
   dimensions = {
@@ -129,7 +241,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_free_storage" {
   period              = 900
   statistic           = "Average"
   threshold           = 10000000000 # Adjust the threshold based on your requirements (in bytes)
-  alarm_description   = "Alarm when RDS free disk space is below the threshold"
+  alarm_description   = "Severity-02 - CloudWatch Alert : [AWS] [NextGen] on RDS : The disk space Utilization for ${var.prefix}-default-pgsql is above the threshold for defined threshold"
   actions_enabled     = true
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
@@ -148,7 +260,7 @@ resource "aws_cloudwatch_metric_alarm" "efs_client_connections" {
   period              = "900" # 5 minutes
   statistic           = "Average"
   threshold           = "90" # Set your desired threshold
-  alarm_description   = "Alarm when EFS client connections exceed 10"
+  alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on EFS : The Client connection for ${var.prefix}-efs is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
     FileSystemId = var.efs_id
@@ -163,8 +275,8 @@ resource "aws_cloudwatch_metric_alarm" "efs_total_io_bytes" {
   namespace           = "AWS/EFS"
   period              = "900" # 5 minutes
   statistic           = "Sum"
-  threshold           = "1000000" # Set your desired threshold
-  alarm_description   = "Alarm when EFS total IO bytes exceed 1,000,000"
+  threshold           = "9000000000" # Set your desired threshold
+  alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on EFS : The IO bytes for ${var.prefix}-efs is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
     FileSystemId = var.efs_id
@@ -183,7 +295,7 @@ resource "aws_cloudwatch_metric_alarm" "fsx_storage_capacity" {
   period              = 900
   statistic           = "Average"
   threshold           = 90 # Change threshold percentage as needed
-  alarm_description   = "Alarm when FSx storage capacity exceeds 90%."
+  alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on FSx : The Storage capacity for ${var.prefix}-fsx is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
     FileSystemId = var.fsx_id
@@ -200,12 +312,30 @@ resource "aws_cloudwatch_metric_alarm" "fsx_storage_used" {
   period              = 900
   statistic           = "Average"
   threshold           = 90 # Change threshold percentage as needed
-  alarm_description   = "Alarm when FSx storage used exceeds 90%."
+  alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on FSx : The Storage used for ${var.prefix}-fsx is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
     FileSystemId = var.fsx_id
   }
 }
 
+# ######## CloudWatch Billing Alarm ########
 
+resource "aws_cloudwatch_metric_alarm" "billing_alarm" {
+  alarm_name          = "SAS_NextGen_billing_alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "EstimatedCharges"
+  namespace           = "AWS/Billing"
+  period              = "21600"
+  statistic           = "Maximum"
+  threshold           = var.billing_threshold
+  alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on resource billing : The Billing for the resources is above the threshold for defined threshold"
+  actions_enabled     = true
+  alarm_actions       = [aws_sns_topic.user_updates.arn]
+
+  dimensions = {
+    Currency = "USD"
+  }
+}
 
