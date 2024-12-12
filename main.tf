@@ -15,6 +15,8 @@ provider "aws" {
   secret_key               = var.aws_secret_access_key
   token                    = var.aws_session_token
 
+
+
 }
 
 data "aws_eks_cluster_auth" "cluster" {
@@ -80,14 +82,25 @@ module "vpc" {
   private_subnet_azs            = local.private_subnet_azs
   database_subnet_azs           = local.database_subnet_azs
   control_plane_subnet_azs      = local.control_plane_subnet_azs
+  eni_subnet_azs                = local.eni_subnet_azs
   existing_subnet_ids           = var.subnet_ids
   subnets                       = var.subnets
   existing_nat_id               = var.nat_id
   vpc_private_endpoints_enabled = var.vpc_private_endpoints_enabled
 
-  tags                = local.tags
-  public_subnet_tags  = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
-  private_subnet_tags = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  tags                   = local.tags
+  public_subnet_tags     = merge(local.tags, { "kubernetes.io/role/elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  private_subnet_tags    = merge(local.tags, { "kubernetes.io/role/internal-elb" = "1" }, { "kubernetes.io/cluster/${local.cluster_name}" = "shared" })
+  additional_cidr_ranges = var.additional_cidr_ranges
+  enable_nist_features   = var.enable_nist_features
+  core_network_id        = var.core_network_id
+  core_network_arn       = var.core_network_arn
+  hub_environment        = var.hub_environment
+  hub                    = var.hub
+  vpc_nist_endpoints     = var.vpc_nist_endpoints
+  local_s3_bucket_arn    = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  depends_on             = [module.spoke_logging_bucket]
+
 }
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
@@ -169,31 +182,31 @@ module "eks" {
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
 
-  access_entries = {
-    # access entry with cluster and namespace scoped policies
-    cluster_creator = {
-      kubernetes_groups = ["rbac.authorization.k8s.io"]
-      principal_arn     = data.aws_caller_identity.terraform.arn
-      user_name         = local.aws_caller_identity_user_name
-      type              = "STANDARD"
+  #   access_entries = {
+  #     # access entry with cluster and namespace scoped policies
+  #     cluster_creator = {
+  #       kubernetes_groups = ["rbac.authorization.k8s.io"]
+  #       principal_arn     = data.aws_caller_identity.terraform.arn
+  #       user_name         = local.aws_caller_identity_user_name
+  #       type              = "STANDARD"
 
-      policy_associations = {
-        cluster_creator_assoc = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        },
-        namespace_creator_assoc = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
-          access_scope = {
-            type       = "namespace"
-            namespaces = ["kube-system"]
-          }
-        }
-      },
-    },
-  }
+  #       policy_associations = {
+  #         cluster_creator_assoc = {
+  #           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  #           access_scope = {
+  #             type = "cluster"
+  #           }
+  #         },
+  #         namespace_creator_assoc = {
+  #           policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+  #           access_scope = {
+  #             type       = "namespace"
+  #             namespaces = ["kube-system"]
+  #           }
+  #         }
+  #       },
+  #     },
+  #   }
 
   iam_role_additional_policies = {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
@@ -298,11 +311,11 @@ module "postgresql" {
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
 
-  tags = local.tags
+  tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
-  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 ? true : false
-  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.public_subnets : module.vpc.database_subnets : module.vpc.database_subnets
+  publicly_accessible = length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == false ? true : false
+  subnet_ids          = length(local.postgres_public_access_cidrs) > 0 ? length(module.vpc.public_subnets) > 0 ? module.vpc.database_subnets : module.vpc.database_subnets : module.vpc.database_subnets
 
   # DB parameter group
   family = "postgres${each.value.server_version}"
@@ -324,6 +337,15 @@ module "postgresql" {
   create_db_parameter_group   = true
   create_db_option_group      = true
   manage_master_user_password = false
+  ### NIST enhancements
+  kms_key_id                            = lookup(local.kms_keys, "rds_key", null)
+  performance_insights_enabled          = local.rds_performance_insight
+  performance_insights_retention_period = local.rds_performance_retention_period
+  performance_insights_kms_key_id       = lookup(local.kms_keys, "rds_key", null)
+  copy_tags_to_snapshot                 = local.copy_tags_snapshot
+  monitoring_interval                   = local.rds_monitoring_interval
+  monitoring_role_arn                   = local.rds_enhanced_monitoring
+  enabled_cloudwatch_logs_exports       = ["postgresql", "upgrade"]
 
 }
 # Resource Groups - https://www.terraform.io/docs/providers/aws/r/resourcegroups_group.html
@@ -346,3 +368,105 @@ resource "aws_resourcegroups_group" "aws_rg" {
 JSON
 }
 }
+
+########## Monitoring role for RDS   #########
+
+module "monitoring_role" {
+  source               = "./modules/aws_rds_iam"
+  enable_nist_features = var.enable_nist_features
+}
+
+########## Cloud watch alarms #########
+module "cloudwatch" {
+  depends_on           = [module.postgresql]
+  count                = var.enable_nist_features == true ? 1 : 0
+  source               = "./modules/aws_cloudwatch"
+  prefix               = var.prefix
+  storage_type_backend = var.storage_type_backend
+  efs_id               = local.efs_id
+  fsx_id               = local.fsx_id
+  spoke_account_id     = var.spoke_account_id
+  location             = var.location
+  hub_environment      = var.hub_environment
+
+}
+
+##########Spoke bucket for centralized logging########
+module "spoke_logging_bucket" {
+  count                  = var.enable_nist_features == true && local.bucket_exists == "false" ? 1 : 0
+  source                 = "./modules/aws_s3"
+  central_logging_bucket = var.central_logging_bucket
+  location               = var.location
+  spoke_account_id       = var.spoke_account_id
+  tags                   = local.tags
+  hub_environment        = var.hub_environment
+  logging_account        = var.logging_account
+  depends_on             = [module.resource_checker]
+}
+
+###################################Config Conformance Pack############################
+module "nist_pack" {
+  count                        = var.enable_nist_features == true ? 1 : 0
+  source                       = "./modules/aws_config"
+  conformance_pack_name        = var.conformance_pack_name
+  custom_conformance_pack_name = var.custom_conformance_pack_name
+  hub_environment              = var.hub_environment
+  tags                         = local.tags
+}
+
+###################### IAM Analyser ############################
+module "iam_access_analyzer" {
+  count                  = var.enable_nist_features == true && local.analyzer_exists == "false" ? 1 : 0
+  source                 = "./modules/aws_iam_analyzer"
+  location               = var.location
+  analyzer_type_external = "ACCOUNT"
+  analyzer_type_unused   = "ACCOUNT_UNUSED_ACCESS"
+  tags                   = local.tags
+  depends_on             = [module.resource_checker]
+
+}
+
+######### WAF & WAF LOGGING #########
+module "spoke_waf" {
+  count               = var.enable_nist_features == true && local.waf_exists == "false" ? 1 : 0
+  depends_on          = [module.spoke_logging_bucket, module.resource_checker]
+  source              = "./modules/aws_waf"
+  local_s3_bucket_arn = var.enable_nist_features == false ? null : local.bucket_exists == "false" ? module.spoke_logging_bucket[0].local_s3_bucket_arn : "arn:aws:s3:::aws-waf-logs-infra-${var.spoke_account_id}-${var.location}-bkt"
+  spoke_account_id    = var.spoke_account_id
+  location            = var.location
+  tags                = local.tags
+
+}
+
+# ####Backup#####
+module "spoke_backup" {
+  count                    = var.enable_nist_features == true && local.backup_exists == "false" ? 1 : 0
+  source                   = "./modules/aws_backup"
+  location                 = var.location
+  spoke_account_id         = var.spoke_account_id
+  backup_account_id        = var.backup_account_id
+  org_id                   = var.org_id
+  tags                     = local.tags
+  spoke_backup_rules       = var.spoke_backup_rules
+  central_backup_operator  = var.central_backup_operator
+  central_restore_operator = var.central_restore_operator
+  central_backup_vault_us  = var.central_backup_vault_us
+  central_backup_vault_eu  = var.central_backup_vault_eu
+  hub_environment          = var.hub_environment
+  depends_on               = [module.resource_checker]
+
+}
+
+########## Resource Checker #########
+
+module "resource_checker" {
+  count                 = var.enable_nist_features == true ? 1 : 0
+  source                = "./modules/resource_checker"
+  location              = var.location
+  spoke_account_id      = var.spoke_account_id
+  aws_access_key_id     = var.aws_access_key_id
+  aws_secret_access_key = var.aws_secret_access_key
+  aws_session_token     = var.aws_session_token
+  analyzer_name         = var.analyzer_name
+}
+
