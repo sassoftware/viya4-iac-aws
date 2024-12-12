@@ -730,21 +730,25 @@ variable "additional_cidr_ranges" {
 variable "hub_environment" {
   description = "name of the hub_environment"
   type        = string
+  default     = ""
 }
 
 variable "core_network_id" {
   description = "Cloud WAN: Core network ID from Global networking account"
   type        = string
+  default     = ""
 }
 
 variable "hub" {
   description = "Name of the Hub: for e.g, CustomerSpokeUS or CustomerSpokeEU "
   type        = string
+  default     = ""
 }
 
 variable "core_network_arn" {
   description = "Core network ARN"
   type        = string
+  default     = ""
 }
 
 variable "vpc_nist_endpoints" {
@@ -760,6 +764,7 @@ variable "vpc_nist_endpoints" {
 variable "backup_account_id" {
   type        = string
   description = "Central backup account number for backup and logging"
+  default     = ""
 }
 
 
@@ -799,29 +804,25 @@ variable "custom_conformance_pack_name" {
 variable "central_backup_operator" {
   type        = string
   description = "IAM role for backup module "
-  # default     = "arn:aws:iam::992382826079:role/sascloud-awsng-central-backup-iam-role-dev"
-  default = ""
+  default     = ""
 }
 
 variable "central_restore_operator" {
   type        = string
   description = "IAM role for restoration"
-  # default     = "arn:aws:iam::992382826079:role/sascloud-awsng-central-restore-iam-role-dev"
-  default = ""
+  default     = ""
 }
 
 variable "central_backup_vault_us" {
   type        = string
   description = "Backup vault"
-  # default     = "arn:aws:backup:us-east-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-dev"
-  default = ""
+  default     = ""
 }
 
 variable "central_backup_vault_eu" {
   type        = string
   description = "Backup vault"
-  # default     = "arn:aws:backup:eu-central-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-dev"
-  default = ""
+  default     = ""
 }
 
 variable "spoke_backup_rules" {
@@ -848,11 +849,20 @@ variable "spoke_backup_rules" {
     }))
   }))
   default = [{
-    "name" : "backup_rule",
-    "schedule" : "cron(30 16 ? * * *)"
+    name                = "backup_rule_daily"
+    schedule            = "cron(0 23 ? * 1-5,7 *)"
+    recovery_point_tags = {}
     lifecycle = {
-      delete_after = "21"
+      delete_after = 14
     }
+    },
+    {
+      name                = "backup_rule_weekly"
+      schedule            = "cron(0 23 ? * 6 *)"
+      recovery_point_tags = {}
+      lifecycle = {
+        delete_after = 60
+      }
   }]
 
 }
@@ -868,6 +878,7 @@ variable "org_id" {
 variable "logging_account" {
   description = "Central logging accoutn ID"
   type        = string
+  default     = ""
 }
 
 

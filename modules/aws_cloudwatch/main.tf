@@ -294,11 +294,13 @@ resource "aws_cloudwatch_metric_alarm" "fsx_storage_capacity" {
   namespace           = "AWS/FSx"
   period              = 900
   statistic           = "Average"
-  threshold           = 90 # Change threshold percentage as needed
+  threshold           = 9000000000 # Change threshold percentage as needed
   alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on FSx : The Storage capacity for ${var.prefix}-fsx is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
-  dimensions = {
+   dimensions = {
     FileSystemId = var.fsx_id
+    DataType = "All"
+    StorageTier = "SSD"
   }
 }
 # # # Alarm for storage used
@@ -311,7 +313,7 @@ resource "aws_cloudwatch_metric_alarm" "fsx_storage_used" {
   namespace           = "AWS/FSx"
   period              = 900
   statistic           = "Average"
-  threshold           = 90 # Change threshold percentage as needed
+  threshold           = 9000000000 # Change threshold percentage as needed
   alarm_description   = "Severity-03 - CloudWatch Alert : [AWS] [NextGen] on FSx : The Storage used for ${var.prefix}-fsx is above the threshold for defined threshold"
   alarm_actions       = [aws_sns_topic.user_updates.arn] # Add SNS topic ARN for notifications
   dimensions = {
