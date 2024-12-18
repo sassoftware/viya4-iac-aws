@@ -104,3 +104,19 @@ variable "hub_environment" {
   type        = string
 }
 
+# variable "location_vault_map" {
+#   description = "A map of regions to backup vault ARNs for RDS"
+#   type = map(string)
+#   default = {
+#     "us-east-1"      = "arn:aws:backup:${local.region}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ca-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-southeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-northeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-south-1"     = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-3"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "us-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#   }
+# }
+

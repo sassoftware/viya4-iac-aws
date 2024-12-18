@@ -825,6 +825,62 @@ variable "central_backup_vault_eu" {
   default     = ""
 }
 
+# variable "spoke_backup_rules" {
+#   description = "Backup control rules: Schedule indicates the time frame of backup"
+#   type = list(object({
+#     name                     = string
+#     schedule                 = optional(string)
+#     enable_continuous_backup = optional(bool)
+#     start_window             = optional(number)
+#     completion_window        = optional(number)
+#     recovery_point_tags      = optional(map(string))
+#     lifecycle = optional(object({
+#       cold_storage_after                        = optional(number)
+#       delete_after                              = optional(number)
+#       opt_in_to_archive_for_supported_resources = optional(bool)
+#     }))
+#     copy_action = optional(object({
+#       destination_vault_arn = optional(string)
+#       lifecycle = optional(object({
+#         cold_storage_after                        = optional(number)
+#         delete_after                              = optional(number)
+#         opt_in_to_archive_for_supported_resources = optional(bool)
+#       }))
+#     }))
+#   }))
+#   default = [{
+#     name                = "backup_rule_daily"
+#     schedule            = "cron(0 23 ? * 1-5,7 *)"
+#     recovery_point_tags = {}
+#     lifecycle = {
+#       delete_after = 14
+#     }
+#     },
+#     {
+#       name                = "backup_rule_weekly"
+#       schedule            = "cron(0 23 ? * 6 *)"
+#       recovery_point_tags = {}
+#       lifecycle = {
+#         delete_after = 60
+#       }
+#   }]
+
+# }
+
+
+variable "org_id" {
+  type        = string
+  description = "organization ID required to enable the conformance pack"
+  # default     = "o-03y3m4pkl8"
+  default = ""
+}
+
+variable "logging_account" {
+  description = "Central logging accoutn ID"
+  type        = string
+  default     = ""
+}
+
 variable "spoke_backup_rules" {
   description = "Backup control rules: Schedule indicates the time frame of backup"
   type = list(object({
@@ -849,37 +905,55 @@ variable "spoke_backup_rules" {
     }))
   }))
   default = [{
-    name                = "backup_rule_daily"
-    schedule            = "cron(0 23 ? * 1-5,7 *)"
+    name     = "efs_backup_rule_daily"
+    schedule = "cron(0 23 ? * 1-5,7 *)" 
     recovery_point_tags = {}
     lifecycle = {
       delete_after = 14
     }
-    },
+  },
+  {
+    name     = "efs_backup_rule_weekly"
+    schedule = "cron(0 23 ? * 6 *)"
+    recovery_point_tags = {}
+    lifecycle = {
+      delete_after = 60
+    }
+  },
+  {
+    name     = "rds_backup_rule_daily"
+    schedule = "cron(0 23 ? * 1-5,7 *)"
+    recovery_point_tags = {}
+    lifecycle = {
+      delete_after = 60
+    }
+  },
     {
-      name                = "backup_rule_weekly"
-      schedule            = "cron(0 23 ? * 6 *)"
-      recovery_point_tags = {}
-      lifecycle = {
-        delete_after = 60
-      }
-  }]
-
+    name     = "rds_backup_rule_weekly"
+    schedule = "cron(0 23 ? * 6 *)"
+    recovery_point_tags = {}
+    lifecycle = {
+      delete_after = 60
+    }
+}]
 }
 
-
-variable "org_id" {
-  type        = string
-  description = "organization ID required to enable the conformance pack"
-  # default     = "o-03y3m4pkl8"
-  default = ""
-}
-
-variable "logging_account" {
-  description = "Central logging accoutn ID"
-  type        = string
-  default     = ""
-}
+# variable "location_vault_map" {
+#   description = "A map of regions to backup vault ARNs for RDS"
+#   type = map(string)
+#   default = {
+#     "us-east-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ca-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-southeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-northeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-south-1"     = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-3"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "us-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#   }
+# }
+ 
 
 
 

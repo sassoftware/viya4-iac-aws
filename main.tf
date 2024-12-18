@@ -455,6 +455,7 @@ module "spoke_backup" {
   hub_environment          = var.hub_environment
   depends_on               = [module.resource_checker]
 
+
 }
 
 ########## Resource Checker #########

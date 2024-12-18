@@ -1,3 +1,5 @@
+
+
 resource "aws_backup_vault" "spoke" {
   name        = "sas-awsng-${var.spoke_account_id}-backup-vault"
   kms_key_arn = aws_kms_key.spoke_vault_key.arn
@@ -235,16 +237,181 @@ resource "aws_backup_framework" "backup_compliance_framework" {
   }
 }
 
+# locals {
+#   location_vault_map = {
+#     "us-east-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ca-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-southeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-northeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "ap-south-1"     = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "eu-west-3"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#     "us-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+#   }
+# }
 
+# resource "aws_backup_plan" "spoke" {
+#   name = "sas-awsng-${var.spoke_account_id}-backup-plan"
 
+#   dynamic "rule" {
+#     for_each = var.spoke_backup_rules
+#     content {
+#       rule_name                = rule.value.name
+#       target_vault_name        = aws_backup_vault.spoke.name
+#       schedule                 = rule.value.schedule
+#       start_window             = rule.value.start_window
+#       completion_window        = rule.value.completion_window
+#       recovery_point_tags      = rule.value.recovery_point_tags
+#       enable_continuous_backup = rule.value.enable_continuous_backup
+
+#       dynamic "lifecycle" {
+#         for_each = lookup(rule.value, "lifecycle", null) != null ? [true] : []
+#         content {
+#           cold_storage_after = rule.value.lifecycle.cold_storage_after
+#           delete_after       = rule.value.lifecycle.delete_after
+#         }
+#       }
+
+#       # Copy action for EFS
+#       dynamic "copy_action" {
+#         for_each = contains(["efs_backup_rule_daily", "efs_backup_rule_weekly"], rule.value.name) ? [true] : []
+
+#         content {
+#           destination_vault_arn = var.central_backup_vault_us  # Example for US
+
+#           dynamic "selection_tag" {
+#             for_each = [for t in rule.value.recovery_point_tags : t if t.key == "Backup" && t.value == "efs"]
+
+#             content {
+#               type  = "STRINGEQUALS"
+#               key   = "Backup"
+#               value = "efs"
+#             }
+#           }
+
+#           dynamic "lifecycle" {
+#             for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+#             content {
+#               cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+#               delete_after       = rule.value.copy_action.lifecycle.delete_after
+#             }
+#           }
+#         }
+#       }
+
+#       # Copy action for RDS
+#       dynamic "copy_action" {
+#         for_each = contains(["rds_backup_rule_daily", "rds_backup_rule_weekly"], rule.value.name) ? [true] : []
+
+#         content {
+#           destination_vault_arn = lookup(local.location_vault_map, var.location, null)
+
+#           dynamic "selection_tag" {
+#             for_each = [for t in rule.value.recovery_point_tags : t if t.key == "Backup" && t.value == "rds"]
+
+#             content {
+#               type  = "STRINGEQUALS"
+#               key   = "Backup"
+#               value = "rds"
+#             }
+#           }
+
+#           dynamic "lifecycle" {
+#             for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+#             content {
+#               cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+#               delete_after       = rule.value.copy_action.lifecycle.delete_after
+#             }
+#           }
+#         }
+#       }
+
+#       # Copy action for FSx
+#       dynamic "copy_action" {
+#         for_each = contains(["fsx_backup_rule_daily", "fsx_backup_rule_weekly"], rule.value.name) ? [true] : []
+
+#         content {
+#           destination_vault_arn = var.central_backup_vault_us  # Example for US or a different FSx target
+
+#           dynamic "selection_tag" {
+#             for_each = [for t in rule.value.recovery_point_tags : t if t.key == "Backup" && t.value == "fsx"]
+
+#             content {
+#               type  = "STRINGEQUALS"
+#               key   = "Backup"
+#               value = "fsx"
+#             }
+#           }
+
+#           dynamic "lifecycle" {
+#             for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+#             content {
+#               cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+#               delete_after       = rule.value.copy_action.lifecycle.delete_after
+#             }
+#           }
+#         }
+#       }
+
+#     }
+#   }
+
+#   dynamic "advanced_backup_setting" {
+#     for_each = var.advanced_backup_setting != null ? [true] : []
+#     content {
+#       backup_options = var.advanced_backup_setting.backup_options
+#       resource_type  = var.advanced_backup_setting.resource_type
+#     }
+#   }
+
+#   tags = merge(
+#     var.tags,
+#     {
+#       Name        = "sas-awsng-${var.spoke_account_id}-backup-plan",
+#       PolicyOwner = "NextGen"
+#     }
+#   )
+# }
+
+# resource "aws_backup_selection" "spoke" {
+#   iam_role_arn = aws_iam_role.backup_operator_role.arn
+#   name         = "sas-awsng-${var.spoke_account_id}-backup-selection"
+#   plan_id      = aws_backup_plan.spoke.id
+
+#   dynamic "selection_tag" {
+#     for_each = ["efs", "rds", "fsx"]
+
+#     content {
+#       type  = "STRINGEQUALS"
+#       key   = "Backup"
+#       value = selection_tag.value
+#     }
+#   }
+#}
+
+locals {
+  location_vault_map = {
+    "us-east-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "eu-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "ca-central-1"   = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "eu-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "ap-southeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "ap-northeast-1" = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "ap-south-1"     = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "eu-west-3"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+    "us-west-1"      = "arn:aws:backup:${var.location}:${var.backup_account_id}:backup-vault:sascloud-awsng-central-backup-vault-${var.hub_environment}"
+  }
+}
 
 resource "aws_backup_plan" "spoke" {
-
   name = "sas-awsng-${var.spoke_account_id}-backup-plan"
 
   dynamic "rule" {
     for_each = var.spoke_backup_rules
-
     content {
       rule_name                = rule.value.name
       target_vault_name        = aws_backup_vault.spoke.name
@@ -256,45 +423,78 @@ resource "aws_backup_plan" "spoke" {
 
       dynamic "lifecycle" {
         for_each = lookup(rule.value, "lifecycle", null) != null ? [true] : []
-
         content {
           cold_storage_after = rule.value.lifecycle.cold_storage_after
           delete_after       = rule.value.lifecycle.delete_after
         }
       }
 
-      copy_action {
-        destination_vault_arn = var.central_backup_vault_us
+      # Apply copy action for EFS to US vault
+      dynamic "copy_action" {
+          for_each = contains(["efs_backup_rule_daily", "efs_backup_rule_weekly"], rule.value.name) ? [true] : []
 
-        dynamic "lifecycle" {
-          for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+        content {
+          destination_vault_arn = var.central_backup_vault_us
 
-          content {
-            cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
-            delete_after       = rule.value.copy_action.lifecycle.delete_after
+          dynamic "lifecycle" {
+            for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+            content {
+              cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+              delete_after       = rule.value.copy_action.lifecycle.delete_after
+            }
           }
         }
       }
 
-        copy_action {
-        destination_vault_arn = var.central_backup_vault_eu
- 
-        dynamic "lifecycle" {
-          for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
- 
-          content {
-            cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
-            delete_after       = rule.value.copy_action.lifecycle.delete_after
+      # Apply copy action for EFS to EU vault
+      dynamic "copy_action" {
+          for_each = contains(["efs_backup_rule_daily", "efs_backup_rule_weekly"], rule.value.name) ? [true] : []
+
+        content {
+          destination_vault_arn = var.central_backup_vault_eu
+
+          dynamic "lifecycle" {
+            for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+            content {
+              cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+              delete_after       = rule.value.copy_action.lifecycle.delete_after
+            }
           }
         }
       }
 
+      # Apply region-based copy action for RDS
+      dynamic "copy_action" {
+        for_each = contains(["rds_backup_rule_daily", "rds_backup_rule_weekly"], rule.value.name) ? [true] : []
+
+        content {
+          destination_vault_arn = lookup(local.location_vault_map, var.location, null) 
+
+          dynamic "lifecycle" {
+            for_each = try(lookup(rule.value.copy_action, "lifecycle", null), null) != null ? [true] : []
+
+            content {
+              cold_storage_after = rule.value.copy_action.lifecycle.cold_storage_after
+              delete_after       = rule.value.copy_action.lifecycle.delete_after
+            }
+          }
+        }
+      }
+
+      # # No copy action for FSx
+      # dynamic "copy_action" {
+      #   for_each = contains(rule.value.name, "fsx") ? [] : [true]
+      #   content {
+      #     destination_vault_arn = aws_backup_vault.spoke.arn
+      #   }
+      # }
     }
   }
 
   dynamic "advanced_backup_setting" {
     for_each = var.advanced_backup_setting != null ? [true] : []
-
     content {
       backup_options = var.advanced_backup_setting.backup_options
       resource_type  = var.advanced_backup_setting.resource_type
@@ -311,7 +511,6 @@ resource "aws_backup_plan" "spoke" {
 }
 
 resource "aws_backup_selection" "spoke" {
-
   iam_role_arn = aws_iam_role.backup_operator_role.arn
   name         = "sas-awsng-${var.spoke_account_id}-backup-selection"
   plan_id      = aws_backup_plan.spoke.id
