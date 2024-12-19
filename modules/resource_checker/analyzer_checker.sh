@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 location=$1
-ANALYZER_NAME="sas-awsng-accessanalyzer-ext-$location"
+ANALYZER_NAME="nextgen-accessanalyzer-ext-$location"
 export AWS_ACCESS_KEY_ID=$2
 export AWS_SECRET_ACCESS_KEY=$3
 export AWS_SESSION_TOKEN=$4

@@ -1,13 +1,13 @@
 # AWS IAM Access Analyzer External
 resource "aws_accessanalyzer_analyzer" "aws_access_analyzer_external" {
-  analyzer_name = "sas-awsng-accessanalyzer-ext-${var.location}"
+  analyzer_name = "nextgen-accessanalyzer-ext-${var.location}"
   type          = var.analyzer_type_external
   tags = var.tags
 }
 
 # AWS IAM Access Analyzer Unused
 resource "aws_accessanalyzer_analyzer" "aws_access_analyzer_unused" {
-  analyzer_name = "sas-awsng-accessanalyzer-unused-${var.location}"
+  analyzer_name = "nextgen-accessanalyzer-unused-${var.location}"
   type          = var.analyzer_type_unused
   configuration {
     unused_access {
@@ -19,7 +19,7 @@ resource "aws_accessanalyzer_analyzer" "aws_access_analyzer_unused" {
 
 # IAM Role for Access Analyzer
 resource "aws_iam_role" "access_analyzer_role" {
-  name = "sas-awsng-iam-analyzer-${var.location}-role"
+  name = "nextgen-iam-analyzer-${var.location}-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -35,7 +35,7 @@ resource "aws_iam_role" "access_analyzer_role" {
 
 # IAM Policy for Access Analyzer
 resource "aws_iam_policy" "access_analyzer_policy" {
-  name        = "sas-awsng-iam-analyzer-${var.location}-policy"
+  name        = "nextgen-iam-analyzer-${var.location}-policy"
   description = "IAM policy for Access Analyzer"
 
   policy = jsonencode({
