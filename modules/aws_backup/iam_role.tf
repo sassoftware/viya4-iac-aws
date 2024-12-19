@@ -15,6 +15,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+#### IAM rle for backup ####
 resource "aws_iam_role" "backup_operator_role" {
   name               = "${var.prefix}-${var.location}-${var.hub_environment}-backup-operator-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json

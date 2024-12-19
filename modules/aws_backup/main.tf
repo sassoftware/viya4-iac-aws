@@ -1,5 +1,5 @@
 
-
+### backup valut creation ###
 resource "aws_backup_vault" "spoke" {
   name        = "ng-${var.spoke_account_id}-backup-vault"
   kms_key_arn = aws_kms_key.spoke_vault_key.arn
@@ -20,6 +20,8 @@ resource "aws_backup_vault_lock_configuration" "spoke" {
   depends_on          = [aws_backup_vault.spoke]
 }
 
+
+### Vault policy and controls ###
 resource "aws_backup_vault_policy" "spoke" {
   backup_vault_name = aws_backup_vault.spoke.name
   depends_on        = [aws_backup_vault.spoke, aws_iam_role.restore_operator_role, aws_iam_role.backup_operator_role]
@@ -89,7 +91,7 @@ EOF
 data "aws_caller_identity" "current" {}
 
 
-
+### Backup framework ###
 resource "aws_backup_framework" "backup_compliance_framework" {
   depends_on = [ aws_backup_vault.spoke ]
   name        = "ng_backup_framework"
