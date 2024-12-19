@@ -164,3 +164,56 @@ variable "workers_security_group_id" {
   description = "Workers Security Group ID input variable value"
   type        = string
 }
+
+#### Newly added variables for enchance NIST code ####
+variable "additional_cidr_ranges" {
+  description = "Number of additional CIDR ranges to be attached to VPC"
+  type        = list(string)
+}
+
+variable "enable_nist_features" {
+  description = "Enables NIST complaint code if set to true"
+  type        = bool
+  default     = false
+}
+
+variable "eni_subnet_azs" {
+  description = "A list of availability zones names or ids in the region for creating the eni subnets"
+  type        = list(string)
+  default     = []
+}
+
+variable "hub_environment" {
+  description = "name of the hub_environment"
+  type        = string
+}
+
+variable "core_network_id" {
+  description = "Cloud WAN: Core network ID from Global networking account"
+  type        = string
+}
+
+variable "hub" {
+  description = "Name of the Hub: for e.g, CustomerSpokeUS or CustomerSpokeEU "
+  type        = string
+}
+
+variable "core_network_arn" {
+  description = "Core network ARN"
+  type        = string
+}
+
+variable "vpc_nist_endpoints" {
+  description = "Endpoints needed for private cluster with WAN"
+  type        = map(string)
+  default = {
+    "ssm"         = "Interface",
+    "ssmmessages" = "Interface",
+    "ec2messages" = "Interface"
+  }
+}
+
+variable "local_s3_bucket_arn" {
+  description = "Local Spoke S3 Bucket ARN"
+  type        = string
+}
