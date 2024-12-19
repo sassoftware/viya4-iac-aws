@@ -311,7 +311,7 @@ module "postgresql" {
   # disable backups to create DB faster
   backup_retention_period = each.value.backup_retention_days
 
-  tags = merge(local.tags, { "Backup" = var.enable_nist_features == true ? "Enabled" : null })
+  tags = merge(local.tags, { "RDSBackup" = var.enable_nist_features == true ? "Enabled" : null })
 
   # DB subnet group - use public subnet if public access is requested
   publicly_accessible = length(local.postgres_public_access_cidrs) > 0 && var.enable_nist_features == false ? true : false
@@ -454,6 +454,9 @@ module "spoke_backup" {
   central_backup_vault_eu  = var.central_backup_vault_eu
   hub_environment          = var.hub_environment
   depends_on               = [module.resource_checker]
+  selection_tag = var.selection_tag
+  prefix = var.prefix
+  
 
 
 }

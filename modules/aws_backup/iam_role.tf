@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "backup_operator_role" {
-  name               = "sas-awsng-${var.location}-${var.hub_environment}-backup-operator-role"
+  name               = "${var.prefix}-${var.location}-${var.hub_environment}-backup-operator-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
   tags               = var.tags
 }
@@ -27,7 +27,7 @@ resource "aws_iam_role_policy_attachment" "aws_managed_backup_operator" {
 }
 
 resource "aws_iam_role" "restore_operator_role" {
-  name               = "sas-awsng-${var.location}-${var.hub_environment}-backup-restore-operator-role"
+  name               = "${var.prefix}-${var.location}-${var.hub_environment}-backup-restore-operator-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
   tags               = var.tags
 }
@@ -46,7 +46,7 @@ data "aws_iam_policy_document" "ec2_pass" {
 }
  
 resource "aws_iam_policy" "ec2_pass_policy" {
-  name   = "sascloud-ec2-pass-policy-${var.hub_environment}-${var.location}"
+  name   = "${var.prefix}-ec2-pass-policy-${var.hub_environment}-${var.location}"
   policy = data.aws_iam_policy_document.ec2_pass.json
 }
 

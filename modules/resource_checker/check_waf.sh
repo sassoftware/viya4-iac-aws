@@ -6,7 +6,7 @@ export AWS_ACCESS_KEY_ID=$3
 export AWS_SECRET_ACCESS_KEY=$4
 export AWS_SESSION_TOKEN=$5
 
-WAF_NAME="sas-awsng-${spoke_account_id}-acl"
+WAF_NAME="iac-awsng-${spoke_account_id}-acl"
 RETRY_COUNT=3  # Number of retries
 RETRY_DELAY=3  # Delay in seconds between retries
 # Function to check the existence of WAF

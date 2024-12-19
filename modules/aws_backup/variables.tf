@@ -45,32 +45,32 @@ variable "tags" {
 }
 
 
-variable "spoke_backup_rules" {
-  description = "AWS Spoke Backup Rules data structure"
-  type = list(object({
-    name                     = string
-    schedule                 = optional(string)
-    enable_continuous_backup = optional(bool)
-    start_window             = optional(number)
-    completion_window        = optional(number)
-    recovery_point_tags      = optional(map(string))
-    lifecycle = optional(object({
-      cold_storage_after                        = optional(number)
-      delete_after                              = optional(number)
-      opt_in_to_archive_for_supported_resources = optional(bool)
-    }))
-    copy_action = optional(object({
-      destination_vault_arn = optional(string)
-      lifecycle = optional(object({
-        cold_storage_after                        = optional(number)
-        delete_after                              = optional(number)
-        opt_in_to_archive_for_supported_resources = optional(bool)
-      }))
-    }))
-  }))
+# variable "spoke_backup_rules" {
+#   description = "AWS Spoke Backup Rules data structure"
+#   type = list(object({
+#     name                     = string
+#     schedule                 = optional(string)
+#     enable_continuous_backup = optional(bool)
+#     start_window             = optional(number)
+#     completion_window        = optional(number)
+#     recovery_point_tags      = optional(map(string))
+#     lifecycle = optional(object({
+#       cold_storage_after                        = optional(number)
+#       delete_after                              = optional(number)
+#       opt_in_to_archive_for_supported_resources = optional(bool)
+#     }))
+#     copy_action = optional(object({
+#       destination_vault_arn = optional(string)
+#       lifecycle = optional(object({
+#         cold_storage_after                        = optional(number)
+#         delete_after                              = optional(number)
+#         opt_in_to_archive_for_supported_resources = optional(bool)
+#       }))
+#     }))
+#   }))
 
 
-}
+# }
 
 variable "advanced_backup_setting" {
   description = "AWS backup options"
@@ -120,3 +120,49 @@ variable "hub_environment" {
 #   }
 # }
 
+variable "selection_tag" {
+  type = map(object({
+    name = list(object({
+      type  = string
+      key   = string
+      value = string
+    }))
+  }))
+}
+
+variable "prefix" {
+  description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with a lowercase letter and contain only alphanumeric characters and hyphens or dashes (-), but cannot start or end with '-'."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z][-0-9a-z]*[0-9a-z]$", var.prefix))
+    error_message = "ERROR: Value of 'prefix'\n * must start with lowercase letter\n * can only contain lowercase letters, numbers, hyphens, or dashes (-), but cannot start or end with '-'."
+  }
+}
+
+variable "spoke_backup_rules" {
+  description = "Backup control rules: Schedule indicates the time frame of backup"
+  type = map(object({
+    scope = list(object({
+      name                     = string
+      schedule                 = optional(string)
+      enable_continuous_backup = optional(bool)
+      start_window             = optional(number)
+      completion_window        = optional(number)
+      recovery_point_tags      = optional(map(string))
+      lifecycle = optional(object({
+        cold_storage_after                        = optional(number)
+        delete_after                              = optional(number)
+        opt_in_to_archive_for_supported_resources = optional(bool)
+      }))
+      copy_action = optional(object({
+        destination_vault_arn = optional(string)
+        lifecycle = optional(object({
+          cold_storage_after                        = optional(number)
+          delete_after                              = optional(number)
+          opt_in_to_archive_for_supported_resources = optional(bool)
+        }))
+      }))
+    }))
+  }))
+}

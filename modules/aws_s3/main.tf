@@ -82,7 +82,7 @@ data "aws_iam_policy_document" "assume_role_local" {
   }
 }
 resource "aws_iam_role" "replication_role_local" {
-  name               = "sas-awsng-${var.location}-${var.hub_environment}-replication-role"
+  name               = "replication-role-${var.location}-${var.hub_environment}"
   assume_role_policy = data.aws_iam_policy_document.assume_role_local.json
   tags               = var.tags
 }
@@ -193,7 +193,7 @@ resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
 EOF
 }
 resource "aws_iam_policy" "replication_policy_local" {
-  name   = "sas-awsng-${var.location}-${var.hub_environment}-replication-policy"
+  name   = "replication-policy${var.location}-${var.hub_environment}"
   policy = data.aws_iam_policy_document.replication_json.json
   tags   = var.tags
 }
@@ -215,7 +215,7 @@ resource "aws_s3_bucket_replication_configuration" "replication_local_config" {
       status = "Disabled"
     }
     destination {
-      account = 730335345263
+      account = var.logging_account
       access_control_translation {
         owner = "Destination"
       }
