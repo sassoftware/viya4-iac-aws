@@ -12,7 +12,7 @@ resource "aws_wafv2_web_acl" "waf" {
     sampled_requests_enabled   = true
   }
   rule {
-    name     = "iac-awsng-BotControlRule"
+    name     = "nextgen-awsng-BotControlRule"
     priority = 1
     statement {
       managed_rule_group_statement {
@@ -31,7 +31,7 @@ resource "aws_wafv2_web_acl" "waf" {
     }
   }
   rule {
-    name     = "iac-awsng-GeoRestrictionRule"
+    name     = "nextgen-awsng-GeoRestrictionRule"
     priority = 2
     action {
       block {}
@@ -48,7 +48,7 @@ resource "aws_wafv2_web_acl" "waf" {
     }
   }
   rule {
-    name     = "iac-awsng-CoreRule"
+    name     = "nextgen-awsng-CoreRule"
     priority = 3
     statement {
       managed_rule_group_statement {
@@ -68,7 +68,7 @@ resource "aws_wafv2_web_acl" "waf" {
 
   # # AWS Managed IP Reputation List
   rule {
-    name     = "iac-awsng-IpReputationList"
+    name     = "nextgen-awsng-IpReputationList"
     priority = 4
     statement {
       managed_rule_group_statement {
@@ -88,7 +88,7 @@ resource "aws_wafv2_web_acl" "waf" {
 
   # Known Bad Inputs
   rule {
-    name     = "iac-awsng-Bad-Inputs-Rule"
+    name     = "nextgen-awsng-Bad-Inputs-Rule"
     priority = 5
     statement {
       managed_rule_group_statement {
@@ -107,7 +107,7 @@ resource "aws_wafv2_web_acl" "waf" {
   }
   tags = merge(
     {
-      "Name" = format("%s", "iac-awsng-${var.spoke_account_id}-acl")
+      "Name" = format("%s", "nextgen-awsng-${var.spoke_account_id}-acl")
     },
     var.tags
   )
