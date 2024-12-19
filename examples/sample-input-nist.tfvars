@@ -14,26 +14,26 @@ location = "us-east-1" # e.g., "us-east-1"
 #***************** CIDR Range for Spoke VPC **************
 
 vpc_cidr     = "10.80.16.0/22"
-hub          = "CustomerSpokeUS"
-hub_environment = "prod"  #  dev or prod
+hub          = "<hub_value>"
+hub_environment = "<environment>"  #  dev or prod
 
 
- org_id = "o-03y3m4pkl8"
- central_restore_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-restore-iam-role-prod"
- central_backup_operator = "arn:aws:iam::992382826079:role/sascloud-awsng-central-backup-iam-role-prod"
- central_backup_vault_us = "arn:aws:backup:us-east-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
- central_backup_vault_eu = "arn:aws:backup:eu-central-1:992382826079:backup-vault:sascloud-awsng-central-backup-vault-prod"
- central_logging_bucket =  "arn:aws:s3:::sascloud-awsng-centralized-prod-logging-bkt"  
- core_network_id = "core-network-0f5411afa03340169"
- core_network_arn = "arn:aws:networkmanager::396608809900:core-network/core-network-0f5411afa03340169"
+ org_id = "<org_id>"
+ central_restore_operator = "arn:aws:iam::<account_id>:role/<role_name>"
+ central_backup_operator = "arn:aws:iam::<account_id>:role/<role_name>"
+ central_backup_vault_us = "arn:aws:iam::<account_id>:role/<role_name>"
+ central_backup_vault_eu = "arn:aws:iam::<account_id>:role/<role_name>"
+ central_logging_bucket =  "<bucket_arn>"  
+ core_network_id = "<core_network_id>"
+ core_network_arn = "<core_network_arn>"
 
 
 
 
 # ********* Set to true to enable NIST complaint code ***********
 enable_nist_features = true
-backup_account_id = "992382826079"
-logging_account = "730335345263"
+backup_account_id = "<backuo_account_id>"
+logging_account = "<logging_account_id>"
 
 #***************** Additional CIDR ranges for Spoke VPC *************
 
