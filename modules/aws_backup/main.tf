@@ -6,7 +6,7 @@ resource "aws_backup_vault" "spoke" {
   tags = merge(
     var.tags,
     {
-      Name = "sas-awsng-${var.spoke_account_id}-backup-vault"
+      Name = "ng-${var.spoke_account_id}-backup-vault"
     }
   )
 

@@ -39,7 +39,7 @@ data "external" "vault_checker_tool" {
     "access_key"       = var.aws_access_key_id
     "secret_key"       = var.aws_secret_access_key
     "token"            = var.aws_session_token
-    "VAULT_NAME"       = "sas-awsng-${var.spoke_account_id}-backup-vault"
+    "VAULT_NAME"       = "ng-${var.spoke_account_id}-backup-vault"
   }
 }
 
