@@ -46,6 +46,8 @@ locals {
   private_subnet_azs       = can(var.subnet_azs["private"]) ? var.subnet_azs["private"] : data.aws_availability_zones.available.names
   database_subnet_azs      = can(var.subnet_azs["database"]) ? var.subnet_azs["database"] : data.aws_availability_zones.available.names
   control_plane_subnet_azs = can(var.subnet_azs["control_plane"]) ? var.subnet_azs["control_plane"] : data.aws_availability_zones.available.names
+  # ENI subnets as per AWS NG architecture
+  eni_subnet_azs = can(var.subnet_azs["eni"]) ? var.subnet_azs["eni"] : data.aws_availability_zones.available.names
 
   ssh_public_key = (var.create_jump_vm || var.storage_type == "standard"
     ? file(var.ssh_public_key)
@@ -179,5 +181,43 @@ locals {
       "internal" : false
     }
   } : {}
+
+  ####### Create and associate KMS keys only if NIST code is enabled ######
+  key_names = {
+    "rds_key" = "${var.prefix}-rds-key"
+    "fsx_key" = "${var.prefix}-fsx-key"
+    "efs_key" = "${var.prefix}-efs-key"
+    "ebs_key" = "${var.prefix}-ebs-key"
+  }
+
+  kms_keys = {
+    for key in keys(local.key_names) :
+    key => aws_kms_key.cmk[key].arn
+    if contains(keys(aws_kms_key.cmk), key)
+  }
+
+  ####### Fetching EFS and FSx id for alarm creation ######
+
+  fsx_id = var.storage_type_backend == "ontap" ? aws_fsx_ontap_file_system.ontap-fs[0].id : null
+  efs_id = var.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].id : null
+
+  ####### Postgres NIST enhancements ######
+
+  copy_tags_snapshot               = var.enable_nist_features == true ? true : false
+  rds_enhanced_monitoring          = var.enable_nist_features == true ? module.monitoring_role.rds_monitoring_role : null
+  rds_storage_encryption           = var.enable_nist_features == true ? true : false
+  rds_monitoring_interval          = var.enable_nist_features == true ? 30 : 0
+  rds_performance_insight          = var.enable_nist_features == true ? true : false
+  rds_performance_retention_period = var.enable_nist_features == true ? 7 : 0
+
+  ###nist-resource-chcker
+  bucket_exists   = try(module.resource_checker[0].bucket_external["exists"], "false")
+  waf_exists      = try(module.resource_checker[0].waf_external["exists"], "false")
+  waf_arn         = try(module.resource_checker[0].waf_external["arn"], "")
+  backup_exists   = try(module.resource_checker[0].backup_external["exists"], "false")
+  backup_arn      = try(module.resource_checker[0].backup_external["arn"], "")
+  analyzer_exists = try(module.resource_checker[0].analyzer_external["exists"], "false")
+  analyzer_arn    = try(module.resource_checker[0].analyzer_external["arn"], "")
+
 
 }

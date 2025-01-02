@@ -42,9 +42,19 @@ resource "aws_vpc" "vpc" {
   tags = merge(
     {
       "Name" = format("%s", "${var.name}-vpc")
+      "type" = var.enable_nist_features == true ? "awsng-spoke-vpc" : null
     },
     var.tags,
   )
+}
+
+######
+# Additional CIDR association
+######
+resource "aws_vpc_ipv4_cidr_block_association" "additional_cidr" {
+  count      = var.enable_nist_features == true ? 4 : 0
+  vpc_id     = aws_vpc.vpc[0].id
+  cidr_block = element(var.additional_cidr_ranges, count.index)
 }
 
 resource "aws_vpc_endpoint" "private_endpoints" {
@@ -60,6 +70,29 @@ resource "aws_vpc_endpoint" "private_endpoints" {
       "Name" = format("%s", "${var.name}-private-endpoint-${each.key}")
     },
     var.tags,
+  )
+
+  subnet_ids = each.value == "Interface" ? [
+    for subnet in local.private_subnets : subnet.id
+  ] : null
+}
+
+######
+### Additional private endpoints required for HUB integration 
+######
+resource "aws_vpc_endpoint" "nist_endpoints" {
+  for_each            = var.enable_nist_features == true ? var.vpc_nist_endpoints : {}
+  vpc_id              = local.vpc_id
+  service_name        = "com.amazonaws.${var.region}.${each.key}"
+  vpc_endpoint_type   = each.value
+  security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
+  private_dns_enabled = each.value == "Interface" ? true : null
+
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-private-endpoint-${each.key}")
+    },
+    var.tags
   )
 
   subnet_ids = each.value == "Interface" ? [
@@ -96,6 +129,7 @@ resource "aws_subnet" "public" {
   availability_zone       = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
   availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
   map_public_ip_on_launch = var.map_public_ip_on_launch
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
 
   tags = merge(
     {
@@ -196,14 +230,15 @@ resource "aws_subnet" "private" {
   cidr_block           = element(var.subnets["private"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
         element(var.private_subnet_azs, count.index),
-      )
+      ),
+      "nlb"  = "yes"
     },
     var.tags,
     var.private_subnet_tags,
@@ -225,7 +260,8 @@ resource "aws_route_table" "private" {
         "%s-${var.private_subnet_suffix}-%s",
         var.name,
         element(var.private_subnet_azs, count.index),
-      )
+      ),
+      "type" = var.enable_nist_features == true ? "awsng-spoke-private-rt" : null
     },
     var.tags,
   )
@@ -240,7 +276,7 @@ resource "aws_subnet" "database" {
   cidr_block           = element(var.subnets["database"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
@@ -259,7 +295,7 @@ resource "aws_db_subnet_group" "database" {
   name        = lower(var.name)
   description = "Database subnet group for ${var.name}"
   subnet_ids  = aws_subnet.database[*].id
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format("%s", var.name)
@@ -277,7 +313,7 @@ resource "aws_subnet" "control_plane" {
   cidr_block           = element(var.subnets["control_plane"], count.index)
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) > 0 ? element(var.control_plane_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) == 0 ? element(var.control_plane_subnet_azs, count.index) : null
-
+  depends_on              = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
   tags = merge(
     {
       "Name" = format(
@@ -291,7 +327,7 @@ resource "aws_subnet" "control_plane" {
 }
 
 resource "aws_eip" "nat" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : 0
 
   domain = "vpc"
 
@@ -313,7 +349,7 @@ data "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : 0
 
   allocation_id = element(aws_eip.nat[*].id, 0)
   subnet_id     = local.existing_public_subnets ? element(data.aws_subnet.public[*].id, 0) : element(aws_subnet.public[*].id, 0)
@@ -333,7 +369,7 @@ resource "aws_nat_gateway" "nat_gateway" {
 }
 
 resource "aws_route" "private_nat_gateway" {
-  count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
+  count = var.existing_nat_id == null ? local.create_nat_gateway ? var.enable_nist_features == false ? 1 : 0 : 0 : null
 
   route_table_id         = element(aws_route_table.private[*].id, count.index)
   destination_cidr_block = "0.0.0.0/0"
@@ -342,4 +378,115 @@ resource "aws_route" "private_nat_gateway" {
   timeouts {
     create = "5m"
   }
+}
+
+#################
+# ENI subnets creation as per AWS NG architecture
+#################
+resource "aws_subnet" "eni" {
+  count      = var.enable_nist_features == true ? 2 : 0
+  vpc_id     = local.vpc_id
+  cidr_block = element(var.subnets["eni"], count.index)
+  #availability_zone       = element(var.availability_zones, count.index)
+  availability_zone    = length(regexall("^[a-z]{2}-", element(var.eni_subnet_azs, count.index))) > 0 ? element(var.eni_subnet_azs, count.index) : null
+  availability_zone_id = length(regexall("^[a-z]{2}-", element(var.eni_subnet_azs, count.index))) == 0 ? element(var.eni_subnet_azs, count.index) : null
+  depends_on           = [aws_vpc.vpc, aws_vpc_ipv4_cidr_block_association.additional_cidr]
+  tags = merge(
+    {
+      "Name" = format("%s", "${var.name}-eni-${count.index}"),
+      "type" = var.enable_nist_features == true ? "awsng-spoke-eni" : null
+    },
+    var.tags
+  )
+}
+
+#################
+# ENI subnets association with private route table #####
+#################
+resource "aws_route_table_association" "eni" {
+  count = var.enable_nist_features == true ? length(aws_subnet.eni) : 0
+  subnet_id      = element(aws_subnet.eni[*].id, count.index)
+  route_table_id = element(aws_route_table.private[*].id, 0)
+}
+
+#################
+# VPC attachment for HUB integration #####
+#################
+resource "aws_networkmanager_vpc_attachment" "vpc_attach" {
+  count           = var.enable_nist_features == true ? 1 : 0
+  subnet_arns     = aws_subnet.eni[*].arn
+  core_network_id = var.core_network_id
+  vpc_arn         = aws_vpc.vpc[0].arn
+  tags = {
+    segment = var.hub
+    Name    = "${var.name}-${var.hub_environment}"
+  }
+}
+
+#################
+# Route to Core network device from Private route table #####
+#################
+resource "aws_route" "private_core_network" {
+  count                  = var.enable_nist_features == true ? 1 : 0
+  route_table_id         = aws_route_table.private[0].id
+  destination_cidr_block = "0.0.0.0/0"
+  core_network_arn       = var.core_network_arn
+  depends_on             = [aws_networkmanager_vpc_attachment.vpc_attach]
+
+  timeouts {
+    create = "5m"
+  }
+}
+
+#################
+# Resolver config 
+#################
+
+resource "aws_route53_resolver_dnssec_config" "config" {
+  count       = var.enable_nist_features == true ? 1 : 0
+  resource_id = aws_vpc.vpc[0].id
+}
+
+#################
+# Fetching the resolver Rules 
+#################
+data "aws_route53_resolver_rule" "rule" {
+  count = var.enable_nist_features == true ? 1 : 0
+  name = "${var.hub}-sasng-${var.hub_environment}-r53-resolver-rule"
+}
+
+#################
+# Associating the resolver rules to VPC 
+#################
+resource "aws_route53_resolver_rule_association" "rule" {
+  count            = var.enable_nist_features == true ? 1 : 0
+  resolver_rule_id = data.aws_route53_resolver_rule.rule[0].id
+  vpc_id = aws_vpc.vpc[0].id
+}
+
+#################
+# Enabling VPC flow logs
+#################
+resource "aws_flow_log" "flow_logs" {
+  count                = var.enable_nist_features == true ? 1 : 0
+  vpc_id               = aws_vpc.vpc[0].id
+  log_destination      = "${var.local_s3_bucket_arn}/vpc-flow"
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+}
+
+#################
+# Enabling DNS query logging
+#################
+resource "aws_route53_resolver_query_log_config" "log_create" {
+  count           = var.enable_nist_features == true ? 1 : 0
+  name            = "sas-awsng-${var.hub_environment}-query-logging-${var.region}"
+  destination_arn = "${var.local_s3_bucket_arn}/dns-query"
+}
+
+#### To be enabled per VPC
+resource "aws_route53_resolver_query_log_config_association" "log_association" {
+  count                        = var.enable_nist_features == true ? 1 : 0
+  resolver_query_log_config_id = aws_route53_resolver_query_log_config.log_create[0].id
+  resource_id                  = local.vpc_id
 }

@@ -118,3 +118,8 @@ variable "enable_nist_features" {
   type        = bool
   default     = false
 }
+
+variable "ebs_cmk_key" {
+  description = "KMS key for ebs encryption"
+  type        = string
+}

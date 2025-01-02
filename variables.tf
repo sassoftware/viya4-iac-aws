@@ -387,8 +387,8 @@ variable "subnet_azs" {
 
   # We only support configuring the AZs for the public, private, control_plane, and database subnet
   validation {
-    condition     = var.subnet_azs == {} || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "control_plane", "database"], subnet)])
-    error_message = "ERROR: public, private, control_plane, and database are the only keys allowed in the subnet_azs map"
+    condition     = var.subnet_azs == {} || alltrue([for subnet in keys(var.subnet_azs) : contains(["public", "private", "control_plane", "database", "eni"], subnet)])
+    error_message = "ERROR: public, private, control_plane, database, and eni are the only keys allowed in the subnet_azs map"
   }
 }
 variable "security_group_id" {
@@ -719,3 +719,220 @@ variable "enable_nist_features" {
   type        = bool
   default     = false
 }
+
+#### Network changes made for AWS NG architecture ####
+variable "additional_cidr_ranges" {
+  description = "Additionl cidr ranges to be associated with VPC"
+  type        = list(string)
+  default     = null
+}
+
+variable "hub_environment" {
+  description = "name of the hub_environment"
+  type        = string
+  default     = ""
+}
+
+variable "core_network_id" {
+  description = "Cloud WAN: Core network ID from Global networking account"
+  type        = string
+  default     = ""
+}
+
+variable "hub" {
+  description = "Name of the Hub: for e.g, CustomerSpokeUS or CustomerSpokeEU "
+  type        = string
+  default     = ""
+}
+
+variable "core_network_arn" {
+  description = "Core network ARN"
+  type        = string
+  default     = ""
+}
+
+variable "vpc_nist_endpoints" {
+  description = "Endpoints needed for private cluster with WAN"
+  type        = map(string)
+  default = {
+    "ssm"         = "Interface",
+    "ssmmessages" = "Interface",
+    "ec2messages" = "Interface"
+  }
+}
+
+variable "backup_account_id" {
+  type        = string
+  description = "Central backup account number for backup and logging"
+  default     = ""
+}
+
+
+### Logging and backup module varaibles ####
+
+variable "spoke_account_id" {
+  description = "spoke account id for s3 deployment"
+  type        = string
+  default     = ""
+}
+
+variable "analyzer_name" {
+  type    = string
+  default = ""
+}
+
+variable "central_logging_bucket" {
+  type        = string
+  description = "Centralized logging bucket"
+  default     = ""
+}
+
+variable "conformance_pack_name" {
+  type        = string
+  description = "name for aws config"
+  default     = "Operational-Best-Practices-for-NIST-800-53-rev-5"
+  # default = ""
+}
+variable "custom_conformance_pack_name" {
+  type        = string
+  description = "name for aws config"
+  default     = "SAS-Custom-Conformance-Pack"
+}
+
+
+
+variable "central_backup_operator" {
+  type        = string
+  description = "IAM role for backup module "
+  default     = ""
+}
+
+variable "central_restore_operator" {
+  type        = string
+  description = "IAM role for restoration"
+  default     = ""
+}
+
+variable "central_backup_vault_us" {
+  type        = string
+  description = "Backup vault"
+  default     = ""
+}
+
+variable "central_backup_vault_eu" {
+  type        = string
+  description = "Backup vault"
+  default     = ""
+}
+
+
+variable "org_id" {
+  type        = string
+  description = "organization ID required to enable the conformance pack"
+  # default     = "o-03y3m4pkl8"
+  default = ""
+}
+
+variable "logging_account" {
+  description = "Central logging accoutn ID"
+  type        = string
+  default     = ""
+}
+
+
+
+
+variable "selection_tag" {
+  type = map(object({
+    name = list(object({
+      type  = string
+      key   = string
+      value = string
+    }))
+  }))
+  default = {
+    spoke = {
+      name = [{
+        type  = "STRINGEQUALS"
+        key   = "Backup"
+        value = "Enabled"
+      }]
+    }
+    rds = {
+      name = [{
+        type  = "STRINGEQUALS"
+        key   = "RDSBackup"
+        value = "Enabled"
+      }]
+  } }
+}
+
+variable "spoke_backup_rules" {
+  description = "Backup control rules: Schedule indicates the time frame of backup"
+  type = map(object({
+    scope = list(object({
+      name                     = string
+      schedule                 = optional(string)
+      enable_continuous_backup = optional(bool)
+      start_window             = optional(number)
+      completion_window        = optional(number)
+      recovery_point_tags      = optional(map(string))
+      lifecycle = optional(object({
+        cold_storage_after                        = optional(number)
+        delete_after                              = optional(number)
+        opt_in_to_archive_for_supported_resources = optional(bool)
+      }))
+      copy_action = optional(object({
+        destination_vault_arn = optional(string)
+        lifecycle = optional(object({
+          cold_storage_after                        = optional(number)
+          delete_after                              = optional(number)
+          opt_in_to_archive_for_supported_resources = optional(bool)
+        }))
+      }))
+    }))
+  }))
+  default = {
+    spoke = {
+      scope = [{
+        name                = "backup_rule_daily"
+        schedule            = "cron(0 23 ? * 1-5,7 *)"
+        recovery_point_tags = {}
+        lifecycle = {
+          delete_after = 14
+        }
+        },
+        {
+          name                = "backup_rule_weekly"
+          schedule            = "cron(0 23 ? * 6 *)"
+          recovery_point_tags = {}
+          lifecycle = {
+            delete_after = 60
+          }
+        }
+      ]
+    }
+    rds = {
+      scope = [{
+        name                = "backup_rule_daily"
+        schedule            = "cron(0 23 ? * 1-5,7 *)"
+        recovery_point_tags = {}
+        lifecycle = {
+          delete_after = 14
+        }
+        },
+        {
+          name                = "backup_rule_weekly"
+          schedule            = "cron(0 23 ? * 6 *)"
+          recovery_point_tags = {}
+          lifecycle = {
+            delete_after = 60
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+
