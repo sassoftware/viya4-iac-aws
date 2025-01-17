@@ -149,7 +149,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.29"
+  default     = "1.30"
 }
 
 variable "tags" {
