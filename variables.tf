@@ -719,3 +719,20 @@ variable "enable_nist_features" {
   type        = bool
   default     = false
 }
+
+variable "authentication_mode" {
+  description = "The authentication mode for the EKS cluster. Supported values are 'API_AND_CONFIG_MAP' and 'API'."
+  type        = string
+  default     = "API_AND_CONFIG_MAP"
+
+  validation {
+    condition     = contains(["API_AND_CONFIG_MAP", "API"], var.authentication_mode)
+    error_message = "ERROR: Supported values for `authentication_mode` are API_AND_CONFIG_MAP and API."
+  }
+}
+
+variable "access_entry_role_arns" {
+  description = "List of IAM role ARNs to create EKS access_entries for."
+  type        = list(string)
+  default     = null
+}

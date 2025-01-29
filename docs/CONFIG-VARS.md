@@ -266,6 +266,8 @@ Custom policy:
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
+| authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
+| access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each existing IAM role ARN specified in this list. | list of strings | | **Note:** The assumed-role used to authenticate to Terraform should not be included this list. The format role ARNs take is: "arn:aws:iam::<Subscription_ID>:role/<rolename>"|
 
 ## Node Pools
 
