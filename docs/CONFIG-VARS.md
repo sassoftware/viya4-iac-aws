@@ -187,7 +187,7 @@ By default, two custom IAM policies and two custom IAM roles (with instance prof
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| cluster_iam_role_arn | ARN of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
+| cluster_iam_role_arn | Amazon Resource Name (ARN) of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
 | workers_iam_role_arn | ARN of the pre-existing IAM role for the cluster node VMs | string | null | If an existing EKS node IAM role is being used, the IAM role's 'ARN' is required. |
 
 The cluster IAM role must include three AWS-managed policies and one custom policy.
@@ -267,7 +267,7 @@ Custom policy:
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
-| access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each existing IAM role ARN specified in this list. | list of strings | | **Note:** The assumed-role used to authenticate to Terraform should not be included this list. The format role ARNs take is: "arn:aws:iam::<Subscription_ID>:role/<rolename>"|
+| access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Subscription_ID>:role/<rolename>"|
 
 ## Node Pools
 
