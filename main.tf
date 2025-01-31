@@ -189,7 +189,7 @@ module "eks" {
 }
 
 resource "aws_eks_access_entry" "instance" {
-  for_each = toset(coalesce(var.access_entry_role_arns, []))
+  for_each = toset(coalesce(var.admin_access_entry_role_arns, []))
 
   cluster_name      = module.eks.cluster_name
   principal_arn     = each.value

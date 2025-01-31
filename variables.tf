@@ -731,8 +731,8 @@ variable "authentication_mode" {
   }
 }
 
-variable "access_entry_role_arns" {
-  description = "List of IAM role ARNs to create EKS access_entries for."
+variable "admin_access_entry_role_arns" {
+  description = "List of IAM role ARNs to create admin EKS access_entries for."
   type        = list(string)
   default     = null
 }

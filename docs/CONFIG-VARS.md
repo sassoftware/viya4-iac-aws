@@ -267,7 +267,7 @@ Custom policy:
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
-| access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Subscription_ID>:role/<rolename>"|
+| admin_access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Account_ID>:role/<rolename>"|
 
 ## Node Pools
 
