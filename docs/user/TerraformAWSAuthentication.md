@@ -35,7 +35,7 @@ TF_VAR_aws_session_token=<your_aws_session_token>
 
 > **NOTE** `AWS_SESSION_TOKEN` is optional and is only required when you are using temporary AWS credentials. For example, you might generate temporary AWS credentials when assuming an IAM role.  See the [AWS documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) on environment variables for more information.
 
-See [AWS IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) for more information about temporary credentials when using an assumed role. In order for an IAM user to be able to assume a role, a trust relationship for that user must be created within the role, For more information, see [granting AssumeRole permission for a role](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_permissions-to-switch.html) for more information.
+See [AWS IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) for more information about temporary credentials when using an assumed role. In order for an IAM user to be able to assume a role, a trust relationship for that user must be created within the role. For more information, see [granting AssumeRole permission for a role](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_permissions-to-switch.html) for more information.
 
 ## Using AWS Profile with Credentials File
 
