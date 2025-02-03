@@ -13,8 +13,14 @@ variable "tags" {
   default     = null
 }
 
-variable "iam_user_name" {
-  description = "AWS caller identity user name parsed from the ARN value"
+variable "iam_name" {
+  description = "AWS caller identity name parsed from the ARN value"
   type        = string
   default     = ""
+}
+
+variable "is_user" {
+  description = "Boolean value to determine if the caller identity is a user"
+  type        = bool
+  default     = false
 }

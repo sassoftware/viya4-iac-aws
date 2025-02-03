@@ -233,7 +233,8 @@ module "ontap" {
 
   prefix        = var.prefix
   tags          = local.tags
-  iam_user_name = local.aws_caller_identity_user_name
+  iam_name      = local.aws_caller_identity_name
+  is_user       = local.caller_is_user
 }
 
 module "kubeconfig" {
