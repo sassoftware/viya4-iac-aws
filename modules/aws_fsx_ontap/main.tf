@@ -82,6 +82,7 @@ resource "aws_iam_user_policy_attachment" "attachment" {
 }
 
 resource "aws_iam_role_policy_attachment" "attachment" {
+  # tflint-ignore: aws_iam_role_policy_attachment_invalid_role 
   count = var.is_user ? 0 : 1
 
   role       = var.iam_name
