@@ -3,10 +3,13 @@
 
 locals {
 
-  # AWS caller identity name derived from ARN value
+  # AWS caller user name derived from ARN value
   aws_caller_identity_name = element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 1)
 
   caller_is_user = strcontains(data.aws_caller_identity.terraform.arn, ":user")
+
+  # AWS caller role name derived from ARN value
+  aws_caller_role_name = local.caller_is_user ? "" : element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 2) 
 
   # General
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
