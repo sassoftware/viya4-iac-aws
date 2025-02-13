@@ -177,8 +177,8 @@ variable "default_nodepool_os_disk_type" {
   default     = "gp2"
 
   validation {
-    condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
-    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, io1."
+    condition     = contains(["gp3", "gp2", "io1"], lower(var.default_nodepool_os_disk_type))
+    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp3, gp2, or io1."
   }
 }
 
