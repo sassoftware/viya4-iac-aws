@@ -23,6 +23,10 @@ output "public_subnet_cidrs" {
   value       = local.existing_public_subnets ? data.aws_subnet.public[*].cidr_block : aws_subnet.public[*].cidr_block
 }
 
+output "public_subnet_ipv6_cidrs" {
+  description = "IPv6 CIDR blocks of public subnets"
+  value       = local.existing_public_subnets ? data.aws_subnet.public[*].ipv6_cidr_block : aws_subnet.public[*].ipv6_cidr_block
+}
 
 output "private_subnets" {
   description = "List of IDs of private subnets"
@@ -39,6 +43,10 @@ output "private_subnet_cidrs" {
   value       = local.existing_private_subnets ? data.aws_subnet.private[*].cidr_block : aws_subnet.private[*].cidr_block
 }
 
+output "private_subnet_ipv6_cidrs" {
+  description = "IPv6 CIDR blocks of private subnets"
+  value       = local.existing_private_subnets ? data.aws_subnet.private[*].ipv6_cidr_block : aws_subnet.private[*].ipv6_cidr_block
+}
 
 output "database_subnets" {
   description = "List of IDs of database subnets"
@@ -68,6 +76,11 @@ output "private_route_table_ids" {
 output "vpc_cidr" {
   description = "CIDR block of VPC"
   value       = var.vpc_id == null ? var.cidr : data.aws_vpc.vpc[0].cidr_block
+}
+
+output "vpc_ipv6_cidr" {
+  description = "IPv6 CIDR block of VPC"
+  value       = var.vpc_id == null ? null : data.aws_vpc.vpc[0].ipv6_cidr_block
 }
 
 output "byon_scenario" {

@@ -42,6 +42,12 @@ variable "cidr" {
   description = "The CIDR block for the VPC"
 }
 
+variable "enable_ipv6" {
+  description = "Enable IPv6"
+  type        = bool
+  default     = false
+}
+
 variable "subnets" {
   type        = map(any)
   description = "Map of list of subnet cidr_blocks"

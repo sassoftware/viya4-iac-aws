@@ -379,6 +379,12 @@ variable "subnets" {
   }
 }
 
+variable "enable_ipv6" {
+  description = "Enable IPv6 on subnets, VPC, and EKS"
+  type        = bool
+  default     = false
+}
+
 variable "subnet_azs" {
   description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))

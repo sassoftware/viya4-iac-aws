@@ -76,6 +76,7 @@ module "vpc" {
   cluster_security_group_id     = var.cluster_security_group_id
   workers_security_group_id     = var.workers_security_group_id
   cidr                          = var.vpc_cidr
+  enable_ipv6                   = var.enable_ipv6
   public_subnet_azs             = local.public_subnet_azs
   private_subnet_azs            = local.private_subnet_azs
   database_subnet_azs           = local.database_subnet_azs
@@ -101,6 +102,7 @@ module "eks" {
   cluster_endpoint_private_access      = true
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
+  cluster_ip_family                    = var.enable_ipv6 ? "ipv6" : "ipv4"
 
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
   control_plane_subnet_ids = module.vpc.control_plane_subnets
@@ -173,6 +175,8 @@ module "eks" {
   iam_role_additional_policies = {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
+
+  create_cni_ipv6_iam_policy = var.enable_ipv6
 
   ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {

@@ -23,7 +23,7 @@ resource "aws_security_group" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
-resource "aws_vpc_security_group_egress_rule" "sg" {
+resource "aws_vpc_security_group_egress_rule" "sg_ipv4" {
 
   security_group_id = local.security_group_id
 
@@ -31,7 +31,18 @@ resource "aws_vpc_security_group_egress_rule" "sg" {
   ip_protocol = "-1"
   cidr_ipv4   = "0.0.0.0/0"
 
-  tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv4" })
+}
+
+resource "aws_vpc_security_group_egress_rule" "sg_ipv6" {
+
+  security_group_id = local.security_group_id
+
+  description = "Allow all outbound traffic."
+  ip_protocol = "-1"
+  cidr_ipv6   = "::/0"
+
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv6" })
 }
 
 # Only create this/these ingress rule(s) if we are using VPC Endpoints
@@ -112,13 +123,23 @@ resource "aws_security_group" "cluster_security_group" {
 
 }
 
-resource "aws_vpc_security_group_egress_rule" "cluster_security_group" {
+resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv4" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
 
   description       = "Allow all outbound traffic."
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = local.cluster_security_group_id
+}
+
+resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6" {
+
+  count = var.cluster_security_group_id == null ? 1 : 0
+
+  description       = "Allow all outbound traffic."
+  ip_protocol       = "-1"
+  cidr_ipv6         = "::/0"
   security_group_id = local.cluster_security_group_id
 }
 
@@ -160,11 +181,22 @@ resource "aws_security_group" "workers_security_group" {
   )
 }
 
-resource "aws_vpc_security_group_egress_rule" "workers_security_group" {
+resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv4" {
 
   count = var.workers_security_group_id == null ? 1 : 0
 
   cidr_ipv4         = "0.0.0.0/0"
+  security_group_id = local.workers_security_group_id
+  description       = "Allow cluster egress access to the Internet."
+  ip_protocol       = "-1"
+
+}
+
+resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6" {
+
+  count = var.workers_security_group_id == null ? 1 : 0
+
+  cidr_ipv6         = "::/0"
   security_group_id = local.workers_security_group_id
   description       = "Allow cluster egress access to the Internet."
   ip_protocol       = "-1"
