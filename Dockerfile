@@ -1,5 +1,5 @@
 ARG TERRAFORM_VERSION=1.10.5
-ARG AWS_CLI_VERSION=2.24.10
+ARG AWS_CLI_VERSION=2.24.16
 FROM hashicorp/terraform:$TERRAFORM_VERSION AS terraform
 
 FROM almalinux:minimal AS amin
