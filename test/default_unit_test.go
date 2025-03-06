@@ -35,10 +35,15 @@ func TestPlanDefaults(t *testing.T) {
 
 func TestPlanDefaultDefaultNodepool(t *testing.T) {
 	nodepoolTests := map[string]testCase{
-		"default_nodepool_gp3": {
+		"defaultNodepoolVolumeType": {
 			expected:          "gp2",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
 			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_type}",
+		},
+		"defaultNodepoolVmType": {
+			expected:          "[\"m5.2xlarge\"]",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.instance_types}",
 		},
 	}
 	variables := getDefaultPlanVars(t)

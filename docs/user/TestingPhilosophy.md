@@ -17,29 +17,29 @@ The unit tests are written as [table-driven tests](https://go.dev/wiki/TableDriv
 
 The test file named default_unit_test.go validates the default values of a Terraform plan. This testing ensures that there are no regressions in the default behavior of the code base. The test file named non_default_unit_test.go modifies the input values before running the Terraform plan. After generating the plan file, the test verifies that it contains the expected values. Both files are written as table-driven tests.
 
-To see an example, look at the `TestPlanStorageDefaults` function in the default_unit_test.go file that is shown below.
+To see an example, look at the `TestPlanDefaultDefaultNodepool` function in the default_unit_test.go file that is shown below.
 
-With the Table-Driven approach, each entry in the `storageTests` map is a test. These tests verify that the expected value matches the actual value of the "module.nfs[0].azurerm_linux_virtual_machine.vm" resource.  We use the [k8s.io JsonPath](https://pkg.go.dev/k8s.io/client-go@v0.28.4/util/jsonpath) library to parse the Terraform output and extract the desired attribute.  The runTest call is a helper function that runs through each test in the map and perform assertions. See the [helpers.go](../../test/helpers.go) file for more information on the common helper functions.
+With the Table-Driven approach, each entry in the `nodepoolTests` map is a test. These tests verify that the expected value matches the actual value of the "module.eks.module.eks_managed_node_group[\"default\"]" resource.  We use the [k8s.io JsonPath](https://pkg.go.dev/k8s.io/client-go@v0.28.4/util/jsonpath) library to parse the Terraform output and extract the desired attribute.  The runTest call is a helper function that runs through each test in the map and perform assertions. See the [helpers.go](../../test/helpers.go) file for more information on the common helper functions.
 
 ```go
-// Function containing all unit tests for the Storage type
-// and its default values.
-func TestPlanStorageDefaults(t *testing.T) {
+// Function containing all unit tests for the Default Nodepool
+// resource and its default values.
+func TestPlanDefaultDefaultNodepool(t *testing.T) {
     // Map containing the different tests. Each entry is 
     // a separate test.
-    storageTests := map[string]testCase{
-        // Verify that the default user is 'nfsuser'.
-        "userTest": {
-            expected:          "nfsuser",
-            resourceMapName:   "module.nfs[0].azurerm_linux_virtual_machine.vm",
-            attributeJsonPath: "{$.admin_username}",
-        },
-        // Verify that the default size is 'Standard_D4s_v5'.
-        "sizeTest": {
-            expected:          "Standard_D4s_v5",
-            resourceMapName:   "module.nfs[0].azurerm_linux_virtual_machine.vm",
-            attributeJsonPath: "{$.size}",
-        },
+    nodepoolTests := map[string]testCase{
+		// Verify the default volume type is gp2
+        "defaultNodepoolVolumeType": {
+			expected:          "gp2",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
+			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_type}",
+		},
+		// Verify the default VM Type is m5.2xlarge
+        "defaultNodepoolVmType": {
+			expected:          "[\"m5.2xlarge\"]",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.instance_types}",
+		},
     }
 
     // Generate a Plan file using the default input variables.

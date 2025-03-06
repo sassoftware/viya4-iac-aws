@@ -13,7 +13,7 @@ import (
 // and overriding the default_nodepool_os_disk_type to gp3.
 func TestPlanNonDefaultDefaultNodepoolgp3(t *testing.T) {
 	nodepoolTests := map[string]testCase{
-		"default_nodepool_gp3": {
+		"defaultNodepoolVolumeTypeGp3": {
 			expected:          "gp3",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
 			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_type}",
@@ -36,7 +36,7 @@ func TestPlanNonDefaultDefaultNodepoolgp3(t *testing.T) {
 // and overriding the default_nodepool_os_disk_type to io1.
 func TestPlanNonDefaultDefaultNodepoolio1(t *testing.T) {
 	nodepoolTests := map[string]testCase{
-		"default_nodepool_io1": {
+		"defaultNodepoolVolumeTypeIo1": {
 			expected:          "io1",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
 			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_type}",
