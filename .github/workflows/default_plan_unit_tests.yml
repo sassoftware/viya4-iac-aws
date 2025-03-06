@@ -25,5 +25,5 @@ jobs:
             viya4-iac-aws:terratest -v
         env:
           # TF ENVIRONMENT
-          TF_VAR_aws_access_key_id: "${{ secrets.TF_VAR_ACCESS_KEY_ID }}"
-          TF_VAR_aws_secret_access_key: "${{ secrets.TF_VAR_SECRET_ACCESS_KEY }}"
+          TF_VAR_aws_access_key_id: "${{ secrets.TF_VAR_AWS_ACCESS_KEY_ID }}"
+          TF_VAR_aws_secret_access_key: "${{ secrets.TF_VAR_AWS_SECRET_ACCESS_KEY }}"
