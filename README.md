@@ -48,9 +48,9 @@ The following are also required:
 #### Terraform Requirements:
 
 - [Terraform](https://www.terraform.io/downloads.html) v1.9.6
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.30.6
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - v1.30.10
 - [jq](https://stedolan.github.io/jq/) v1.6
-- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.17.58
+- [AWS CLI](https://aws.amazon.com/cli) (optional; useful as an alternative to the AWS Web Console) v2.24.16
 
 #### Docker Requirements:
 
@@ -58,7 +58,7 @@ The following are also required:
 
 ## Getting Started
 
-Ubuntu 18.04 LTS is the operating system that is used on the jump server and NFS server VMs. Ubuntu creates the `/mnt` location as an ephemeral drive, so it cannot be used as the root location of the `jump_rwx_filestore_path` variable.
+Ubuntu 20.04 LTS is the operating system that is used on the jump server and NFS server VMs. Ubuntu creates the `/mnt` location as an ephemeral drive, so it cannot be used as the root location of the `jump_rwx_filestore_path` variable.
 
 ### Clone this Project
 
