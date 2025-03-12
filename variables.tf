@@ -168,7 +168,7 @@ variable "create_default_nodepool" { # tflint-ignore: terraform_unused_declarati
 variable "default_nodepool_vm_type" {
   description = "Type of the default node pool VMs."
   type        = string
-  default     = "m5.2xlarge"
+  default     = "r6in.2xlarge"
 }
 
 variable "default_nodepool_os_disk_type" {
@@ -271,7 +271,7 @@ variable "node_pools" {
 
   default = {
     cas = {
-      "vm_type"      = "m5.2xlarge"
+      "vm_type"      = "r6idn.2xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -288,7 +288,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     compute = {
-      "vm_type"      = "m5.8xlarge"
+      "vm_type"      = "m6idn.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -306,7 +306,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     stateless = {
-      "vm_type"      = "m5.4xlarge"
+      "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -323,7 +323,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     stateful = {
-      "vm_type"      = "m5.4xlarge"
+      "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -448,7 +448,7 @@ variable "jump_vm_admin" {
 variable "jump_vm_type" {
   description = "Jump VM type."
   type        = string
-  default     = "m5.4xlarge"
+  default     = "m6in.xlarge"
 }
 
 variable "jump_rwx_filestore_path" {
@@ -490,7 +490,7 @@ variable "nfs_vm_admin" {
 variable "nfs_vm_type" {
   description = "NFS VM type."
   type        = string
-  default     = "m5.4xlarge"
+  default     = "m6in.xlarge"
 }
 
 variable "os_disk_size" {
@@ -524,8 +524,8 @@ variable "postgres_server_defaults" {
   description = "Map of PostgresSQL server default objects."
   type        = any
   default = {
-    instance_type           = "db.m5.xlarge"
-    storage_size            = 50
+    instance_type           = "db.m6idn.xlarge"
+    storage_size            = 128
     storage_encrypted       = false
     backup_retention_days   = 7
     multi_az                = false
