@@ -41,7 +41,7 @@ func TestPlanDefaultDefaultNodepool(t *testing.T) {
 			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_type}",
 		},
 		"defaultNodepoolVmType": {
-			expected:          "[\"m5.2xlarge\"]",
+			expected:          "[\"r6in.2xlarge\"]",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
 			attributeJsonPath: "{$.instance_types}",
 		},
