@@ -29,7 +29,7 @@ postgres_servers = {
 ## Cluster config
 kubernetes_version           = "1.30"
 default_nodepool_node_count  = 2
-default_nodepool_vm_type     = "m5.2xlarge"
+default_nodepool_vm_type     = "r6in.2xlarge"
 default_nodepool_custom_data = ""
 
 ## General
@@ -39,7 +39,7 @@ storage_type         = "standard"
 ## Cluster Node Pools config
 node_pools = {
   cas = {
-    "vm_type"      = "m5.2xlarge"
+    "vm_type"      = "r6idn.2xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -73,7 +73,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   compute = {
-    "vm_type"      = "m5.8xlarge"
+    "vm_type"      = "m6idn.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -91,7 +91,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   stateless = {
-    "vm_type"      = "m5.4xlarge"
+    "vm_type"      = "m6in.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -108,7 +108,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   stateful = {
-    "vm_type"      = "m5.4xlarge"
+    "vm_type"      = "m6in.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
