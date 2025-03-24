@@ -15,7 +15,7 @@ variable "tags" {
 variable "vm_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "m5.4xlarge"
+  default     = "m6in.xlarge"
 }
 
 variable "cloud_init" {
