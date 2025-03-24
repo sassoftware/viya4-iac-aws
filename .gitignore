@@ -1,6 +1,10 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Local IDE configurations
+.vscode/*
+.idea/*
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -41,3 +45,6 @@ terraform.tfvars
 
 # Configuration files
 *.conf
+
+# Testing output files
+test/test_output/*
