@@ -423,7 +423,7 @@ postgres_servers = {
     server_version               = "15"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
+    parameters                   = [{ "apply_method": "pending-reboot", "name": "shared_preload_libraries", "value": "PGAUDIT,PG_CRON,PG_STAT_STATEMENTS" }, { "apply_method": "pending-reboot", "name": "bar", "value": "false" }]
     options                      = []
   }
 }
