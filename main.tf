@@ -50,6 +50,8 @@ provider-selections: ${data.external.iac_tooling_version.result["provider_select
 outdated: ${data.external.iac_tooling_version.result["terraform_outdated"]}
 EOT
   }
+
+  depends_on = [module.kubeconfig.kube_config]
 }
 
 # EKS Provider
@@ -91,7 +93,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "~> 19.0"
+  version                              = "~> 20.0"
   cluster_name                         = local.cluster_name
   cluster_version                      = var.kubernetes_version
   cluster_enabled_log_types            = var.cluster_enabled_log_types == null ? [] : var.cluster_enabled_log_types
@@ -163,6 +165,11 @@ module "eks" {
   create_iam_role = var.cluster_iam_role_arn == null ? true : false
   iam_role_arn    = var.cluster_iam_role_arn
 
+  authentication_mode = var.authentication_mode
+
+  # Create access entry for current caller identity as a cluster admin
+  enable_cluster_creator_admin_permissions = true
+
   iam_role_additional_policies = {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
@@ -179,6 +186,26 @@ module "eks" {
 
   ## Any individual Node Group customizations should go here
   eks_managed_node_groups = local.node_groups
+}
+
+resource "aws_eks_access_entry" "instance" {
+  for_each = toset(coalesce(var.admin_access_entry_role_arns, []))
+
+  cluster_name      = module.eks.cluster_name
+  principal_arn     = each.value
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "cluster_assoc" {
+  for_each = aws_eks_access_entry.instance
+
+  cluster_name      = module.eks.cluster_name
+  policy_arn        = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn     = each.value.principal_arn
+
+  access_scope {
+    type = "cluster"
+  }
 }
 
 module "autoscaling" {
@@ -206,7 +233,9 @@ module "ontap" {
 
   prefix        = var.prefix
   tags          = local.tags
-  iam_user_name = local.aws_caller_identity_user_name
+  iam_user_name = local.aws_caller_identity_name
+  is_user       = local.caller_is_user
+  iam_role_name = local.aws_caller_role_name
 }
 
 module "kubeconfig" {
@@ -222,7 +251,7 @@ module "kubeconfig" {
   ca_crt       = local.kubeconfig_ca_cert
   sg_id        = local.cluster_security_group_id
 
-  depends_on = [module.eks.cluster_name] # The name/id of the EKS cluster. Will block on cluster creation until the cluster is really ready.
+  depends_on = [module.eks] # Will block on EKS cluster creation until the cluster is completely ready.
 }
 
 # Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
@@ -233,7 +262,7 @@ resource "terraform_data" "run_command" {
     command = "kubectl --kubeconfig=${local.kubeconfig_path} patch storageclass gp2 --patch '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}' "
   }
 
-  depends_on = [module.kubeconfig] 
+  depends_on = [module.kubeconfig.kube_config]
 }
 
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0

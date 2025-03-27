@@ -156,7 +156,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.29"
+  default     = "1.30"
 }
 
 variable "tags" {
@@ -175,7 +175,7 @@ variable "create_default_nodepool" { # tflint-ignore: terraform_unused_declarati
 variable "default_nodepool_vm_type" {
   description = "Type of the default node pool VMs."
   type        = string
-  default     = "m5.2xlarge"
+  default     = "r6in.2xlarge"
 }
 
 variable "default_nodepool_os_disk_type" {
@@ -184,8 +184,8 @@ variable "default_nodepool_os_disk_type" {
   default     = "gp2"
 
   validation {
-    condition     = contains(["gp2", "io1"], lower(var.default_nodepool_os_disk_type))
-    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp2, io1."
+    condition     = contains(["gp3", "gp2", "io1"], lower(var.default_nodepool_os_disk_type))
+    error_message = "ERROR: Supported values for `default_nodepool_os_disk_type` are gp3, gp2, or io1."
   }
 }
 
@@ -278,7 +278,7 @@ variable "node_pools" {
 
   default = {
     cas = {
-      "vm_type"      = "m5.2xlarge"
+      "vm_type"      = "r6idn.2xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -295,7 +295,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     compute = {
-      "vm_type"      = "m5.8xlarge"
+      "vm_type"      = "m6idn.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -313,7 +313,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     stateless = {
-      "vm_type"      = "m5.4xlarge"
+      "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -330,7 +330,7 @@ variable "node_pools" {
       "metadata_http_put_response_hop_limit" = 1
     },
     stateful = {
-      "vm_type"      = "m5.4xlarge"
+      "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2_x86_64"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
@@ -455,7 +455,7 @@ variable "jump_vm_admin" {
 variable "jump_vm_type" {
   description = "Jump VM type."
   type        = string
-  default     = "m5.4xlarge"
+  default     = "m6in.xlarge"
 }
 
 variable "jump_rwx_filestore_path" {
@@ -497,7 +497,7 @@ variable "nfs_vm_admin" {
 variable "nfs_vm_type" {
   description = "NFS VM type."
   type        = string
-  default     = "m5.4xlarge"
+  default     = "m6in.xlarge"
 }
 
 variable "os_disk_size" {
@@ -531,8 +531,8 @@ variable "postgres_server_defaults" {
   description = "Map of PostgresSQL server default objects."
   type        = any
   default = {
-    instance_type           = "db.m5.xlarge"
-    storage_size            = 50
+    instance_type           = "db.m6idn.xlarge"
+    storage_size            = 128
     storage_encrypted       = false
     backup_retention_days   = 7
     multi_az                = false
@@ -725,4 +725,21 @@ variable "enable_nist_features" {
   description = "A flag to enable NIST features under development for this project"
   type        = bool
   default     = false
+}
+
+variable "authentication_mode" {
+  description = "The authentication mode for the EKS cluster. Supported values are 'API_AND_CONFIG_MAP' and 'API'."
+  type        = string
+  default     = "API_AND_CONFIG_MAP"
+
+  validation {
+    condition     = contains(["API_AND_CONFIG_MAP", "API"], var.authentication_mode)
+    error_message = "ERROR: Supported values for `authentication_mode` are API_AND_CONFIG_MAP and API."
+  }
+}
+
+variable "admin_access_entry_role_arns" {
+  description = "List of IAM role ARNs to create admin EKS access_entries for."
+  type        = list(string)
+  default     = null
 }

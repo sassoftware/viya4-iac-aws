@@ -15,8 +15,10 @@ subnet_ids = {               # only needed if using pre-existing subnets
   "private" : ["existing-private-subnet-id1", "existing-private-subnet-id2"],
   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true'
 }
-nat_id            = "<existing-NAT-gateway-id>"
-security_group_id = "<existing-security-group-id>" # only needed if using pre-existing Security Group
+nat_id                    = "<existing-NAT-gateway-id>"
+security_group_id         = "<existing-security-group-id>" # only needed if using pre-existing Security Group
+cluster_security_group_id = "<existing-cluster-security-group-id>" # only needed if using pre-existing Cluster Security Group
+workers_security_group_id = "<existing-workers-security-group-id>" # only needed if using pre-existing Security Group for Node Group VMs
 
 # !NOTE! - Without specifying your CIDR block access rules, ingress traffic
 #          to your cluster will be blocked by default.
@@ -37,9 +39,9 @@ postgres_servers = {
 }
 
 ## Cluster config
-kubernetes_version           = "1.29"
+kubernetes_version           = "1.30"
 default_nodepool_node_count  = 2
-default_nodepool_vm_type     = "m5.2xlarge"
+default_nodepool_vm_type     = "r6in.2xlarge"
 default_nodepool_custom_data = ""
 
 ## General
@@ -49,7 +51,7 @@ storage_type         = "standard"
 ## Cluster Node Pools config
 node_pools = {
   cas = {
-    "vm_type"      = "m5.2xlarge"
+    "vm_type"      = "r6idn.2xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -66,7 +68,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   compute = {
-    "vm_type"      = "m5.8xlarge"
+    "vm_type"      = "m6idn.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -84,7 +86,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   stateless = {
-    "vm_type"      = "m5.4xlarge"
+    "vm_type"      = "m6in.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
@@ -101,7 +103,7 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   stateful = {
-    "vm_type"      = "m5.4xlarge"
+    "vm_type"      = "m6in.xlarge"
     "cpu_type"     = "AL2_x86_64"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200

@@ -88,6 +88,7 @@ resource "kubernetes_cluster_role_binding" "kubernetes_crb" {
 
   depends_on = [
     data.aws_security_group.selected,
+    local_file.kubeconfig
   ]
 }
 

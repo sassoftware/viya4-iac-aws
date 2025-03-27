@@ -187,7 +187,7 @@ By default, two custom IAM policies and two custom IAM roles (with instance prof
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| cluster_iam_role_arn | ARN of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
+| cluster_iam_role_arn | Amazon Resource Name (ARN) of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
 | workers_iam_role_arn | ARN of the pre-existing IAM role for the cluster node VMs | string | null | If an existing EKS node IAM role is being used, the IAM role's 'ARN' is required. |
 
 The cluster IAM role must include three AWS-managed policies and one custom policy.
@@ -257,7 +257,7 @@ Custom policy:
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | create_static_kubeconfig | Allows the user to create a provider- or service account-based kubeconfig file | bool | true | A value of `false` defaults to using the cloud provider's mechanism for generating the kubeconfig file. A value of `true` creates a static kubeconfig that uses a service account and cluster role binding to provide credentials. |
-| kubernetes_version | The EKS cluster Kubernetes version | string | "1.29" | |
+| kubernetes_version | The EKS cluster Kubernetes version | string | "1.30" | |
 | create_jump_vm | Create bastion host (jump VM) | bool | true| |
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
@@ -266,6 +266,8 @@ Custom policy:
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
+| authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
+| admin_access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Account_ID>:role/<rolename>"|
 
 ## Node Pools
 
@@ -388,8 +390,8 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | server_version | The version of the PostgreSQL server | string | "15" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
-| instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
-| storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
+| instance_type | The VM type for the PostgreSQL Server | string | "db.m6idn.xlarge" | |
+| storage_size | Max storage allowed for the PostgreSQL server in GB | number | 128 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
@@ -410,8 +412,8 @@ postgres_servers = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
   cds-postgres = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
+    instance_type                = "db.m6idn.xlarge"
+    storage_size                 = 128
     storage_encrypted            = false
     backup_retention_days        = 7
     multi_az                     = false
@@ -421,7 +423,7 @@ postgres_servers = {
     server_version               = "15"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
+    parameters                   = [{ "apply_method": "pending-reboot", "name": "shared_preload_libraries", "value": "PGAUDIT,PG_CRON,PG_STAT_STATEMENTS" }, { "apply_method": "pending-reboot", "name": "bar", "value": "false" }]
     options                      = []
   }
 }
