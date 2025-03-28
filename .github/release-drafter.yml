@@ -21,7 +21,7 @@ categories:
     labels:
       - 'test'
   - title: '🔧 Maintenance'
-    labels: 
+    labels:
       - 'build'
       - 'chore'
       - 'CI/CD'
