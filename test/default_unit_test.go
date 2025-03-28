@@ -57,3 +57,29 @@ func TestPlanDefaultDefaultNodepool(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanDefaultEks(t *testing.T) {
+	variables := getDefaultPlanVars(t)
+	eksTests := map[string]testCase{
+		"eksClusterName": {
+			expected:          fmt.Sprintf("%s-eks", variables["prefix"]),
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.name}",
+		},
+		"clusterLogging": {
+			expected:          "",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.cluster_enabled_log_types}",
+		},
+	}
+
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range eksTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
