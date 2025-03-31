@@ -439,4 +439,4 @@ postgres_servers = {
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| cluster_enabled_log_types | List of audits to record from EKS cluster in CloudWatch | list(string) | |  |
+| cluster_enabled_log_types | List of audits to record from EKS cluster in CloudWatch | list(string) | | More information on the audit types can be [found here.](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) |
