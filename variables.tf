@@ -75,7 +75,7 @@ variable "default_private_access_cidrs" {
 }
 
 variable "cluster_enabled_log_types" {
-  description = "List of audit to record from EKS cluster in CloudWatch"
+  description = "List of audits to record from EKS cluster in CloudWatch"
   type        = list(string)
   default     = null
   # Example value: ["audit","api","authenticator"] 
