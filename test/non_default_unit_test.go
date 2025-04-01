@@ -54,3 +54,25 @@ func TestPlanNonDefaultDefaultNodepoolio1(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanNonDefaultEks(t *testing.T) {
+	variables := getDefaultPlanVars(t)
+	variables["cluster_enabled_log_types"] = []string{"api", "audit", "authenticator"}
+	eksTests := map[string]testCase{
+		"clusterLogging": {
+			expected:          "[\"api\",\"audit\",\"authenticator\"]",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.enabled_cluster_log_types}",
+		},
+	}
+
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range eksTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
