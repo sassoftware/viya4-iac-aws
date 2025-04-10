@@ -86,25 +86,26 @@ func TestPlanDefaultEks(t *testing.T) {
 
 func TestPlanDefaultSecurityGroup(t *testing.T) {
 	variables := getDefaultPlanVars(t)
+	default_cidr := variables["default_public_access_cidrs"].([]string)[0]
 	defaultTests := map[string]testCase{
 		"securityGroupCIDR": {
-			expected:          "123.45.67.89/32",
-			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			expected:          default_cidr,
+			resourceMapName:   fmt.Sprintf("aws_vpc_security_group_ingress_rule.vms[\"%s\"]", default_cidr),
 			attributeJsonPath: "{$.cidr_ipv4}",
 		},
 		"securityGroupSSHIngressFromPort": {
 			expected:          "22",
-			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			resourceMapName:   fmt.Sprintf("aws_vpc_security_group_ingress_rule.vms[\"%s\"]", default_cidr),
 			attributeJsonPath: "{$.from_port}",
 		},
 		"securityGroupSSHIngressToPort": {
 			expected:          "22",
-			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			resourceMapName:   fmt.Sprintf("aws_vpc_security_group_ingress_rule.vms[\"%s\"]", default_cidr),
 			attributeJsonPath: "{$.to_port}",
 		},
 		"securityGroupIpProtocol": {
 			expected:          "tcp",
-			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			resourceMapName:   fmt.Sprintf("aws_vpc_security_group_ingress_rule.vms[\"%s\"]", default_cidr),
 			attributeJsonPath: "{$.ip_protocol}",
 		},
 	}
