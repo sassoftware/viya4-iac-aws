@@ -83,3 +83,39 @@ func TestPlanDefaultEks(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanDefaultSecurityGroup(t *testing.T) {
+	variables := getDefaultPlanVars(t)
+	defaultTests := map[string]testCase{
+		"securityGroupCIDR": {
+			expected:          "123.45.67.89/32",
+			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			attributeJsonPath: "{$.cidr_ipv4}",
+		},
+		"securityGroupSSHIngressFromPort": {
+			expected:          "22",
+			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			attributeJsonPath: "{$.from_port}",
+		},
+		"securityGroupSSHIngressToPort": {
+			expected:          "22",
+			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			attributeJsonPath: "{$.to_port}",
+		},
+		"securityGroupIpProtocol": {
+			expected:          "tcp",
+			resourceMapName:   "aws_vpc_security_group_ingress_rule.vms[\"123.45.67.89/32\"]",
+			attributeJsonPath: "{$.ip_protocol}",
+		},
+	}
+
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range defaultTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
