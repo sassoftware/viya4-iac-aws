@@ -52,7 +52,7 @@ resource "aws_vpc_security_group_ingress_rule" "sg" {
 
 resource "aws_vpc_security_group_ingress_rule" "vms" {
 
-  for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm)) ? toset(local.vm_public_access_cidrs) : toset([])
+  for_each = toset(local.vm_public_access_cidrs)
 
   security_group_id = local.security_group_id
 
