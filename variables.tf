@@ -74,6 +74,13 @@ variable "default_private_access_cidrs" {
   default     = null
 }
 
+variable "cluster_enabled_log_types" {
+  description = "List of audits to record from EKS cluster in CloudWatch"
+  type        = list(string)
+  default     = null
+  # Example value: ["audit","api","authenticator"] 
+}
+
 variable "cluster_endpoint_public_access_cidrs" {
   description = "List of CIDRs to access Kubernetes cluster - Public."
   type        = list(string)
@@ -149,7 +156,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.30"
+  default     = "1.31"
 }
 
 variable "tags" {
