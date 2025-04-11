@@ -1,5 +1,25 @@
 # SAS Viya 4 Infrastructure as Code (IaC) for Amazon Web Services (AWS)
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+  - [Technical Prerequisites](#technical-prerequisites)
+    - [Terraform Requirements](#terraform-requirements)
+    - [Docker Requirements](#docker-requirements)
+- [Getting Started](#getting-started)
+  - [Clone this Project](#clone-this-project)
+  - [Authenticate Terraform to Access AWS](#authenticate-terraform-to-access-aws)
+  - [Customize Input Values](#customize-input-values)
+- [Create and Manage Cloud Resources](#create-and-manage-cloud-resources)
+- [Increase the Max Prepared Transactions for External Postgres Database](#increase-the-max-prepared-transactions-for-external-postgres-database)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Additional Resources](#additional-resources)
+  - [AWS Resources](#aws-resources)
+  - [Terraform Resources](#terraform-resources)
+
 ## Overview
 
 This project contains Terraform scripts to provision the AWS cloud infrastructure resources that are required to deploy SAS Viya platform product offerings. Here is a list of resources that this project can create:
