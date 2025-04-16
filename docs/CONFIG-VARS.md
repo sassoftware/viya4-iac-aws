@@ -27,6 +27,7 @@ Supported configuration variables are listed in the tables below.  All variables
     - [AWS FSx for NetApp ONTAP File System](#aws-fsx-for-netapp-ontap-file-system)
     - [AWS Elastic Block Store (EBS)](#aws-elastic-block-store-ebs)
   - [PostgreSQL Server](#postgresql-server)
+  - [Cluster Logging](#cluster-logging)
 
 Terraform input variables can be set in the following ways:
 
@@ -423,8 +424,19 @@ postgres_servers = {
     server_version               = "15"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
+    parameters                   = [{ "apply_method": "pending-reboot", "name": "shared_preload_libraries", "value": "PGAUDIT,PG_CRON,PG_STAT_STATEMENTS" }, { "apply_method": "pending-reboot", "name": "bar", "value": "false" }]
     options                      = []
   }
 }
 ```
+
+## Cluster Logging
+
+[CloudWatch](https://aws.amazon.com/cloudwatch/) can be enabled by setting the `cluster_enabled_log_types` configuration variable. The list of audits will be streamed to the CloudWatch Log Group.
+
+**NOTE**: This requires additional IAM policies to create and tag CloudWatch logs.
+
+<!--| Name | Description | Type | Default | Notes | -->
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| cluster_enabled_log_types | List of audits to record from EKS cluster in CloudWatch | list(string) | | More information on the audit types can be [found here.](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) |

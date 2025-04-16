@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Hadolint Action
-        uses: jbergstroem/hadolint-gh-action@v1.11.0
+        uses: jbergstroem/hadolint-gh-action@v1.12.2
         with:
           dockerfile: ./Dockerfile
           config_file: linting-configs/.hadolint.yaml
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run ShellCheck Action
         uses: ludeeus/action-shellcheck@master
@@ -40,10 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Cache Plugin Directory
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.tflint.d/plugins
         key: ubuntu-latest-tflint-${{ hashFiles('.tflint.hcl') }}
