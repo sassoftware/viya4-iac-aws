@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,6 +21,11 @@ func TestPlanDefaults(t *testing.T) {
 			resourceMapName:   "aws_resourcegroups_group.aws_rg",
 			attributeJsonPath: "{$.name}",
 		},
+		"k8sVersionTest": {
+			expected:          "1.31",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.version}",
+		},
 	}
 
 	plan, err := initPlanWithVariables(t, variables)
@@ -27,6 +33,70 @@ func TestPlanDefaults(t *testing.T) {
 	require.NoError(t, err)
 
 	for name, tc := range defaultTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
+func TestPlanGeneral(t *testing.T) {
+	tests := map[string]testCase{
+		"kubeconfigCrbResourceNotNil": {
+			expected:          "<nil>",
+			resourceMapName:   "module.kubeconfig.kubernetes_service_account.kubernetes_sa[0]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+			message:           "The kubeconfig CRB resource should exist",
+		},
+		"kubeconfigSAResourceNotNil": {
+			expected:          "<nil>",
+			resourceMapName:   "module.kubeconfig.kubernetes_service_account.kubernetes_sa[0]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+			message:           "The kubeconfig Service Account resource should exist",
+		},
+		"jumpVmNotNil": {
+			expected:          "<nil>",
+			resourceMapName:   "module.jump[0].aws_instance.vm",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+			message:           "The Jump VM resource should exist",
+		},
+		"jumpVmElasticIPNotNil": {
+			expected:          "<nil>",
+			resourceMapName:   "module.jump[0].aws_eip.eip[0]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+			message:           "The Jump VM Elastic IP resource should exist",
+		},
+		/*
+			"jumpVmEnablePublicStaticIp": {
+				expected:          "Static",
+				resourceMapName:   "module.jump[0].aws_instance.vm",
+				attributeJsonPath: "{$.allocation_method}",
+				assertFunction:    assert.Equal,
+				message:           "The Jump VM Public IP resource should have a Static allocation method",
+			},
+			"jumpVmAdmin": {
+				expected:          "jumpuser",
+				resourceMapName:   "module.jump[0].aws_instance.vm",
+				attributeJsonPath: "{$.admin_username}",
+				assertFunction:    assert.Equal,
+				message:           "The Jump VM admin username should be jumpuser",
+			},
+			"jumpVmMachineType": {
+				expected:          "Standard_B2s",
+				resourceMapName:   "module.jump[0].aws_instance.vm",
+				attributeJsonPath: "{$.size}",
+				assertFunction:    assert.Equal,
+				message:           "The Jump VM machine type should be Standard_B2s",
+			},*/
+	}
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			runTest(t, tc, plan)
 		})
@@ -44,6 +114,41 @@ func TestPlanDefaultDefaultNodepool(t *testing.T) {
 			expected:          "[\"r6in.2xlarge\"]",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
 			attributeJsonPath: "{$.instance_types}",
+		},
+		"defaultNodepoolOsDiskSize": {
+			expected:          "200",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
+			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].volume_size}",
+		},
+		"defaultNodepoolOsDiskIops": {
+			expected:          "0",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
+			attributeJsonPath: "{$.block_device_mappings[0].ebs[0].iops}",
+		},
+		"defaultNodepoolNodeCount": {
+			expected:          "1",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.scaling_config[0].desired_size}",
+		},
+		"defaultNodepoolMaxNodes": {
+			expected:          "5",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.scaling_config[0].max_size}",
+		},
+		"defaultNodepoolMinNodes": {
+			expected:          "1",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.scaling_config[0].min_size}",
+		},
+		"defaultNodepoolMetadataHttpEndpoint": {
+			expected:          "enabled",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
+			attributeJsonPath: "{$.metadata_options[0].http_endpoint}",
+		},
+		"defaultNodepoolMetadataHttpPutResponseHopLimit": {
+			expected:          "1",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_launch_template.this[0]",
+			attributeJsonPath: "{$.metadata_options[0].http_put_response_hop_limit}",
 		},
 	}
 	variables := getDefaultPlanVars(t)
@@ -115,6 +220,64 @@ func TestPlanDefaultSecurityGroup(t *testing.T) {
 	require.NoError(t, err)
 
 	for name, tc := range defaultTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
+
+func TestPlanNetwork(t *testing.T) {
+	tests := map[string]testCase{
+		"vpcCidrTest": {
+			expected:          "192.168.0.0/16",
+			resourceMapName:   "module.vpc.aws_vpc.vpc[0]",
+			attributeJsonPath: "{$.cidr_block}",
+		},
+		"subnetsTest": {
+			expected:          "192.168.129.0/25",
+			resourceMapName:   "module.vpc.aws_subnet.public[0]",
+			attributeJsonPath: "{$.cidr_block}",
+		},
+		"subnetAzsTest": {
+			expected:          "us-east-1a",
+			resourceMapName:   "module.vpc.aws_subnet.public[0]",
+			attributeJsonPath: "{$.availability_zone}",
+		},
+		// Use Existing
+		/*
+			"vnetSubnetTest": {
+				expected:          "",
+				resourceMapName:   "module.vnet.azurerm_virtual_network.vnet[0]",
+				attributeJsonPath: "{$.subnet[0].name}",
+			},
+			"clusterEgressTypeTest": {
+				expected:          "loadBalancer",
+				resourceMapName:   "module.aks.azurerm_kubernetes_cluster.aks",
+				attributeJsonPath: "{$.network_profile[0].outbound_type}",
+			},
+			"networkPluginTest": {
+				expected:          "kubenet",
+				resourceMapName:   "module.aks.azurerm_kubernetes_cluster.aks",
+				attributeJsonPath: "{$.network_profile[0].network_plugin}",
+			},
+			"aksNetworkPolicyTest": {
+				expected:          "",
+				resourceMapName:   "module.aks.azurerm_kubernetes_cluster.aks",
+				attributeJsonPath: "{$.expressions.aks_network_policy.reference[0]}",
+			},
+			"aksNetworkPluginModeTest": {
+				expected:          "",
+				resourceMapName:   "module.aks.azurerm_kubernetes_cluster.aks",
+				attributeJsonPath: "{$.expressions.aks_network_plugin_mode.reference[0]}",
+			},*/
+	}
+
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			runTest(t, tc, plan)
 		})
