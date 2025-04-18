@@ -283,3 +283,44 @@ func TestPlanNetwork(t *testing.T) {
 		})
 	}
 }
+
+// Test the default variables when using the sample-input-defaults.tfvars file
+// with storage_type set to "ha". This should engage the Azure NetApp Files module,
+// with the default values as tested herein.
+func TestPlanNetApp(t *testing.T) {
+	tests := map[string]testCase{
+		"deploymentType": {
+			expected:          "SINGLE_AZ_1",
+			resourceMapName:   "aws_fsx_ontap_file_system.ontap-fs[0]",
+			attributeJsonPath: "{$.deployment_type}",
+		},
+		"storageCapacity": {
+			expected:          "1024",
+			resourceMapName:   "aws_fsx_ontap_file_system.ontap-fs[0]",
+			attributeJsonPath: "{$.storage_capacity}",
+		},
+		"throughputCapacity": {
+			expected:          "256",
+			resourceMapName:   "aws_fsx_ontap_file_system.ontap-fs[0]",
+			attributeJsonPath: "{$.throughput_capacity}",
+		},
+		"adminPassword": {
+			expected:          "v3RyS3cretPa$sw0rd",
+			resourceMapName:   "aws_fsx_ontap_file_system.ontap-fs[0]",
+			attributeJsonPath: "{$.fsx_admin_password}",
+		},
+	}
+
+	variables := getDefaultPlanVars(t)
+	variables["storage_type_backend"] = "ontap"
+	variables["storage_type"] = "ha"
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
