@@ -68,6 +68,7 @@ func TestPlanGeneral(t *testing.T) {
 			assertFunction:    assert.NotEqual,
 			message:           "The Jump VM Elastic IP resource should exist",
 		},
+
 		/*
 			"jumpVmEnablePublicStaticIp": {
 				expected:          "Static",
