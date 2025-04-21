@@ -6,6 +6,35 @@
 # Terraform Registry : https://registry.terraform.io/namespaces/terraform-aws-modules
 # GitHub Repository  : https://github.com/terraform-aws-modules
 #
+locals {
+  asg_tags = flatten([
+    for i in local.node_groups : [
+      for k, v in local.tags : {
+        node_name           = i.name
+        key                 = k
+        value               = v
+      }
+    ]
+  ])
+}
+
+data "aws_autoscaling_groups" "asg_names" {
+
+}
+
+resource "aws_autoscaling_group_tag" "asg_tags" {
+  for_each = { for i in local.asg_tags : "${i.node_name}-${i.key}" => i }
+
+  depends_on = [ data.aws_autoscaling_groups.asg_names ]
+  autoscaling_group_name = each.value.node_name
+
+  tag {
+    key                 = each.value.key
+    value               = each.value.value
+    propagate_at_launch = true
+  }
+}
+
 
 provider "aws" {
   region                   = var.location
