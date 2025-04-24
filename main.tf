@@ -22,18 +22,19 @@ data "aws_autoscaling_groups" "asg_names" {
 
 }
 
-resource "aws_autoscaling_group_tag" "asg_tags" {
-  for_each = { for i in local.asg_tags : "${i.node_name}-${i.key}" => i }
+# resource "aws_autoscaling_group_tag" "asg_tags" {
+#   for_each = { for i in local.asg_tags : "${i.node_name}-${i.key}" => i }
 
-  depends_on = [ data.aws_autoscaling_groups.asg_names ]
-  autoscaling_group_name = each.value.node_name
+#   depends_on = [ data.aws_autoscaling_groups.asg_names ]
+#   # depends_on = [module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]]
+#   autoscaling_group_name = each.value.node_name
 
-  tag {
-    key                 = each.value.key
-    value               = each.value.value
-    propagate_at_launch = true
-  }
-}
+#   tag {
+#     key                 = each.value.key
+#     value               = each.value.value
+#     propagate_at_launch = true
+#   }
+# }
 
 
 provider "aws" {
@@ -211,12 +212,14 @@ module "eks" {
     # BYO - EKS Workers IAM Role
     create_iam_role = var.workers_iam_role_arn == null ? true : false
     iam_role_arn    = var.workers_iam_role_arn
+    tags = local.tags
+    tag_specifications = ["instance", "volume", "network-interface", "spot-instances-request"]
+    launch_template_tags = local.tags
   }
 
   ## Any individual Node Group customizations should go here
   eks_managed_node_groups = local.node_groups
 }
-
 resource "aws_eks_access_entry" "instance" {
   for_each = toset(coalesce(var.admin_access_entry_role_arns, []))
 

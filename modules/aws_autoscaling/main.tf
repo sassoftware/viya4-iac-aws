@@ -32,7 +32,8 @@ data "aws_iam_policy_document" "worker_autoscaling" {
     actions = [
       "autoscaling:SetDesiredCapacity",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
-      "autoscaling:UpdateAutoScalingGroup"
+      "autoscaling:UpdateAutoScalingGroup",
+      "autoscaling:DescribeTags"
 
     ]
 

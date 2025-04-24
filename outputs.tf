@@ -156,10 +156,10 @@ output "cluster_node_pool_mode" {
   value       = var.cluster_node_pool_mode
 }
 
-output "autoscaler_account" {
-  description = "ARN of IAM role for cluster-autoscaler."
-  value       = var.autoscaling_enabled ? module.autoscaling[0].autoscaler_account : null
-}
+# output "autoscaler_account" {
+#   description = "ARN of IAM role for cluster-autoscaler."
+#   value       = var.autoscaling_enabled ? module.autoscaling[0].autoscaler_account : null
+# }
 
 output "cluster_api_mode" {
   description = "Use Public or Private IP address for the cluster API endpoint."
@@ -243,3 +243,23 @@ output "enable_nist_features" {
   description = "Flag to enable NIST features."
   value       = var.enable_nist_features
 }
+
+output "asg_names" {
+  description = "List of ASG names."
+  value       = data.aws_autoscaling_groups.asg_names
+}
+
+output "asg_tags" {
+  description = "List of ASG names."
+  value       = local.asg_tags
+}
+
+output "node_groups" {
+  description = "List of node groups."
+  value       = local.node_groups
+}
+
+# output "node" {
+#   description = "List of node groups."
+#   value       = .aws_eks_node_group
+# }
