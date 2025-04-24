@@ -164,6 +164,33 @@ func TestPlanDefaultDefaultNodepool(t *testing.T) {
 	}
 }
 
+func TestPlanStorage(t *testing.T) {
+	tests := map[string]testCase{
+		"instanceTypeTest": {
+			expected:          "m6in.xlarge",
+			resourceMapName:   "module.nfs[0].aws_instance.vm",
+			attributeJsonPath: "{$.instance_type}",
+		},
+		"vmNotNilTest": {
+			expected:          "<nil>",
+			resourceMapName:   "module.nfs[0].aws_instance.vm",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+		},
+	}
+
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
+
 func TestPlanDefaultEks(t *testing.T) {
 	variables := getDefaultPlanVars(t)
 	eksTests := map[string]testCase{
