@@ -178,6 +178,7 @@ func TestPlanStorage(t *testing.T) {
 			assertFunction:    assert.NotEqual,
 		},
 	}
+
 	variables := getDefaultPlanVars(t)
 	plan, err := initPlanWithVariables(t, variables)
 	require.NotNil(t, plan)
