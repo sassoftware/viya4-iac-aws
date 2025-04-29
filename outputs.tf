@@ -258,8 +258,3 @@ output "node_groups" {
   description = "List of node groups."
   value       = local.node_groups
 }
-
-# output "node" {
-#   description = "List of node groups."
-#   value       = .aws_eks_node_group
-# }
