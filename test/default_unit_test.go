@@ -352,3 +352,64 @@ func TestPlanNetApp(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanNfs(t *testing.T) {
+	tests := map[string]testCase{
+		"create_nfs_public_IP": {
+			expected:          "false",
+			resourceMapName:   "module.nfs[0].aws_instance.vm",
+			attributeJsonPath: "{$.associate_public_ip_address}",
+		},
+		// todo figure out how to test this variable
+		/*
+			"nfs_vm_admin": {
+				expected:          "nfsuser",
+				resourceMapName:   "module.nfs[0].aws_instance.vm",
+				attributeJsonPath: "{$.vm_admin}",
+			},*/
+		"raidDisk0Iops": {
+			expected:          "0",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[0]",
+			attributeJsonPath: "{$.iops}",
+		},
+		"raidDisk0Type": {
+			expected:          "gp2",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[0]",
+			attributeJsonPath: "{$.type}",
+		},
+		"raidDisk0Size": {
+			expected:          "128",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[0]",
+			attributeJsonPath: "{$.size}",
+		},
+		"nfsDataDisk1NotNilTest": {
+			expected:          "<nil>",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[1]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+		},
+		"nfsDataDisk2NotNilTest": {
+			expected:          "<nil>",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[2]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+		},
+		"nfsDataDisk3NotNilTest": {
+			expected:          "<nil>",
+			resourceMapName:   "module.nfs[0].aws_ebs_volume.raid_disk[3]",
+			attributeJsonPath: "{$}",
+			assertFunction:    assert.NotEqual,
+		},
+	}
+
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
