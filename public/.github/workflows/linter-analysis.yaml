@@ -1,0 +1,79 @@
+name: Linter Analysis
+
+on:
+  push:
+    branches: [ '**' ] # '**' will cause the workflow to run on all commits to all branches, including those with path separators
+
+jobs:
+  # Hadolint: Job-1
+  Hadolint:
+    name: Hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Run Hadolint Action
+        uses: jbergstroem/hadolint-gh-action@v1.12.2
+        with:
+          dockerfile: ./Dockerfile
+          config_file: linting-configs/.hadolint.yaml
+          error_level: 1 # Fail CI based on hadolint output (-1: never, 0: error, 1: warning, 2: info)
+
+  # ShellCheck: Job-2
+  ShellCheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck Action
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: error
+          ignore_names: additional_userdata.sh
+
+  # TFLint: Job-3
+  TFLint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Cache Plugin Directory
+      uses: actions/cache@v4
+      with:
+        path: ~/.tflint.d/plugins
+        key: ubuntu-latest-tflint-${{ hashFiles('.tflint.hcl') }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "^1.10.5"
+        terraform_wrapper: false
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v3.0.0
+      with:
+        tflint_version: latest
+        github_token: ${{ secrets.LINTER_TEST_TOKEN }}
+
+      # Necessary so we can recursively tflint our modules folder
+      # with the plugin, not needed for regular project use.
+    - name: Initializing modules
+      run: |
+       terraform init
+       terraform -chdir=modules/aws_autoscaling init
+       terraform -chdir=modules/aws_fsx_ontap init
+       terraform -chdir=modules/aws_ebs_csi init
+       terraform -chdir=modules/aws_vm init
+       terraform -chdir=modules/aws_vpc init
+       terraform -chdir=modules/kubeconfig init
+
+    - name: Initializing TFLint
+      run: TFLINT_LOG=info tflint --recursive --init -c "$(pwd)/linting-configs/.tflint.hcl"
+
+    - name: Run TFLint Action
+      run: TFLINT_LOG=info tflint -c "$(pwd)/linting-configs/.tflint.hcl" --recursive
