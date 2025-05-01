@@ -37,18 +37,21 @@ variable "aws_shared_credentials_files" {
   default     = null
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "aws_session_token" {
   description = "Session token for temporary credentials."
   type        = string
   default     = ""
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "aws_access_key_id" {
   description = "Static credential key."
   type        = string
   default     = ""
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "aws_secret_access_key" {
   description = "Static credential secret."
   type        = string
