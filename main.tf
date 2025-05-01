@@ -8,12 +8,12 @@
 #
 
 provider "aws" {
-  region                   = var.location
-  profile                  = var.aws_profile
-  shared_credentials_files = local.aws_shared_credentials
-  access_key               = var.aws_access_key_id
-  secret_key               = var.aws_secret_access_key
-  token                    = var.aws_session_token
+  region  = var.location
+  profile = var.aws_profile
+  # shared_credentials_files = local.aws_shared_credentials
+  # access_key               = var.aws_access_key_id
+  # secret_key               = var.aws_secret_access_key
+  # token                    = var.aws_session_token
 
 }
 
@@ -191,17 +191,17 @@ module "eks" {
 resource "aws_eks_access_entry" "instance" {
   for_each = toset(coalesce(var.admin_access_entry_role_arns, []))
 
-  cluster_name      = module.eks.cluster_name
-  principal_arn     = each.value
-  type              = "STANDARD"
+  cluster_name  = module.eks.cluster_name
+  principal_arn = each.value
+  type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "cluster_assoc" {
   for_each = aws_eks_access_entry.instance
 
-  cluster_name      = module.eks.cluster_name
-  policy_arn        = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-  principal_arn     = each.value.principal_arn
+  cluster_name  = module.eks.cluster_name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = each.value.principal_arn
 
   access_scope {
     type = "cluster"

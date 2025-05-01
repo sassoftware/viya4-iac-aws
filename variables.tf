@@ -37,21 +37,18 @@ variable "aws_shared_credentials_files" {
   default     = null
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "aws_session_token" {
   description = "Session token for temporary credentials."
   type        = string
   default     = ""
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "aws_access_key_id" {
   description = "Static credential key."
   type        = string
   default     = ""
 }
 
-# tflint-ignore: terraform_unused_declarations
 variable "aws_secret_access_key" {
   description = "Static credential secret."
   type        = string
@@ -236,6 +233,36 @@ variable "default_nodepool_labels" {
   }
 }
 
+variable "default_nodepool_schedules" {
+  description = "Schedules for the default node pool."
+  type = map(object({
+    schedule_action_name = string
+    recurrence           = string
+    time_zone            = string
+    min_size             = number
+    max_size             = number
+    desired_size         = number
+  }))
+  default = {
+    "start" = {
+      schedule_action_name = "start"
+      recurrence           = "0 7 * * 1-5" # CRON expression
+      time_zone            = "US/Eastern"
+      min_size             = 1
+      max_size             = 5
+      desired_size         = 1
+    }
+    "stop" = {
+      schedule_action_name = "stop"
+      recurrence           = "0 17 * * 1-5" # CRON expression
+      time_zone            = "US/Eastern"
+      min_size             = 0
+      max_size             = 0
+      desired_size         = 0
+    }
+  }
+}
+
 variable "default_nodepool_custom_data" {
   description = "Additional user data that will be appended to the default user data."
   type        = string
@@ -264,15 +291,23 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
 variable "node_pools" {
   description = "Node Pool Definitions."
   type = map(object({
-    vm_type                              = string
-    cpu_type                             = string
-    os_disk_type                         = string
-    os_disk_size                         = number
-    os_disk_iops                         = number
-    min_nodes                            = number
-    max_nodes                            = number
-    node_taints                          = list(string)
-    node_labels                          = map(string)
+    vm_type      = string
+    cpu_type     = string
+    os_disk_type = string
+    os_disk_size = number
+    os_disk_iops = number
+    min_nodes    = number
+    max_nodes    = number
+    node_taints  = list(string)
+    node_labels  = map(string)
+    schedules = map(object({
+      schedule_action_name = string
+      recurrence           = string
+      time_zone            = string
+      min_size             = number
+      max_size             = number
+      desired_size         = number
+    }))
     custom_data                          = string
     metadata_http_endpoint               = string
     metadata_http_tokens                 = string
@@ -292,6 +327,7 @@ variable "node_pools" {
       "node_labels" = {
         "workload.sas.com/class" = "cas"
       }
+      "schedules"                            = null
       "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
@@ -310,6 +346,7 @@ variable "node_pools" {
         "workload.sas.com/class"        = "compute"
         "launcher.sas.com/prepullImage" = "sas-programming-environment"
       }
+      "schedules"                            = null
       "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
@@ -327,6 +364,7 @@ variable "node_pools" {
       "node_labels" = {
         "workload.sas.com/class" = "stateless"
       }
+      "schedules"                            = null
       "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"
@@ -344,6 +382,7 @@ variable "node_pools" {
       "node_labels" = {
         "workload.sas.com/class" = "stateful"
       }
+      "schedules"                            = null
       "custom_data"                          = ""
       "metadata_http_endpoint"               = "enabled"
       "metadata_http_tokens"                 = "required"

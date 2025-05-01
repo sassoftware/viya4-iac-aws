@@ -92,7 +92,7 @@ locals {
         "effect" = length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
         }
       }
-      labels = var.default_nodepool_labels
+      labels    = var.default_nodepool_labels
       schedules = var.default_nodepool_schedules
       # User data
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "

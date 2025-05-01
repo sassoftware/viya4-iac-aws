@@ -84,6 +84,6 @@ resource "aws_iam_user_policy_attachment" "attachment" {
 resource "aws_iam_role_policy_attachment" "attachment" {
   count = var.is_user ? 0 : 1
 
-  role       = var.iam_role_name 
+  role       = var.iam_role_name
   policy_arn = aws_iam_policy.fsx_ontap.arn
 }
