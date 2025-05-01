@@ -178,6 +178,16 @@ variable "default_nodepool_vm_type" {
   default     = "r6in.2xlarge"
 }
 
+variable "default_nodepool_cpu_type" {
+  description = "Value used to identify the CPU type of the default node pool VMs."
+  type        = string
+  default     = "AL2023_x86_64_STANDARD"
+  validation {
+    condition     = contains(["AL2023_x86_64_STANDARD"], var.default_nodepool_cpu_type)
+    error_message = "ERROR: Supported values for `default_nodepool_cpu_type` are AL2023_x86_64_STANDARD."
+  }
+}
+
 variable "default_nodepool_os_disk_type" {
   description = "Disk type for default node pool VMs."
   type        = string
@@ -317,7 +327,7 @@ variable "node_pools" {
   default = {
     cas = {
       "vm_type"      = "r6idn.2xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -335,7 +345,7 @@ variable "node_pools" {
     },
     compute = {
       "vm_type"      = "m6idn.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -354,7 +364,7 @@ variable "node_pools" {
     },
     stateless = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -372,7 +382,7 @@ variable "node_pools" {
     },
     stateful = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0

@@ -72,6 +72,7 @@ locals {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
+      ami_type = var.default_nodepool_cpu_type
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"

@@ -317,7 +317,7 @@ variable "node_pools" {
   default = {
     cas = {
       "vm_type"      = "r6idn.2xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -335,7 +335,7 @@ variable "node_pools" {
     },
     compute = {
       "vm_type"      = "m6idn.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -354,7 +354,7 @@ variable "node_pools" {
     },
     stateless = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -372,7 +372,7 @@ variable "node_pools" {
     },
     stateful = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0

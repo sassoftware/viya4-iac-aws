@@ -41,7 +41,7 @@ cluster_node_pool_mode = "minimal"
 node_pools = {
   cas = {
     "vm_type"      = "r6idn.2xlarge"
-    "cpu_type"     = "AL2_x86_64"
+    "cpu_type"     = "AL2023_x86_64_STANDARD"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -58,7 +58,7 @@ node_pools = {
   },
   generic = {
     "vm_type"      = "m6idn.xlarge"
-    "cpu_type"     = "AL2_x86_64"
+    "cpu_type"     = "AL2023_x86_64_STANDARD"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
