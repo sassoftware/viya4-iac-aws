@@ -532,3 +532,34 @@ func TestPlanConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestPlanNetworking(t *testing.T) {
+    tests := map[string]testCase{
+        "vpcCidrTest": {
+            expected:          "192.168.0.0/16",
+            resourceMapName:   "module.vpc.aws_vpc.vpc[0]",
+            attributeJsonPath: "{$.cidr_block}",
+        },
+        "subnetsTest": {
+            expected:          "192.168.129.0/25",
+            resourceMapName:   "module.vpc.aws_subnet.public[0]",
+            attributeJsonPath: "{$.cidr_block}",
+        },
+        "subnetAzsTest": {
+            expected:          "us-east-1a",
+            resourceMapName:   "module.vpc.aws_subnet.public[0]",
+            attributeJsonPath: "{$.availability_zone}",
+        },
+    }
+        
+    variables := getDefaultPlanVars(t)
+    plan, err := initPlanWithVariables(t, variables)
+    require.NotNil(t, plan)
+    require.NoError(t, err)
+
+    for name, tc := range tests {
+        t.Run(name, func(t *testing.T) {
+            runTest(t, tc, plan)
+        })
+    }
+}
