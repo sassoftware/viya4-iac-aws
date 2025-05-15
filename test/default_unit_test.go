@@ -413,3 +413,153 @@ func TestPlanNfs(t *testing.T) {
 		})
 	}
 }
+
+// TestPlanConfig tests the general configuration settings for the EKS cluster
+func TestPlanConfig(t *testing.T) {
+	variables := getDefaultPlanVars(t)
+
+	configTests := map[string]testCase{
+		// Kubernetes Configuration Tests
+		"kubernetesVersion": {
+			expected:          "1.31",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.version}",
+			message:          "Kubernetes version should match the specified version",
+			assertFunction:   assert.Equal,
+		},
+		"authenticationMode": {
+			expected:          "API_AND_CONFIG_MAP",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.access_config[0].authentication_mode}",
+			message:          "Authentication mode should match the default value",
+			assertFunction:   assert.Equal,
+		},
+		"clusterApiMode": {
+			expected:          "true",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.vpc_config[0].endpoint_public_access}",
+			message:          "Cluster API mode should be public by default",
+			assertFunction:   assert.Equal,
+		},
+
+		// Jump VM Configuration Tests
+		"jumpVmEnabled": {
+			expected:          "true",
+			resourceMapName:   "module.jump[0].aws_instance.vm",
+			attributeJsonPath: "{$}",
+			message:          "Jump VM should be created by default",
+			assertFunction:   assert.NotEqual,
+		},
+		"jumpVmAdmin": {
+			expected:          "jump-admin",
+			resourceMapName:   "module.jump[0].aws_instance.vm",
+			attributeJsonPath: "{$.key_name}",
+			message:          "Jump VM admin key name should contain jump-admin",
+			assertFunction:   assert.Contains,
+		},
+		"jumpVmPublicIP": {
+			expected:          "<nil>",
+			resourceMapName:   "module.jump[0].aws_eip.eip[0]",
+			attributeJsonPath: "{$}",
+			message:          "Jump VM should have a public IP by default",
+			assertFunction:   assert.NotEqual,
+		},
+		"jumpRwxFilestorePath": {
+			expected:          "jump-vm",
+			resourceMapName:   "module.jump[0].aws_instance.vm",
+			attributeJsonPath: "{$.tags.Name}",
+			message:          "Jump VM should have the correct name tag",
+			assertFunction:   assert.Contains,
+		},
+
+		// Autoscaling Configuration Tests
+		"autoscalingEnabled": {
+			expected:          "true",
+			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
+			attributeJsonPath: "{$.scaling_config[0].desired_size}",
+			message:          "Autoscaling should be enabled by default",
+			assertFunction:   assert.NotEqual,
+		},
+
+		// Tags Configuration Test
+		"defaultProjectTag": {
+			expected:          "viya",
+			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
+			attributeJsonPath: "{$.tags.project_name}",
+			message:          "Default project tag should be set to viya",
+			assertFunction:   assert.Equal,
+		},
+	}
+
+	// Test admin access entry role ARNs if specified
+	if admin_role_arns, ok := variables["admin_access_entry_role_arns"].([]interface{}); ok && len(admin_role_arns) > 0 {
+		for i, arn := range admin_role_arns {
+			configTests[fmt.Sprintf("adminAccessEntryRoleArn_%d", i)] = testCase{
+				expected:          arn.(string),
+				resourceMapName:   fmt.Sprintf("module.eks.aws_eks_access_entry.admin_access_entry[\"%s\"]", arn.(string)),
+				attributeJsonPath: "{$.principal_arn}",
+				message:          fmt.Sprintf("Admin access entry role ARN %d should be correctly configured", i),
+				assertFunction:   assert.Equal,
+			}
+		}
+	}
+
+	// Test static kubeconfig creation
+	if create_static_kubeconfig, ok := variables["create_static_kubeconfig"].(bool); ok && create_static_kubeconfig {
+		configTests["staticKubeconfigServiceAccount"] = testCase{
+			expected:          "<nil>",
+			resourceMapName:   "module.kubeconfig.kubernetes_service_account.kubernetes_sa[0]",
+			attributeJsonPath: "{$}",
+			message:          "Static kubeconfig service account should be created",
+			assertFunction:   assert.NotEqual,
+		}
+		configTests["staticKubeconfigRoleBinding"] = testCase{
+			expected:          "<nil>",
+			resourceMapName:   "module.kubeconfig.kubernetes_cluster_role_binding.kubernetes_crb[0]",
+			attributeJsonPath: "{$}",
+			message:          "Static kubeconfig role binding should be created",
+			assertFunction:   assert.NotEqual,
+		}
+	}
+
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range configTests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
+}
+
+func TestPlanNetworking(t *testing.T) {
+    tests := map[string]testCase{
+        "vpcCidrTest": {
+            expected:          "192.168.0.0/16",
+            resourceMapName:   "module.vpc.aws_vpc.vpc[0]",
+            attributeJsonPath: "{$.cidr_block}",
+        },
+        "subnetsTest": {
+            expected:          "192.168.129.0/25",
+            resourceMapName:   "module.vpc.aws_subnet.public[0]",
+            attributeJsonPath: "{$.cidr_block}",
+        },
+        "subnetAzsTest": {
+            expected:          "us-east-1a",
+            resourceMapName:   "module.vpc.aws_subnet.public[0]",
+            attributeJsonPath: "{$.availability_zone}",
+        },
+    }
+        
+    variables := getDefaultPlanVars(t)
+    plan, err := initPlanWithVariables(t, variables)
+    require.NotNil(t, plan)
+    require.NoError(t, err)
+
+    for name, tc := range tests {
+        t.Run(name, func(t *testing.T) {
+            runTest(t, tc, plan)
+        })
+    }
+}
