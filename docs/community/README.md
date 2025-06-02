@@ -18,7 +18,7 @@ Community contributed features are submitted by community members to help expand
 
 ## Submitting a Community-Contributed Feature
 
-Submit a community contributed Feature by creating a GitHub PR in this project. The PR should include the source code, unit tests and any required documentation including expected content for the docs/community/community-config-vars.md file.
+Submit a community contributed Feature by creating a GitHub PR in this project. The PR should include the source code, unit tests and any required documentation including expected content for the [docs/community/community-config-vars.md](community-config-vars.md) file.
 
 ## What if a Community-Contributed Feature breaks
 
