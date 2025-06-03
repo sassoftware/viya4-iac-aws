@@ -1,7 +1,7 @@
 
 # Community-Contributed Features
 
-Community-contributed features are submitted by community members to help expand the set of features that the project maintainers are capable of adding to the project on their own. 
+Community contributed features are submitted by community members to help expand the set of features that the project maintainers are capable of adding to the project on their own. 
 
 > [!CAUTION]
 > Community members are responsible for maintaining these features. While project maintainers try to verify these features work as expected when merged, they cannot guarantee future releases will not break them. If you encounter issues while using these features, start a [GitHub Discussion](https://github.com/sassoftware/viya4-iac-aws/discussions) or open a Pull Request to fix them. As a last resort, create a GitHub Issue for the concern.
@@ -18,10 +18,10 @@ Community-contributed features are submitted by community members to help expand
 
 ## Submitting a Community-Contributed Feature
 
-Submit a Community-Contributed Feature by creating a GitHub PR in this project. The PR should include the source code, unit tests and any required documentation including expected content for the docs/community/community-config-vars.md file.
+Submit a community contributed Feature by creating a GitHub PR in this project. The PR should include the source code, unit tests and any required documentation including expected content for the docs/community/community-config-vars.md file.
 
 ## What if a Community-Contributed Feature breaks
 
-If you encounter issues while using a community-contributed feature, start a [GitHub Discussion](https://github.com/sassoftware/viya4-iac-aws/discussions) or open a Pull Request to fix the issue. As a last resort, you can create a GitHub Issue to inform the community about the problem.
+If you encounter issues while using a community contributed feature, start a [GitHub Discussion](https://github.com/sassoftware/viya4-iac-aws/discussions) or open a Pull Request to fix the issue. As a last resort, you can create a GitHub Issue to inform the community about the problem.
 
-If a community-contributed feature is implemented as required, disabling the community feature should serve as a way to remove any impact that it has on the project. Community contributed features that affect the project when disabled should be re-worked to prevent that behavior.
+If a community contributed feature is implemented as required, disabling the community feature should serve as a way to remove any impact that it has on the project. Community contributed features that affect the project when disabled should be re-worked to prevent that behavior.
