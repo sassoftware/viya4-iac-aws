@@ -424,22 +424,22 @@ func TestPlanConfig(t *testing.T) {
 			expected:          "1.31",
 			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			attributeJsonPath: "{$.version}",
-			message:          "Kubernetes version should match the specified version",
-			assertFunction:   assert.Equal,
+			message:           "Kubernetes version should match the specified version",
+			assertFunction:    assert.Equal,
 		},
 		"authenticationMode": {
 			expected:          "API_AND_CONFIG_MAP",
 			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			attributeJsonPath: "{$.access_config[0].authentication_mode}",
-			message:          "Authentication mode should match the default value",
-			assertFunction:   assert.Equal,
+			message:           "Authentication mode should match the default value",
+			assertFunction:    assert.Equal,
 		},
 		"clusterApiMode": {
 			expected:          "true",
 			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			attributeJsonPath: "{$.vpc_config[0].endpoint_public_access}",
-			message:          "Cluster API mode should be public by default",
-			assertFunction:   assert.Equal,
+			message:           "Cluster API mode should be public by default",
+			assertFunction:    assert.Equal,
 		},
 
 		// Jump VM Configuration Tests
@@ -447,29 +447,29 @@ func TestPlanConfig(t *testing.T) {
 			expected:          "true",
 			resourceMapName:   "module.jump[0].aws_instance.vm",
 			attributeJsonPath: "{$}",
-			message:          "Jump VM should be created by default",
-			assertFunction:   assert.NotEqual,
+			message:           "Jump VM should be created by default",
+			assertFunction:    assert.NotEqual,
 		},
 		"jumpVmAdmin": {
 			expected:          "jump-admin",
 			resourceMapName:   "module.jump[0].aws_instance.vm",
 			attributeJsonPath: "{$.key_name}",
-			message:          "Jump VM admin key name should contain jump-admin",
-			assertFunction:   assert.Contains,
+			message:           "Jump VM admin key name should contain jump-admin",
+			assertFunction:    assert.Contains,
 		},
 		"jumpVmPublicIP": {
 			expected:          "<nil>",
 			resourceMapName:   "module.jump[0].aws_eip.eip[0]",
 			attributeJsonPath: "{$}",
-			message:          "Jump VM should have a public IP by default",
-			assertFunction:   assert.NotEqual,
+			message:           "Jump VM should have a public IP by default",
+			assertFunction:    assert.NotEqual,
 		},
 		"jumpRwxFilestorePath": {
 			expected:          "jump-vm",
 			resourceMapName:   "module.jump[0].aws_instance.vm",
 			attributeJsonPath: "{$.tags.Name}",
-			message:          "Jump VM should have the correct name tag",
-			assertFunction:   assert.Contains,
+			message:           "Jump VM should have the correct name tag",
+			assertFunction:    assert.Contains,
 		},
 
 		// Autoscaling Configuration Tests
@@ -477,8 +477,8 @@ func TestPlanConfig(t *testing.T) {
 			expected:          "true",
 			resourceMapName:   "module.eks.module.eks_managed_node_group[\"default\"].aws_eks_node_group.this[0]",
 			attributeJsonPath: "{$.scaling_config[0].desired_size}",
-			message:          "Autoscaling should be enabled by default",
-			assertFunction:   assert.NotEqual,
+			message:           "Autoscaling should be enabled by default",
+			assertFunction:    assert.NotEqual,
 		},
 
 		// Tags Configuration Test
@@ -486,8 +486,8 @@ func TestPlanConfig(t *testing.T) {
 			expected:          "viya",
 			resourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			attributeJsonPath: "{$.tags.project_name}",
-			message:          "Default project tag should be set to viya",
-			assertFunction:   assert.Equal,
+			message:           "Default project tag should be set to viya",
+			assertFunction:    assert.Equal,
 		},
 	}
 
@@ -498,8 +498,8 @@ func TestPlanConfig(t *testing.T) {
 				expected:          arn.(string),
 				resourceMapName:   fmt.Sprintf("module.eks.aws_eks_access_entry.admin_access_entry[\"%s\"]", arn.(string)),
 				attributeJsonPath: "{$.principal_arn}",
-				message:          fmt.Sprintf("Admin access entry role ARN %d should be correctly configured", i),
-				assertFunction:   assert.Equal,
+				message:           fmt.Sprintf("Admin access entry role ARN %d should be correctly configured", i),
+				assertFunction:    assert.Equal,
 			}
 		}
 	}
@@ -510,15 +510,15 @@ func TestPlanConfig(t *testing.T) {
 			expected:          "<nil>",
 			resourceMapName:   "module.kubeconfig.kubernetes_service_account.kubernetes_sa[0]",
 			attributeJsonPath: "{$}",
-			message:          "Static kubeconfig service account should be created",
-			assertFunction:   assert.NotEqual,
+			message:           "Static kubeconfig service account should be created",
+			assertFunction:    assert.NotEqual,
 		}
 		configTests["staticKubeconfigRoleBinding"] = testCase{
 			expected:          "<nil>",
 			resourceMapName:   "module.kubeconfig.kubernetes_cluster_role_binding.kubernetes_crb[0]",
 			attributeJsonPath: "{$}",
-			message:          "Static kubeconfig role binding should be created",
-			assertFunction:   assert.NotEqual,
+			message:           "Static kubeconfig role binding should be created",
+			assertFunction:    assert.NotEqual,
 		}
 	}
 
@@ -534,95 +534,94 @@ func TestPlanConfig(t *testing.T) {
 }
 
 func TestPlanNetworking(t *testing.T) {
-    tests := map[string]testCase{
-        "vpcCidrTest": {
-            expected:          "192.168.0.0/16",
-            resourceMapName:   "module.vpc.aws_vpc.vpc[0]",
-            attributeJsonPath: "{$.cidr_block}",
-        },
-        "subnetsTest": {
-            expected:          "192.168.129.0/25",
-            resourceMapName:   "module.vpc.aws_subnet.public[0]",
-            attributeJsonPath: "{$.cidr_block}",
-        },
-        "subnetAzsTest": {
-            expected:          "us-east-1a",
-            resourceMapName:   "module.vpc.aws_subnet.public[0]",
-            attributeJsonPath: "{$.availability_zone}",
-        },
-    }
-        
-    variables := getDefaultPlanVars(t)
-    plan, err := initPlanWithVariables(t, variables)
-    require.NotNil(t, plan)
-    require.NoError(t, err)
+	tests := map[string]testCase{
+		"vpcCidrTest": {
+			expected:          "192.168.0.0/16",
+			resourceMapName:   "module.vpc.aws_vpc.vpc[0]",
+			attributeJsonPath: "{$.cidr_block}",
+		},
+		"subnetsTest": {
+			expected:          "192.168.129.0/25",
+			resourceMapName:   "module.vpc.aws_subnet.public[0]",
+			attributeJsonPath: "{$.cidr_block}",
+		},
+		"subnetAzsTest": {
+			expected:          "us-east-1a",
+			resourceMapName:   "module.vpc.aws_subnet.public[0]",
+			attributeJsonPath: "{$.availability_zone}",
+		},
+	}
 
-    for name, tc := range tests {
-        t.Run(name, func(t *testing.T) {
-            runTest(t, tc, plan)
-        })
-    }
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
 }
 
 func TestPlanPostgreSQL(t *testing.T) {
-    tests := map[string]testCase{
-        "engineVersionTest": {
-            expected:          "15",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.engine_version}",
-        },
-        "instanceClassTest": {
-            expected:          "db.m6idn.xlarge",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.instance_class}",
-        },
-        "allocatedStorageTest": {
-            expected:          "128",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.allocated_storage}",
-        },
-        "backupRetentionTest": {
-            expected:          "7",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.backup_retention_period}",
-        },
-        "multiAZTest": {
-            expected:          "false",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.multi_az}",
-        },
-        "deletionProtectionTest": {
-            expected:          "false",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.deletion_protection}",
-        },
-        "storageEncryptedTest": {
-            expected:          "false",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.storage_encrypted}",
-        },
-        "administratorlogin": {
-            expected:          "pgadmin",
-            resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
-            attributeJsonPath: "{$.username}",
-        },
-		"administrator_password": {	
+	tests := map[string]testCase{
+		"engineVersionTest": {
+			expected:          "15",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.engine_version}",
+		},
+		"instanceClassTest": {
+			expected:          "db.m6idn.xlarge",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.instance_class}",
+		},
+		"allocatedStorageTest": {
+			expected:          "128",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.allocated_storage}",
+		},
+		"backupRetentionTest": {
+			expected:          "7",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.backup_retention_period}",
+		},
+		"multiAZTest": {
+			expected:          "false",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.multi_az}",
+		},
+		"deletionProtectionTest": {
+			expected:          "false",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.deletion_protection}",
+		},
+		"storageEncryptedTest": {
+			expected:          "false",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.storage_encrypted}",
+		},
+		"administratorlogin": {
+			expected:          "pgadmin",
+			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
+			attributeJsonPath: "{$.username}",
+		},
+		"administrator_password": {
 			expected:          "my$up3rS3cretPassw0rd",
 			resourceMapName:   "module.postgresql[\"default\"].module.db_instance.aws_db_instance.this[0]",
 			attributeJsonPath: "{$.password}",
 		},
-    }	
+	}
+	variables := getDefaultPlanVars(t)
+	plan, err := initPlanWithVariables(t, variables)
+	require.NotNil(t, plan)
+	require.NoError(t, err)
 
-    variables := getDefaultPlanVars(t)
-    plan, err := initPlanWithVariables(t, variables)
-    require.NotNil(t, plan)
-    require.NoError(t, err)
-
-    for name, tc := range tests {
-        t.Run(name, func(t *testing.T) {
-            runTest(t, tc, plan)
-        })
-    }
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			runTest(t, tc, plan)
+		})
+	}
 }
 
 // Test the default variables when using the sample-input-defaults.tfvars file
@@ -644,13 +643,13 @@ func TestPlanEFS(t *testing.T) {
 			expected:          "bursting",
 			resourceMapName:   "aws_efs_file_system.efs-fs[0]",
 			attributeJsonPath: "{$.throughput_mode}",
-
 		},
 	}
 
 	variables := getDefaultPlanVars(t)
 	variables["storage_type_backend"] = "efs"
 	variables["storage_type"] = "ha"
+
 	plan, err := initPlanWithVariables(t, variables)
 	require.NotNil(t, plan)
 	require.NoError(t, err)
@@ -665,49 +664,44 @@ func TestPlanEFS(t *testing.T) {
 func TestPlanNodePools(t *testing.T) {
 	variables := getDefaultPlanVars(t)
 
-	// Set default node pool configurations if not provided
 	if _, ok := variables["node_pools"]; !ok {
 		variables["node_pools"] = map[string]map[string]interface{}{
 			"gpu": {
-				"vm_type":                        "g4dn.xlarge",
-				"cpu_type":                       "AL2_x86_64_GPU",
-				"os_disk_type":                   "gp2",
-				"os_disk_size":                   100,
-				"os_disk_iops":                   3000,
-				"min_nodes":                      1,
-				"max_nodes":                      3,
-				"node_taints":                    []string{"nvidia.com/gpu=present:NoSchedule"},
-				"node_labels":                    map[string]string{"workload.sas.com/node": ""},
-				"metadata_http_endpoint":         "enabled",
-				"metadata_http_tokens":           "required",
+				"vm_type":                              "g4dn.xlarge",
+				"cpu_type":                             "AL2_x86_64_GPU",
+				"os_disk_type":                         "gp2",
+				"os_disk_size":                         100,
+				"os_disk_iops":                         3000,
+				"min_nodes":                            1,
+				"max_nodes":                            3,
+				"node_taints":                          []string{"nvidia.com/gpu=present:NoSchedule"},
+				"node_labels":                          map[string]string{"workload.sas.com/node": ""},
+				"metadata_http_endpoint":               "enabled",
+				"metadata_http_tokens":                 "required",
 				"metadata_http_put_response_hop_limit": 1,
-				"custom_data":                    "",
+				"custom_data":                          "",
 			},
 			"high-memory": {
-				"vm_type":                        "r5.2xlarge",
-				"cpu_type":                       "AL2_x86_64",
-				"os_disk_type":                   "io1",
-				"os_disk_size":                   200,
-				"os_disk_iops":                   3000,
-				"min_nodes":                      2,
-				"max_nodes":                      4,
-				"node_taints":                    []string{"workload.sas.com/memory=high:NoSchedule"},
-				"node_labels":                    map[string]string{"workload.sas.com/node": ""},
-				"metadata_http_endpoint":         "enabled",
-				"metadata_http_tokens":           "required",
+				"vm_type":                              "r5.2xlarge",
+				"cpu_type":                             "AL2_x86_64",
+				"os_disk_type":                         "io1",
+				"os_disk_size":                         200,
+				"os_disk_iops":                         3000,
+				"min_nodes":                            2,
+				"max_nodes":                            4,
+				"node_taints":                          []string{"workload.sas.com/memory=high:NoSchedule"},
+				"node_labels":                          map[string]string{"workload.sas.com/node": ""},
+				"metadata_http_endpoint":               "enabled",
+				"metadata_http_tokens":                 "required",
 				"metadata_http_put_response_hop_limit": 1,
-				"custom_data":                    "",
+				"custom_data":                          "",
 			},
 		}
 	}
 
-	// Log the variables we're checking
 	t.Logf("Checking node pool configurations: %+v", variables["node_pools"])
-
-	// Create test cases for node pool configurations
 	nodePoolTests := map[string]testCase{}
 
-	// Test GPU node pool configuration
 	nodePoolTests["gpuNodePoolVmType"] = testCase{
 		expected:          "g4dn.xlarge",
 		resourceMapName:   "module.eks.module.eks_managed_node_group[\"gpu\"].aws_eks_node_group.this[0]",
@@ -748,7 +742,6 @@ func TestPlanNodePools(t *testing.T) {
 		assertFunction:    assert.Equal,
 	}
 
-	// Test high-memory node pool configuration
 	nodePoolTests["highMemoryNodePoolVmType"] = testCase{
 		expected:          "r5.2xlarge",
 		resourceMapName:   "module.eks.module.eks_managed_node_group[\"high-memory\"].aws_eks_node_group.this[0]",
@@ -773,7 +766,6 @@ func TestPlanNodePools(t *testing.T) {
 		assertFunction:    assert.Equal,
 	}
 
-	// Test metadata configuration for both node pools
 	for _, pool := range []string{"gpu", "high-memory"} {
 		nodePoolTests[fmt.Sprintf("%sNodePoolMetadataEndpoint", pool)] = testCase{
 			expected:          "enabled",
@@ -814,4 +806,4 @@ func TestPlanNodePools(t *testing.T) {
 			runTest(t, tc, plan)
 		})
 	}
-} 
+}
