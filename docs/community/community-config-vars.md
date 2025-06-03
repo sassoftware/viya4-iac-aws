@@ -22,4 +22,4 @@ Here is a table with the variables you would use to configure it
 
 | Name | Description | Type | Default | Release Added | Notes |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| contrib_enable_community_feature | Enable community feature | bool | false | vMajor.Minor.Patch | |
+| community_enable_community_feature | Enable community feature | bool | false | vMajor.Minor.Patch | |
