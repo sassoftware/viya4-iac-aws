@@ -277,7 +277,7 @@ Custom policy:
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_nodepool_vm_type | Type of the default node pool VMs | string | "m5.2xlarge" | |
-| default_nodepool_os_disk_type | Disk type for default node pool VMs | string | gp2 | |
+| default_nodepool_os_disk_type | Disk type for default node pool VMs | string | gp2 | `gp2`, `gp3`, or `io1` |
 | default_nodepool_os_disk_size | Disk size for default node pool VMs in GB | number | 200 ||
 | default_nodepool_os_disk_iops | Disk IOPS for default node pool VMs | number | | For `io1`, you MUST set the value to your desired IOPS value. Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
 | default_nodepool_node_count | Initial number of nodes in the default node pool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`. |
@@ -327,8 +327,8 @@ When `storage_type=standard`, an NFS server VM is created, and the following var
 | create_nfs_public_ip | Add public IP address to the NFS server VM | bool | false |  |
 | nfs_vm_admin | Admin user account for the NFS server VM | string | "nfsuser" | |
 | nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | |
-| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: "standard", "gp2", "io1", "io2", "sc1" or "st1". |
-| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io1" or "io2". |
+| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: `standard`, `gp2`, `io1`, `io2`, `sc1` or `st1`. |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is `io1` or `io2`. |
 
 ### AWS Elastic File System (EFS)
 
