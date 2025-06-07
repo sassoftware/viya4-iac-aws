@@ -5,7 +5,7 @@
 
 locals {
   # Determine the VPC ID to use, prioritizing the provided vpc_id variable, falling back to the first VPC in the aws_vpc.vpc data source
-  vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  vpc_id = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
   # Check if there are existing subnets by evaluating the length of the existing_subnet_ids variable
   existing_subnets = length(var.existing_subnet_ids) > 0 ? true : false
 

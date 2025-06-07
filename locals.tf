@@ -10,21 +10,21 @@ locals {
   caller_is_user = strcontains(data.aws_caller_identity.terraform.arn, ":user")
 
   # AWS caller role name derived from ARN value
-  aws_caller_role_name = local.caller_is_user ? "" : element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 2) 
+  aws_caller_role_name = local.caller_is_user ? "" : element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 2)
 
   # General
   # Security group ID for the instance, can be from variable or derived from existing security group
-  security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
+  security_group_id = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
   # Cluster security group ID, with a preference for the variable value
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   # Workers security group ID, with a preference for the variable value
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   # Name of the EKS cluster
-  cluster_name              = "${var.prefix}-eks"
+  cluster_name = "${var.prefix}-eks"
   # Default tags applied to resources
-  default_tags              = { project_name = "viya" }
+  default_tags = { project_name = "viya" }
   # Tags for the resources, defaults to project name if not provided
-  tags                      = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
+  tags = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
 
   # aws_shared_credentials_file - is DEPRECATED and will be removed in a future release
   # Determine if the deprecated AWS shared credentials file variable is used
@@ -56,9 +56,9 @@ locals {
 
   # Subnets
   # Determine the subnet to use for the jump VM, based on public IP creation flag
-  jump_vm_subnet   = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  jump_vm_subnet = var.create_jump_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   # Determine the subnet to use for the NFS VM, based on public IP creation flag
-  nfs_vm_subnet    = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
+  nfs_vm_subnet = var.create_nfs_public_ip ? module.vpc.public_subnets[0] : module.vpc.private_subnets[0]
   # Availability zone for the NFS VM subnet, based on public IP creation flag
   nfs_vm_subnet_az = var.create_nfs_public_ip ? module.vpc.public_subnet_azs[0] : module.vpc.private_subnet_azs[0]
 
@@ -87,7 +87,7 @@ locals {
   kubeconfig_filename = "${local.cluster_name}-kubeconfig.conf"
   kubeconfig_path     = var.iac_tooling == "docker" ? "/workspace/${local.kubeconfig_filename}" : local.kubeconfig_filename
   # Certificate authority data for the Kubernetes cluster
-  kubeconfig_ca_cert  = module.eks.cluster_certificate_authority_data
+  kubeconfig_ca_cert = module.eks.cluster_certificate_authority_data
 
   # Mapping node_pools to node_groups
   # Default node pool configuration
@@ -201,7 +201,7 @@ locals {
   ] : [] : []
   # Creating CIDR and port pairs for PostgreSQL access rules
   postgres_cidr_port_pairs = setproduct(local.postgres_sgr_ports, local.postgres_public_access_cidrs)
-  
+
   # Ingress pairs for PostgreSQL, mapping server ports to CIDRs
   ingress_pairs = length(local.postgres_cidr_port_pairs) != 0 ? { for pair in local.postgres_cidr_port_pairs :
     "${pair[0]}-${pair[1]}" => {

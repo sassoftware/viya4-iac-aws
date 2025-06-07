@@ -69,7 +69,7 @@ data "aws_ami" "ubuntu" {
 # Resource to create an SSH key pair for accessing the VM
 resource "aws_key_pair" "admin" {
   # The name of the key pair, unique within the AWS region
-  key_name   = "${var.name}-admin"
+  key_name = "${var.name}-admin"
   # The public key material
   public_key = var.ssh_public_key
 }
@@ -77,13 +77,13 @@ resource "aws_key_pair" "admin" {
 # Resource to provision an EC2 instance (VM) in AWS
 resource "aws_instance" "vm" {
   # The AMI ID to use for the instance, fetched from the aws_ami data source
-  ami               = data.aws_ami.ubuntu.id
+  ami = data.aws_ami.ubuntu.id
   # The instance type, e.g., t2.micro, specified in variables
-  instance_type     = var.vm_type
+  instance_type = var.vm_type
   # Cloud-init script for initializing the VM, if provided
-  user_data         = (var.cloud_init != "" ? var.cloud_init : null)
+  user_data = (var.cloud_init != "" ? var.cloud_init : null)
   # The key pair to use for SSH access, referencing the aws_key_pair resource
-  key_name          = aws_key_pair.admin.key_name
+  key_name = aws_key_pair.admin.key_name
   # The availability zone for the instance, specified in variables
   availability_zone = var.data_disk_availability_zone
 
@@ -95,15 +95,15 @@ resource "aws_instance" "vm" {
   # Configuration for the root block device (EBS volume)
   root_block_device {
     # The type of the volume, e.g., gp2, io1, specified in variables
-    volume_type           = var.os_disk_type
+    volume_type = var.os_disk_type
     # The size of the volume in GiB
-    volume_size           = var.os_disk_size
+    volume_size = var.os_disk_size
     # Whether to delete the volume on instance termination
     delete_on_termination = var.os_disk_delete_on_termination
     # The IOPS (Input/Output Operations Per Second) for the volume, if applicable
-    iops                  = var.os_disk_iops
+    iops = var.os_disk_iops
     # Whether to enable encryption for the volume
-    encrypted             = var.enable_ebs_encryption
+    encrypted = var.enable_ebs_encryption
     # Tags to apply to the volume, merging static and variable tags
     tags = merge(
       {
@@ -130,43 +130,43 @@ resource "aws_instance" "vm" {
 # Resource to allocate an Elastic IP address for the VM
 resource "aws_eip" "eip" {
   # Count is set based on whether a public IP is to be created
-  count    = var.create_public_ip ? 1 : 0
+  count = var.create_public_ip ? 1 : 0
   # The domain for the Elastic IP, "vpc" for VPC-based instances
-  domain   = "vpc"
+  domain = "vpc"
   # The instance to associate the Elastic IP with
   instance = aws_instance.vm.id
   # Tags to apply to the Elastic IP, merging static and variable tags
-  tags     = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
+  tags = merge(var.tags, tomap({ Name : "${var.name}-eip" }))
 }
 
 # Resource to attach additional EBS volumes to the VM
 resource "aws_volume_attachment" "data-volume-attachment" {
   # Count is set to the number of data disks to attach
-  count       = var.data_disk_count
+  count = var.data_disk_count
   # The device name to expose to the instance, based on the local device_name list
   device_name = element(local.device_name, count.index)
   # The instance to attach the volume to
   instance_id = aws_instance.vm.id
   # The volume to attach, from the aws_ebs_volume resource
-  volume_id   = element(aws_ebs_volume.raid_disk[*].id, count.index)
+  volume_id = element(aws_ebs_volume.raid_disk[*].id, count.index)
 }
 
 # Resource to create additional EBS volumes for the VM
 resource "aws_ebs_volume" "raid_disk" {
   # Count is set to the number of data disks to create
-  count             = var.data_disk_count
+  count = var.data_disk_count
   # The availability zone for the volume, specified in variables
   availability_zone = var.data_disk_availability_zone
   # The size of the volume in GiB
-  size              = var.data_disk_size
+  size = var.data_disk_size
   # The type of the volume, e.g., gp2, io1, specified in variables
-  type              = var.data_disk_type
+  type = var.data_disk_type
   # The IOPS (Input/Output Operations Per Second) for the volume, if applicable
-  iops              = var.data_disk_iops
+  iops = var.data_disk_iops
   # Tags to apply to the volume, merging static and variable tags
-  tags              = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
+  tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
   # Whether to enable encryption for the volume
-  encrypted         = var.enable_ebs_encryption
+  encrypted = var.enable_ebs_encryption
 }
 
 # Reference the feature flag variable name, an example reference to suppress TFLint warning

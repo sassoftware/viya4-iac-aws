@@ -8,7 +8,7 @@ resource "aws_iam_policy" "ebs_csi" {
   # Description of the policy, including the cluster name for context
   description = "EKS ebs csi policy for cluster ${var.cluster_name}"
   # Tags to apply to the policy for management and organization
-  tags        = var.tags
+  tags = var.tags
 
   # The policy document that defines the permissions granted by this policy
   policy = <<EOT
@@ -174,18 +174,18 @@ EOT
 # Module to create an IAM role that can be assumed by the EBS CSI driver using OIDC
 module "iam_assumable_role_with_oidc" {
   # Source of the module, pointing to the IAM module in the Terraform AWS Modules collection
-  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   # Version constraint for the module
   version = "~> 5.0"
 
   # Enable role creation
-  create_role                    = true
+  create_role = true
   # Name of the role, following the naming convention with the provided prefix
-  role_name                      = "${var.prefix}-ebs-csi-role"
+  role_name = "${var.prefix}-ebs-csi-role"
   # OIDC provider URL, formatted as required by the module
-  provider_url                   = replace(var.oidc_url, "https://", "")
+  provider_url = replace(var.oidc_url, "https://", "")
   # Attach the previously created policy to this role
-  role_policy_arns               = [aws_iam_policy.ebs_csi.arn]
+  role_policy_arns = [aws_iam_policy.ebs_csi.arn]
   # Audience and subject for the OIDC provider, specific to the EBS CSI controller service account
   oidc_fully_qualified_audiences = ["sts.amazonaws.com"]
   oidc_fully_qualified_subjects  = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
@@ -202,7 +202,7 @@ module "iam_assumable_role_with_oidc" {
 # Attach the IAM policy to the role created by the module
 resource "aws_iam_role_policy_attachment" "ebs_attachment" {
   # Role to attach the policy to, obtained from the module output
-  role       = module.iam_assumable_role_with_oidc.iam_role_name
+  role = module.iam_assumable_role_with_oidc.iam_role_name
   # ARN of the policy to attach
   policy_arn = aws_iam_policy.ebs_csi.arn
 }
