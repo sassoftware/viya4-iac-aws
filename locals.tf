@@ -9,7 +9,7 @@ locals {
   caller_is_user = strcontains(data.aws_caller_identity.terraform.arn, ":user")
 
   # AWS caller role name derived from ARN value
-  aws_caller_role_name = local.caller_is_user ? "" : element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 2) 
+  aws_caller_role_name = local.caller_is_user ? "" : element(split("/", data.aws_caller_identity.terraform.arn), length(split("/", data.aws_caller_identity.terraform.arn)) - 2)
 
   # General
   security_group_id         = var.security_group_id == null ? aws_security_group.sg[0].id : data.aws_security_group.sg[0].id
@@ -72,6 +72,7 @@ locals {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
+      ami_type = var.default_nodepool_cpu_type
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -92,7 +93,8 @@ locals {
         "effect" = length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
         }
       }
-      labels = var.default_nodepool_labels
+      labels    = var.default_nodepool_labels
+      schedules = var.default_nodepool_schedules
       # User data
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
       pre_bootstrap_user_data = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
@@ -142,7 +144,8 @@ locals {
         "effect" = length(regexall(":No", taint)) > 0 ? upper(replace(split(":", split("=", taint)[1])[1], "No", "NO_")) : upper(replace(split(":", split("=", taint)[1])[1], "No", "_NO_"))
         }
       }
-      labels = np_value.node_labels
+      labels    = np_value.node_labels
+      schedules = np_value.schedules
       # User data
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
       pre_bootstrap_user_data = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
@@ -172,14 +175,12 @@ locals {
     v.server_port
   ] : [] : []
   postgres_cidr_port_pairs = setproduct(local.postgres_sgr_ports, local.postgres_public_access_cidrs)
-  
   ingress_pairs = length(local.postgres_cidr_port_pairs) != 0 ? { for pair in local.postgres_cidr_port_pairs :
     "${pair[0]}-${pair[1]}" => {
       "server_port" : pair[0],
       "cidr" : pair[1]
     }
   } : {}
-
 
   postgres_outputs = length(module.postgresql) != 0 ? { for k, v in module.postgresql :
     k => {
