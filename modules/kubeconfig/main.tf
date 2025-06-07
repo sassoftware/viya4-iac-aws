@@ -3,6 +3,7 @@
 
 
 locals {
+  # Constructed names for service account, cluster role binding, and service account secret
   service_account_name        = "${var.prefix}-cluster-admin-sa"
   cluster_role_binding_name   = "${var.prefix}-cluster-admin-crb"
   service_account_secret_name = "${var.prefix}-sa-secret"
