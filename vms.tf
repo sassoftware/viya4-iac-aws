@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 locals {
+  # Determine the file store endpoint based on the storage type and backend
   rwx_filestore_endpoint = (var.storage_type == "none"
     ? ""
     : local.storage_type_backend == "efs" ? aws_efs_file_system.efs-fs[0].dns_name
     : local.storage_type_backend == "ontap" ? aws_fsx_ontap_storage_virtual_machine.ontap-svm[0].endpoints[0]["nfs"][0]["dns_name"] : module.nfs[0].private_ip_address
   )
+  # Set the file store path based on the storage type and backend
   rwx_filestore_path = (var.storage_type == "none"
     ? ""
     : local.storage_type_backend == "efs" ? "/"
