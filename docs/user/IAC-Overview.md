@@ -10,7 +10,8 @@ The items are created in their dependency order determined by Terraform during r
   - This item is created by the IaC code base unless provided by the customer
 
 - **VPC Private Endpoints**
-  - These provide the needed communication between AWS, its items, and the running cluster  
+  - These provide the needed communication between AWS, its items, and the running cluster
+  - [Documentation from AWS on Private EKS clusters](https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html) and service and endpoint considerations
     **NOTE:** These are added to the VPC security groups created
     - ec2 (Interface)
     - ecr.api (Interface)
