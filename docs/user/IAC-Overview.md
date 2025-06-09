@@ -1,8 +1,8 @@
-# Infrastructure Items Created by the IaC Codebase
+# Overview of Infrastructure Items Created by the IaC Codebase
 
 The items are created in their dependency order determined by Terraform during runtime. They are placed in the order below on how they logically fall within the Terraform files.
 
-## VPC
+## VPC - Virtual Private Cloud
 
 [IAC VPC Code](https://github.com/sassoftware/viya4-iac-aws/tree/main/modules/aws_vpc)
 
@@ -132,7 +132,7 @@ The include rules, their Ports, protocols, and source groups
 
 ---
 
-## EKS
+## EKS - Elastic Kubernetes Cluster
 
 [IAC EKS Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L94)
 
@@ -146,7 +146,7 @@ The include rules, their Ports, protocols, and source groups
 
 ---
 
-## VMS
+## VMS - Virtual Machines and Servers
 
 [IAC VMS Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf)
 
