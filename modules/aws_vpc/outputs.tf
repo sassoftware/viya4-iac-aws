@@ -76,6 +76,6 @@ output "byon_scenario" {
 }
 
 output "create_nat_gateway" {
-  description = "Indicates if the networking configuration will create a NAT gateway"
+  description = "The networking configuration will create a NAT gateway"
   value       = local.create_nat_gateway
 }
