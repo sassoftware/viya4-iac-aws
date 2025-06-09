@@ -82,16 +82,14 @@ resource "aws_iam_policy" "fsx_ontap" {
 
 # IAM User Policy Attachment resource
 resource "aws_iam_user_policy_attachment" "attachment" {
-  count = var.is_user ? 1 : 0 # Attach policy only if var.is_user is true
-
+  count      = var.is_user ? 1 : 0          # Attach policy only if var.is_user is tru
   user       = var.iam_user_name            # IAM user name to attach the policy
   policy_arn = aws_iam_policy.fsx_ontap.arn # ARN of the FSx ONTAP policy
 }
 
 # IAM Role Policy Attachment resource
 resource "aws_iam_role_policy_attachment" "attachment" {
-  count = var.is_user ? 0 : 1 # Attach policy only if var.is_user is false
-
+  count      = var.is_user ? 0 : 1          # Attach policy only if var.is_user is false
   role       = var.iam_role_name            # IAM role name to attach the policy
   policy_arn = aws_iam_policy.fsx_ontap.arn # ARN of the FSx ONTAP policy
 }
