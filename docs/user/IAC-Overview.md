@@ -37,7 +37,7 @@ The items are created in their dependency order determined by Terraform during r
 - **Route Tables**
   - These are created if the code base is creating the subnets  
     **NOTE:** If the customer is providing the subnets, it is their responsibility to provide route tables and routes for each of the subnets provided.
-    Here is a reference link to the [Subnet Requirements and Considerations from AWS](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html#network-requirements-subnets)
+    Here is a reference link to the [EKS Networking Requirements for VPCs and subnets](https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html)
     They must also provide connectivity that is sufficient for the infrastructure to communicate successfully between those subnets.
     - Public Route Table - Associated with the public subnet and VPC
       - Public Internet Gateway Route - Associated with the public route table and the internet gateway
