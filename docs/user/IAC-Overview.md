@@ -151,7 +151,7 @@ The include rules, their Ports, protocols, and source groups
 [IAC VMS Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf)
 
 - Stand up VMs and supporting storage
-- Generic VM module: <https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_vm/main.tf>
+- [Generic VM module](https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_vm/main.tf)
   - Jump VM
   - NFS Server
 
