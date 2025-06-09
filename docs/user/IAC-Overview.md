@@ -25,9 +25,9 @@ The items are created in their dependency order determined by Terraform during r
 - **Subnets**
   - These items are created by the IaC code base unless provided by the customer
   - They are:
-    - Public (Optional with BYO scenario 2)
     - Private
     - Control Plane
+    - Public (Optional with BYO scenario 2)
     - Database (Optional with BYO scenario 2)
 
 - **Internet Gateway**
