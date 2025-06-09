@@ -4,7 +4,7 @@ The items are created in their dependency order determined by Terraform during r
 
 ## VPC
 
-<https://github.com/sassoftware/viya4-iac-aws/tree/main/modules/aws_vpc>
+[IAC VPC Code](https://github.com/sassoftware/viya4-iac-aws/tree/main/modules/aws_vpc)
 
 - **VPC**
   - This item is created by the IaC code base unless provided by the customer
@@ -59,11 +59,11 @@ The items are created in their dependency order determined by Terraform during r
 
 ## Security
 
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/security.tf>
+[IAC Security Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/security.tf)
 
-The following security groups will be created as outlined here:  
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/docs/user/BYOnetwork.md#security-groups>  
-Ports, protocols, and source groups are listed in the doc.
+The following [security groups](https://github.com/sassoftware/viya4-iac-aws/blob/main/docs/user/BYOnetwork.md#security-groups) will be created as outlined here.
+
+The include rules, their Ports, protocols, and source groups
 
 **NOTE:** When creating or having a BYO network scenario, one must consult with their Network Administrator and set up what's needed to configure a working AWS VPC network for the infrastructure.
 
@@ -134,11 +134,10 @@ Ports, protocols, and source groups are listed in the doc.
 
 ## EKS
 
-This is the RAW terraform-aws-eks module from AWS:  
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L94>
+[IAC EKS Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L94)
 
 - A generic EKS cluster
-- Documentation: <https://github.com/terraform-aws-modules/terraform-aws-eks>
+- [Documentation](https://github.com/terraform-aws-modules/terraform-aws-eks)
 - This repo configures several items including:
   - Cluster Security Group
   - Node Security Group
@@ -149,7 +148,7 @@ This is the RAW terraform-aws-eks module from AWS:
 
 ## VMS
 
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf>
+[IAC VMS Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf)
 
 - Stand up VMs and supporting storage
 - Generic VM module: <https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_vm/main.tf>
@@ -157,9 +156,9 @@ This is the RAW terraform-aws-eks module from AWS:
   - NFS Server
 
 - Storage and initialization items:
-  - FSX OnTAP: <https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L19>
-  - EFS: <https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L60>
-  - Jump VM cloud-config: <https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L80>
+  - [FSX OnTAP](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L19)
+  - [EFS](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L60)
+  - [Jump VM cloud-config](https://github.com/sassoftware/viya4-iac-aws/blob/main/vms.tf#L80)
 
 ---
 
@@ -169,27 +168,26 @@ Misc items needed for AWS and IAM rule setup for baseline items: Cluster Autosca
 
 ## PostgreSQL
 
-This is the RAW PostgreSQL module from AWS:  
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L269>
+[IAC PostgreSQL Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L269)
 
 - External database configured by default
-- Documentation: <https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0>
+- [Documentation](https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0)
 
 ---
 
 ## Resource Group
 
-This is the RAW ResourceGroup from AWS:  
-<https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L327>
+[IAC Resource Group Code](https://github.com/sassoftware/viya4-iac-aws/blob/main/main.tf#L327)
 
 - Resource group made up of the current deployment's items
-- Documentation: <https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/resourcegroups_group.html>
+- [Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/resourcegroups_group.html)
 
 ---
 
 ## Modules
 
 These modules are used to create IAM policies for use with standard Kubernetes cluster items:
-- Autoscaling: <https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_autoscaling/main.tf>
-- EBS CSI: <https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_ebs_csi/main.tf>
-- FSX onTap: <https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_fsx_ontap/main.tf>
+
+- [Autoscaling](https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_autoscaling/main.tf)
+- [EBS CSI](https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_ebs_csi/main.tf)
+- [FSX onTap](https://github.com/sassoftware/viya4-iac-aws/blob/main/modules/aws_fsx_ontap/main.tf)
