@@ -82,7 +82,7 @@ resource "aws_iam_policy" "fsx_ontap" {
 
 # IAM User Policy Attachment resource
 resource "aws_iam_user_policy_attachment" "attachment" {
-  count      = var.is_user ? 1 : 0          # Attach policy only if var.is_user is tru
+  count      = var.is_user ? 1 : 0          # Attach policy only if var.is_user is true
   user       = var.iam_user_name            # IAM user name to attach the policy
   policy_arn = aws_iam_policy.fsx_ontap.arn # ARN of the FSx ONTAP policy
 }
