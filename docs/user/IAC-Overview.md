@@ -118,6 +118,7 @@ The include rules, their Ports, protocols, and source groups
       - Allow all outbound traffic from this security group 
     - Create an ingress rule for the workers
       - Allow communication between all worker security groups
+      - Allow all worker nodes to communicate with each other
     - Create a rule that allows traffic from the cluster security group to the worker security group
       - Protocol: TCP
       - From: 1025
