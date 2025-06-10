@@ -16,7 +16,7 @@ subnet_ids = {               # only needed if using pre-existing subnets
   "database" : ["existing-database-subnet-id1", "existing-database-subnet-id2"] # only when 'create_postgres=true'
 }
 nat_id                    = "<existing-NAT-gateway-id>"
-security_group_id         = "<existing-security-group-id>" # only needed if using pre-existing Security Group
+security_group_id         = "<existing-security-group-id>"         # only needed if using pre-existing Security Group
 cluster_security_group_id = "<existing-cluster-security-group-id>" # only needed if using pre-existing Cluster Security Group
 workers_security_group_id = "<existing-workers-security-group-id>" # only needed if using pre-existing Security Group for Node Group VMs
 

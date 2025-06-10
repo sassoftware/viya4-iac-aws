@@ -1,7 +1,8 @@
-# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2025, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 ## Global
+# The prefix used for naming all cloud resources. Must start with a lowercase letter and can only contain lowercase letters, numbers, and hyphens (not starting or ending with '-').
 variable "prefix" {
   description = "A prefix used in the name for all cloud resources created by this script. The prefix string must start with a lowercase letter and contain only alphanumeric characters and hyphens or dashes (-), but cannot start or end with '-'."
   type        = string
@@ -13,48 +14,56 @@ variable "prefix" {
 }
 
 ## Provider
+# AWS region where all resources will be provisioned. Default is 'us-east-1'.
 variable "location" {
   description = "AWS Region to provision all resources in this script."
   type        = string
   default     = "us-east-1"
 }
 
+# AWS CLI profile name to use for authentication. If empty, the default profile is used.
 variable "aws_profile" {
   description = "Name of Profile in the credentials file."
   type        = string
   default     = ""
 }
 
+# Path to the AWS credentials file if not using the default location. Useful for custom setups.
 variable "aws_shared_credentials_file" {
   description = "Name of credentials file, if using non-default location."
   type        = string
   default     = ""
 }
 
+# List of paths to shared credentials files. Allows specifying multiple credentials files for advanced use cases.
 variable "aws_shared_credentials_files" {
   description = "List of paths to shared credentials files, if using non-default location."
   type        = list(string)
   default     = null
 }
 
+# AWS session token for temporary credentials, typically used with MFA or assumed roles.
 variable "aws_session_token" {
   description = "Session token for temporary credentials."
   type        = string
   default     = ""
 }
 
+# AWS access key ID for static credentials. Used for programmatic access.
 variable "aws_access_key_id" {
   description = "Static credential key."
   type        = string
   default     = ""
 }
 
+# AWS secret access key for static credentials. Used for programmatic access.
 variable "aws_secret_access_key" {
   description = "Static credential secret."
   type        = string
   default     = ""
 }
 
+# Identifier for the infrastructure-as-code tooling used. Default is 'terraform'.
 variable "iac_tooling" {
   description = "Value used to identify the tooling used to generate this provider's infrastructure."
   type        = string
@@ -62,18 +71,21 @@ variable "iac_tooling" {
 }
 
 ## Public & Private Access
+# List of CIDR blocks allowed public access to created resources (e.g., VMs, endpoints).
 variable "default_public_access_cidrs" {
   description = "List of CIDRs to access created resources - Public."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed private access to created resources.
 variable "default_private_access_cidrs" {
   description = "List of CIDRs to access created resources - Private."
   type        = list(string)
   default     = null
 }
 
+# List of EKS cluster log types to enable in CloudWatch (e.g., audit, api, authenticator).
 variable "cluster_enabled_log_types" {
   description = "List of audits to record from EKS cluster in CloudWatch"
   type        = list(string)
@@ -81,36 +93,42 @@ variable "cluster_enabled_log_types" {
   # Example value: ["audit","api","authenticator"] 
 }
 
+# List of CIDR blocks allowed public access to the Kubernetes cluster endpoint.
 variable "cluster_endpoint_public_access_cidrs" {
   description = "List of CIDRs to access Kubernetes cluster - Public."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed private access to the Kubernetes cluster endpoint.
 variable "cluster_endpoint_private_access_cidrs" {
   description = "List of CIDRs to access Kubernetes cluster - Private."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed private access to VPC endpoints.
 variable "vpc_endpoint_private_access_cidrs" {
   description = "List of CIDRs to access VPC endpoints - Private."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed public access to jump or NFS VMs.
 variable "vm_public_access_cidrs" {
   description = "List of CIDRs to access jump VM or NFS VM - Public."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed private access to jump or NFS VMs.
 variable "vm_private_access_cidrs" {
   description = "List of CIDRs to access jump VM or NFS VM - Private."
   type        = list(string)
   default     = null
 }
 
+# List of CIDR blocks allowed access to the PostgreSQL server.
 variable "postgres_public_access_cidrs" {
   description = "List of CIDRs to access PostgreSQL server."
   type        = list(string)
@@ -118,18 +136,21 @@ variable "postgres_public_access_cidrs" {
 }
 
 ## Provider Specific
+# SSH public key path used for VM access. Default is '~/.ssh/id_rsa.pub'.
 variable "ssh_public_key" {
   description = "SSH public key used to access VMs."
   type        = string
   default     = "~/.ssh/id_rsa.pub"
 }
 
+# EFS (Elastic File System) performance mode. Can be 'generalPurpose' or 'maxIO'.
 variable "efs_performance_mode" {
   description = "EFS performance mode. Supported values are `generalPurpose` or `maxIO`."
   type        = string
   default     = "generalPurpose"
 }
 
+# EFS throughput mode. 'bursting' for automatic scaling, 'provisioned' for fixed throughput (requires 'efs_throughput_rate').
 variable "efs_throughput_mode" {
   description = "EFS throughput mode. Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required."
   type        = string
@@ -141,6 +162,7 @@ variable "efs_throughput_mode" {
   }
 }
 
+# EFS throughput rate in MiB/s. Only used if 'efs_throughput_mode' is 'provisioned'. Must be between 1 and 1024.
 variable "efs_throughput_rate" {
   description = "EFS throughput rate, measured in MiB/s. Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'."
   type        = number
@@ -153,12 +175,14 @@ variable "efs_throughput_rate" {
 }
 
 ## Kubernetes
+# Kubernetes version for the EKS cluster. Default is '1.31'.
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
   default     = "1.31"
 }
 
+# Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
 variable "tags" {
   description = "Map of common tags to be placed on the resources."
   type        = map(any)
@@ -166,18 +190,21 @@ variable "tags" {
 }
 
 ## Default node pool config
+# Whether to create the default node pool for the cluster. If false, you must define your own node pools.
 variable "create_default_nodepool" { # tflint-ignore: terraform_unused_declarations
   description = "Create Default Node Pool."
   type        = bool
   default     = true
 }
 
+# EC2 instance type for the default node pool (e.g., r6in.2xlarge).
 variable "default_nodepool_vm_type" {
   description = "Type of the default node pool VMs."
   type        = string
   default     = "r6in.2xlarge"
 }
 
+# Disk type for default node pool VMs. Supported: 'gp3', 'gp2', 'io1'.
 variable "default_nodepool_os_disk_type" {
   description = "Disk type for default node pool VMs."
   type        = string
@@ -189,42 +216,49 @@ variable "default_nodepool_os_disk_type" {
   }
 }
 
+# Disk size in GiB for default node pool VMs. Default is 200.
 variable "default_nodepool_os_disk_size" {
   description = "Disk size for default node pool VMs."
   type        = number
   default     = 200
 }
 
+# Disk IOPS for default node pool VMs. Used for performance tuning.
 variable "default_nodepool_os_disk_iops" {
   description = "Disk IOPS for default node pool VMs."
   type        = number
   default     = 0
 }
 
+# Initial number of nodes in the default node pool.
 variable "default_nodepool_node_count" {
   description = "Initial number of nodes in the default node pool."
   type        = number
   default     = 1
 }
 
+# Maximum number of nodes in the default node pool.
 variable "default_nodepool_max_nodes" {
   description = "Maximum number of nodes in the default node pool."
   type        = number
   default     = 5
 }
 
+# Minimum and initial number of nodes for the node pool.
 variable "default_nodepool_min_nodes" {
   description = "Minimum and initial number of nodes for the node pool."
   type        = number
   default     = 1
 }
 
+# Taints for the default node pool VMs.
 variable "default_nodepool_taints" {
   description = "Taints for the default node pool VMs."
   type        = list(any)
   default     = []
 }
 
+# Labels to add to the default node pool.
 variable "default_nodepool_labels" {
   description = "Labels to add to the default node pool."
   type        = map(any)
@@ -233,24 +267,28 @@ variable "default_nodepool_labels" {
   }
 }
 
+# Additional user data that will be appended to the default user data.
 variable "default_nodepool_custom_data" {
   description = "Additional user data that will be appended to the default user data."
   type        = string
   default     = ""
 }
 
+# The state of the default node pool's metadata service.
 variable "default_nodepool_metadata_http_endpoint" {
   description = "The state of the default node pool's metadata service."
   type        = string
   default     = "enabled"
 }
 
+# The state of the session tokens for the default node pool.
 variable "default_nodepool_metadata_http_tokens" {
   description = "The state of the session tokens for the default node pool."
   type        = string
   default     = "required"
 }
 
+# The desired HTTP PUT response hop limit for instance metadata requests for the default node pool.
 variable "default_nodepool_metadata_http_put_response_hop_limit" {
   description = "The desired HTTP PUT response hop limit for instance metadata requests for the default node pool."
   type        = number
@@ -258,6 +296,7 @@ variable "default_nodepool_metadata_http_put_response_hop_limit" {
 }
 
 ## Dynamic node pool config
+# Node Pool Definitions.
 variable "node_pools" {
   description = "Node Pool Definitions."
   type = map(object({
@@ -350,12 +389,14 @@ variable "node_pools" {
 }
 
 # Networking
+# Pre-exising VPC id. Leave blank to have one created.
 variable "vpc_id" {
   description = "Pre-exising VPC id. Leave blank to have one created."
   type        = string
   default     = null
 }
 
+# Map subnet usage roles to list of existing subnet ids.
 variable "subnet_ids" {
   description = "Map subnet usage roles to list of existing subnet ids."
   type        = map(list(string))
@@ -369,12 +410,14 @@ variable "subnet_ids" {
   # }
 }
 
+# VPC CIDR - NOTE: Subnets below must fall into this range.
 variable "vpc_cidr" {
   description = "VPC CIDR - NOTE: Subnets below must fall into this range."
   type        = string
   default     = "192.168.0.0/16"
 }
 
+# Subnets to be created and their settings - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).
 variable "subnets" {
   description = "Subnets to be created and their settings - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
@@ -386,6 +429,7 @@ variable "subnets" {
   }
 }
 
+# AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).
 variable "subnet_azs" {
   description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
@@ -398,126 +442,147 @@ variable "subnet_azs" {
     error_message = "ERROR: public, private, control_plane, and database are the only keys allowed in the subnet_azs map"
   }
 }
+# Pre-existing Security Group id. Leave blank to have one created.
 variable "security_group_id" {
   description = "Pre-existing Security Group id. Leave blank to have one created."
   type        = string
   default     = null
 }
 
+# Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created.
 variable "cluster_security_group_id" {
   description = "Pre-existing Security Group id for the EKS Cluster. Leave blank to have one created."
   type        = string
   default     = null
 }
 
+# Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created.
 variable "workers_security_group_id" {
   description = "Pre-existing Security Group id for the Cluster Node VM. Leave blank to have one created."
   type        = string
   default     = null
 }
 
+# Pre-existing NAT Gateway id.
 variable "nat_id" {
   description = "Pre-existing NAT Gateway id."
   type        = string
   default     = null
 }
 
+# ARN of the pre-existing IAM Role for the EKS cluster.
 variable "cluster_iam_role_arn" {
   description = "ARN of the pre-existing IAM Role for the EKS cluster."
   type        = string
   default     = null
 }
 
+# ARN of the pre-existing IAM Role for the cluster node VMs.
 variable "workers_iam_role_arn" {
   description = "ARN of the pre-existing IAM Role for the cluster node VMs."
   type        = string
   default     = null
 }
 
+# Create bastion Host VM.
 variable "create_jump_vm" {
   description = "Create bastion Host VM."
   type        = bool
   default     = true
 }
 
+# Add public IP address to Jump VM.
 variable "create_jump_public_ip" {
   description = "Add public IP address to Jump VM."
   type        = bool
   default     = true
 }
 
+# OS Admin User for Jump VM.
 variable "jump_vm_admin" {
   description = "OS Admin User for Jump VM."
   type        = string
   default     = "jumpuser"
 }
 
+# Jump VM type.
 variable "jump_vm_type" {
   description = "Jump VM type."
   type        = string
   default     = "m6in.xlarge"
 }
 
+# OS path used in cloud-init for NFS integration.
 variable "jump_rwx_filestore_path" {
   description = "OS path used in cloud-init for NFS integration."
   type        = string
   default     = "/viya-share"
 }
 
+# Size in GB for each disk of the RAID0 cluster, when storage_type=standard.
 variable "nfs_raid_disk_size" {
   description = "Size in GB for each disk of the RAID0 cluster, when storage_type=standard."
   type        = number
   default     = 128
 }
 
+# Disk type for the NFS server EBS volumes.
 variable "nfs_raid_disk_type" {
   description = "Disk type for the NFS server EBS volumes."
   type        = string
   default     = "gp2"
 }
 
+# IOPS for the the NFS server EBS volumes.
 variable "nfs_raid_disk_iops" {
   description = "IOPS for the the NFS server EBS volumes."
   type        = number
   default     = 0
 }
 
+# Add public IP address to the NFS server VM.
 variable "create_nfs_public_ip" {
   description = "Add public IP address to the NFS server VM."
   type        = bool
   default     = false
 }
 
+# OS Admin User for NFS VM, when storage_type=standard.
 variable "nfs_vm_admin" {
   description = "OS Admin User for NFS VM, when storage_type=standard."
   type        = string
   default     = "nfsuser"
 }
 
+# NFS VM type.
 variable "nfs_vm_type" {
   description = "NFS VM type."
   type        = string
   default     = "m6in.xlarge"
 }
 
+# Disk size for default node pool VMs in GB.
 variable "os_disk_size" {
   description = "Disk size for default node pool VMs in GB."
   type        = number
   default     = 64
 }
 
+# Disk type for default node pool VMs.
 variable "os_disk_type" {
   description = "Disk type for default node pool VMs."
   type        = string
   default     = "standard"
 }
 
+# Delete Disk on termination.
 variable "os_disk_delete_on_termination" {
   description = "Delete Disk on termination."
   type        = bool
   default     = true
 }
 
+# Disk IOPS for default node pool VMs.
 variable "os_disk_iops" {
   description = "Disk IOPS for default node pool VMs."
   type        = number
@@ -527,6 +592,7 @@ variable "os_disk_iops" {
 ## PostgresSQL
 
 # Defaults
+# Map of PostgresSQL server default objects.
 variable "postgres_server_defaults" {
   description = "Map of PostgresSQL server default objects."
   type        = any
@@ -548,6 +614,7 @@ variable "postgres_server_defaults" {
 }
 
 # User inputs
+# Map of PostgreSQL server objects provided by the user.
 variable "postgres_servers" {
   description = "Map of PostgreSQL server objects provided by the user."
   type        = any
@@ -596,6 +663,7 @@ variable "postgres_servers" {
   }
 }
 
+# Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint or AWS for NetApp ONTAP file system depending on the storage_type_backend
 variable "storage_type" {
   description = "Type of Storage. A value of 'standard' creates an NFS server VM; a value of 'ha' creates an AWS EFS mountpoint or AWS for NetApp ONTAP file system depending on the storage_type_backend"
   type        = string
@@ -607,6 +675,7 @@ variable "storage_type" {
   }
 }
 
+# The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type='ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'.
 variable "storage_type_backend" {
   description = "The storage backend used for the chosen storage type. Defaults to 'nfs' for storage_type='standard'. Defaults to 'efs for storage_type='ha'. 'efs' and 'ontap' are valid choices for storage_type='ha'."
   type        = string
@@ -619,12 +688,14 @@ variable "storage_type_backend" {
   }
 }
 
+# Allows the user to create a provider- or service account-based kubeconfig file.
 variable "create_static_kubeconfig" {
   description = "Allows the user to create a provider- or service account-based kubeconfig file."
   type        = bool
   default     = true
 }
 
+# Use Public or Private IP address for the cluster API endpoint.
 variable "cluster_api_mode" {
   description = "Use Public or Private IP address for the cluster API endpoint."
   type        = string
@@ -636,6 +707,7 @@ variable "cluster_api_mode" {
   }
 }
 
+# Endpoints needed for private cluster.
 variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declarations
   description = "Endpoints needed for private cluster."
   type        = map(string)
@@ -651,12 +723,14 @@ variable "vpc_private_endpoints" { # tflint-ignore: terraform_unused_declaration
   }
 }
 
+# Enable the creation of vpc private endpoint resources
 variable "vpc_private_endpoints_enabled" {
   description = "Enable the creation of vpc private endpoint resources"
   type        = bool
   default     = true
 }
 
+# Flag for predefined cluster node configurations. Supported values are default, minimal.
 variable "cluster_node_pool_mode" {
   description = "Flag for predefined cluster node configurations. Supported values are default, minimal."
   type        = string
@@ -664,24 +738,28 @@ variable "cluster_node_pool_mode" {
 
 }
 
+# Enable autoscaling for your AWS cluster.
 variable "autoscaling_enabled" {
   description = "Enable autoscaling for your AWS cluster."
   type        = bool
   default     = true
 }
 
+# Enable encryption on EBS volumes.
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
   type        = bool
   default     = false
 }
 
+# Enable encryption on EFS file systems.
 variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
   default     = false
 }
 
+# The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1
 variable "aws_fsx_ontap_deployment_type" {
   description = "The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
   type        = string
@@ -693,12 +771,14 @@ variable "aws_fsx_ontap_deployment_type" {
   }
 }
 
+# The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API.
 variable "aws_fsx_ontap_fsxadmin_password" {
   description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API."
   type        = string
   default     = "v3RyS3cretPa$sw0rd"
 }
 
+# The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608.
 variable "aws_fsx_ontap_file_system_storage_capacity" {
   description = "The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608."
   type        = number
@@ -710,6 +790,7 @@ variable "aws_fsx_ontap_file_system_storage_capacity" {
   }
 }
 
+# Sets the throughput capacity (in MBps) for the ONTAP file system that you're creating. Valid values are 128, 256, 512, 1024, 2048, and 4096.
 variable "aws_fsx_ontap_file_system_throughput_capacity" {
   description = "Sets the throughput capacity (in MBps) for the ONTAP file system that you're creating. Valid values are 128, 256, 512, 1024, 2048, and 4096."
   type        = number
@@ -721,12 +802,14 @@ variable "aws_fsx_ontap_file_system_throughput_capacity" {
   }
 }
 
+# A flag to enable NIST features under development for this project
 variable "enable_nist_features" {
   description = "A flag to enable NIST features under development for this project"
   type        = bool
   default     = false
 }
 
+# The authentication mode for the EKS cluster. Supported values are 'API_AND_CONFIG_MAP' and 'API'.
 variable "authentication_mode" {
   description = "The authentication mode for the EKS cluster. Supported values are 'API_AND_CONFIG_MAP' and 'API'."
   type        = string
@@ -738,6 +821,7 @@ variable "authentication_mode" {
   }
 }
 
+# List of IAM role ARNs to create admin EKS access_entries for.
 variable "admin_access_entry_role_arns" {
   description = "List of IAM role ARNs to create admin EKS access_entries for."
   type        = list(string)
