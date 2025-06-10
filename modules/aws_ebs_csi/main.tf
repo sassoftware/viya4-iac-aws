@@ -29,7 +29,6 @@ resource "aws_iam_policy" "ebs_csi" {
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications"
       ],
-      # Allow these actions on all resources
       "Resource": "*"
     },
     {
@@ -37,7 +36,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:CreateTags"
       ],
-      # Restrict tag creation to specific resources: volumes and snapshots
       "Resource": [
         "arn:aws:ec2:*:*:volume/*",
         "arn:aws:ec2:*:*:snapshot/*"
@@ -56,7 +54,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteTags"
       ],
-      # Restrict tag deletion to specific resources: volumes and snapshots
       "Resource": [
         "arn:aws:ec2:*:*:volume/*",
         "arn:aws:ec2:*:*:snapshot/*"
@@ -67,7 +64,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:CreateVolume"
       ],
-      # Allow volume creation with specific tags
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -80,7 +76,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:CreateVolume"
       ],
-      # Allow volume creation if the CSIVolumeName tag is present
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -93,7 +88,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:CreateVolume"
       ],
-      # Allow volume creation for volumes owned by the cluster
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -106,7 +100,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteVolume"
       ],
-      # Allow volume deletion with specific resource tags
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -119,7 +112,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteVolume"
       ],
-      # Allow volume deletion if the CSIVolumeName tag is present on the resource
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -132,7 +124,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteVolume"
       ],
-      # Allow volume deletion for volumes owned by the cluster
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -145,7 +136,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteSnapshot"
       ],
-      # Allow snapshot deletion if the CSIVolumeSnapshotName tag is present on the resource
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -158,7 +148,6 @@ resource "aws_iam_policy" "ebs_csi" {
       "Action": [
         "ec2:DeleteSnapshot"
       ],
-      # Allow snapshot deletion with specific resource tags
       "Resource": "*",
       "Condition": {
         "StringLike": {
