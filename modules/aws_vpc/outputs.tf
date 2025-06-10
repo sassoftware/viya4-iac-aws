@@ -1,4 +1,4 @@
-# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2025, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 #vpc_id
@@ -14,12 +14,12 @@ output "public_subnets" {
 }
 
 output "public_subnet_azs" {
-  description = "List of public subnet AZs"
+  description = "List of availability zones for the public subnets"
   value       = local.existing_public_subnets ? data.aws_subnet.public[*].availability_zone : aws_subnet.public[*].availability_zone
 }
 
 output "public_subnet_cidrs" {
-  description = "CIDR blocks of public subnets"
+  description = "CIDR blocks of the public subnets"
   value       = local.existing_public_subnets ? data.aws_subnet.public[*].cidr_block : aws_subnet.public[*].cidr_block
 }
 
@@ -30,12 +30,12 @@ output "private_subnets" {
 }
 
 output "private_subnet_azs" {
-  description = "List of private subnet AZs"
+  description = "List of availability zones for the private subnets"
   value       = local.existing_private_subnets ? data.aws_subnet.private[*].availability_zone : aws_subnet.private[*].availability_zone
 }
 
 output "private_subnet_cidrs" {
-  description = "CIDR blocks of private subnets"
+  description = "CIDR blocks of the private subnets"
   value       = local.existing_private_subnets ? data.aws_subnet.private[*].cidr_block : aws_subnet.private[*].cidr_block
 }
 
