@@ -47,4 +47,4 @@ terraform.tfvars
 *.conf
 
 # Testing output files
-test/test_output/*
+test/testoutput/*

@@ -71,9 +71,9 @@ export TF_VAR_aws_secret_access_key=$TF_VAR_aws_secret_access_key
 
 # Run the tests
 echo "Running 'go test $VERBOSE $PACKAGE -run $TEST -timeout 60m'"
-exec go test $VERBOSE $PACKAGE -run $TEST -timeout 60m | tee ./test_output/test_output.log
+exec go test $VERBOSE $PACKAGE -run $TEST -timeout 60m | tee ./testoutput/test_output.log
 
 # Parse the results
-cd test_output
+cd testoutput
 terratest_log_parser -testlog test_output.log -outputdir .
 go run parse_results.go
