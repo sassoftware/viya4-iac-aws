@@ -10,7 +10,7 @@
 provider "aws" {
   region  = var.location
   profile = var.aws_profile
-  # shared_credentials_files = local.aws_shared_credentials
+  shared_credentials_files = local.aws_shared_credentials
   # access_key               = var.aws_access_key_id
   # secret_key               = var.aws_secret_access_key
   # token                    = var.aws_session_token
@@ -31,27 +31,6 @@ data "external" "git_hash" {
 
 data "external" "iac_tooling_version" {
   program = ["files/tools/iac_tooling_version.sh"]
-}
-
-resource "kubernetes_config_map" "sas_iac_buildinfo" {
-  metadata {
-    name      = "sas-iac-buildinfo"
-    namespace = "kube-system"
-  }
-
-  data = {
-    git-hash    = data.external.git_hash.result["git-hash"]
-    timestamp   = chomp(timestamp())
-    iac-tooling = var.iac_tooling
-    terraform   = <<EOT
-version: ${data.external.iac_tooling_version.result["terraform_version"]}
-revision: ${data.external.iac_tooling_version.result["terraform_revision"]}
-provider-selections: ${data.external.iac_tooling_version.result["provider_selections"]}
-outdated: ${data.external.iac_tooling_version.result["terraform_outdated"]}
-EOT
-  }
-
-  depends_on = [module.kubeconfig.kube_config]
 }
 
 # EKS Provider
