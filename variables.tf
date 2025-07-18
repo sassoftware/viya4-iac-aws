@@ -175,11 +175,11 @@ variable "efs_throughput_rate" {
 }
 
 ## Kubernetes
-# Kubernetes version for the EKS cluster. Default is '1.31'.
+# Kubernetes version for the EKS cluster. Default is '1.32'.
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.31"
+  default     = "1.32"
 }
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
@@ -318,7 +318,7 @@ variable "node_pools" {
   default = {
     cas = {
       "vm_type"      = "r6idn.2xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -335,7 +335,7 @@ variable "node_pools" {
     },
     compute = {
       "vm_type"      = "m6idn.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -353,7 +353,7 @@ variable "node_pools" {
     },
     stateless = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
@@ -370,7 +370,7 @@ variable "node_pools" {
     },
     stateful = {
       "vm_type"      = "m6in.xlarge"
-      "cpu_type"     = "AL2_x86_64"
+      "cpu_type"     = "AL2023_x86_64_STANDARD"
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
