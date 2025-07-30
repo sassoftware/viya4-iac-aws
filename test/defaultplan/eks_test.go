@@ -40,7 +40,7 @@ func TestPlanEKSConfig(t *testing.T) {
 	tests := map[string]helpers.TestCase{
 		// Kubernetes Configuration Tests
 		"kubernetesVersion": {
-			Expected:          "1.31",
+			Expected:          "1.32",
 			ResourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			AttributeJsonPath: "{$.version}",
 			Message:           "Kubernetes version should match the specified version",

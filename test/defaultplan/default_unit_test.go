@@ -25,7 +25,7 @@ func TestPlanDefaults(t *testing.T) {
 			AttributeJsonPath: "{$.name}",
 		},
 		"k8sVersionTest": {
-			Expected:          "1.31",
+			Expected:          "1.32",
 			ResourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			AttributeJsonPath: "{$.version}",
 		},

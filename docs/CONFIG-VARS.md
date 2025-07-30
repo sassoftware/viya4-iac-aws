@@ -297,7 +297,7 @@ Additional node pools can be created separately from the default node pool. This
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | vm_type | Type of the node pool VMs | string | | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html |
-| cpu_type | Processor type CPU/GPU | string | AL2023_x86_64_STANDARD| [AMI type](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) – Choose Amazon Linux 2 (AL2023_x86_64_STANDARD) for Linux non-GPU instances, Amazon Linux 2 GPU Enabled (AL2023_x86_64_STANDARD_GPU) for Linux GPU instances|
+| cpu_type | Processor type CPU/GPU | string | AL2023_x86_64_STANDARD| [AMI type](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) – Choose Amazon Linux 2 (AL2023_x86_64_STANDARD) for Linux non-GPU instances, Amazon Linux 2 GPU Enabled (AL2023_x86_64_NVIDIA) for Linux GPU instances|
 | os_disk_type | Disk type for node pool VMs | string | | `gp2` or `io1` |
 | os_disk_size | Disk size for node pool VMs in GB | number | | |
 | os_disk_iops | Amount of provisioned [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html) | number | | For `io1`, you MUST set the value to your desired IOPS value. Reference [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
