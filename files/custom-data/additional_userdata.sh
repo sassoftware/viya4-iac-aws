@@ -13,7 +13,7 @@
 ##
 
 # Install needed packages
-yum -y install nvme-cli mdadm
+dnf -y install nvme-cli mdadm
 
 # Setup ENV's for ease of use
 SSD_NVME_DEVICE_LIST=($(nvme list | grep "Amazon EC2 NVMe Instance Storage" | cut -d " " -f 1 || true))
