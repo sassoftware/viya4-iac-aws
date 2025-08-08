@@ -62,7 +62,7 @@ func TestPlanNodePools(t *testing.T) {
 			AssertFunction:    assert.Equal,
 		},
 		"gpuNodePoolCpuType": {
-			Expected:          "AL2_x86_64_GPU",
+			Expected:          "AL2023_x86_64_NVIDIA",
 			ResourceMapName:   "module.eks.module.eks_managed_node_group[\"gpu\"].aws_eks_node_group.this[0]",
 			AttributeJsonPath: "{$.ami_type}",
 			Message:           "GPU node pool should have correct CPU type",
@@ -145,7 +145,7 @@ func TestPlanNodePools(t *testing.T) {
 		variables["node_pools"] = map[string]map[string]interface{}{
 			"gpu": {
 				"vm_type":                              "g4dn.xlarge",
-				"cpu_type":                             "AL2_x86_64_GPU",
+				"cpu_type":                             "AL2023_x86_64_NVIDIA",
 				"os_disk_type":                         "gp2",
 				"os_disk_size":                         100,
 				"os_disk_iops":                         3000,
@@ -160,7 +160,7 @@ func TestPlanNodePools(t *testing.T) {
 			},
 			"high-memory": {
 				"vm_type":                              "r5.2xlarge",
-				"cpu_type":                             "AL2_x86_64",
+				"cpu_type":                             "AL2023_x86_64_STANDARD",
 				"os_disk_type":                         "io1",
 				"os_disk_size":                         200,
 				"os_disk_iops":                         3000,
