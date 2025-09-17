@@ -44,10 +44,12 @@ resource "helm_release" "cert_manager" {
   namespace  = "cert-manager"
   version    = var.cert_manager_version
   create_namespace = true
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
 }
 
 resource "helm_release" "aws_lb_controller" {
@@ -56,29 +58,31 @@ resource "helm_release" "aws_lb_controller" {
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
   version    = var.lb_controller_version
-  set {
-    name  = "clusterName"
-    value = var.cluster_name
-  }
-  set {
-    name  = "region"
-    value = var.region
-  }
-  set {
-    name  = "vpcId"
-    value = var.vpc_id
-  }
-  set {
-    name  = "serviceAccount.create"
-    value = "false"
-  }
-  set {
-    name  = "serviceAccount.name"
-    value = kubernetes_service_account.lb_controller.metadata[0].name
-  }
-  set {
-    name  = "enableIPv6"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "clusterName"
+      value = var.cluster_name
+    },
+    {
+      name  = "region"
+      value = var.region
+    },
+    {
+      name  = "vpcId"
+      value = var.vpc_id
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "false"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = kubernetes_service_account.lb_controller.metadata[0].name
+    },
+    {
+      name  = "enableIPv6"
+      value = "true"
+    }
+  ]
   depends_on = [helm_release.cert_manager]
 }
