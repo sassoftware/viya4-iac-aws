@@ -263,6 +263,13 @@ module "kubeconfig" {
 
   depends_on = [module.eks] # Wait for EKS cluster to be ready
 }
+  # Integrate AWS Load Balancer Controller module for IPv6 EKS clusters
+  module "lb_controller" {
+    source      = "./modules/aws_lb_controller"
+    cluster_name = local.cluster_name
+    region       = var.location
+    vpc_id       = module.vpc.vpc_id
+  }
 
 # Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
 # PSKD-667 will track the move to a newer version of the aws-ebs-csi-driver creating a gp3 storage class which will then become the default storage class.
