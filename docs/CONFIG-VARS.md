@@ -27,6 +27,7 @@ Supported configuration variables are listed in the tables below.  All variables
     - [AWS FSx for NetApp ONTAP File System](#aws-fsx-for-netapp-ontap-file-system)
     - [AWS Elastic Block Store (EBS)](#aws-elastic-block-store-ebs)
   - [PostgreSQL Server](#postgresql-server)
+  - [Cluster Logging](#cluster-logging)
 
 Terraform input variables can be set in the following ways:
 
@@ -276,7 +277,7 @@ Custom policy:
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | default_nodepool_vm_type | Type of the default node pool VMs | string | "m5.2xlarge" | |
-| default_nodepool_os_disk_type | Disk type for default node pool VMs | string | gp2 | |
+| default_nodepool_os_disk_type | Disk type for default node pool VMs | string | gp2 | `gp2`, `gp3`, or `io1` |
 | default_nodepool_os_disk_size | Disk size for default node pool VMs in GB | number | 200 ||
 | default_nodepool_os_disk_iops | Disk IOPS for default node pool VMs | number | | For `io1`, you MUST set the value to your desired IOPS value. Refer to [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `default_nodepool_os_disk_type` selected.|
 | default_nodepool_node_count | Initial number of nodes in the default node pool | number | 1 | The value must be between `default_nodepool_min_nodes` and `default_nodepool_max_nodes`. |
@@ -296,7 +297,7 @@ Additional node pools can be created separately from the default node pool. This
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | vm_type | Type of the node pool VMs | string | | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html |
-| cpu_type | Processor type CPU/GPU | string | AL2_x86_64| [AMI type](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) – Choose Amazon Linux 2 (AL2_x86_64) for Linux non-GPU instances, Amazon Linux 2 GPU Enabled (AL2_x86_64_GPU) for Linux GPU instances|
+| cpu_type | Processor type CPU/GPU | string | AL2023_x86_64_STANDARD| [AMI type](https://docs.aws.amazon.com/eks/latest/APIReference/API_Nodegroup.html#AmazonEKS-Type-Nodegroup-amiType) – Choose Amazon Linux 2023 (AL2023_x86_64_STANDARD) for Linux non-GPU instances, Amazon Linux 2023 GPU Enabled (AL2023_x86_64_NVIDIA) for Linux GPU instances|
 | os_disk_type | Disk type for node pool VMs | string | | `gp2` or `io1` |
 | os_disk_size | Disk size for node pool VMs in GB | number | | |
 | os_disk_iops | Amount of provisioned [IOPS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-io-characteristics.html) | number | | For `io1`, you MUST set the value to your desired IOPS value. Reference [Amazon EBS volume types](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) for details on values based on the `os_disk_type` selected.|
@@ -326,8 +327,8 @@ When `storage_type=standard`, an NFS server VM is created, and the following var
 | create_nfs_public_ip | Add public IP address to the NFS server VM | bool | false |  |
 | nfs_vm_admin | Admin user account for the NFS server VM | string | "nfsuser" | |
 | nfs_raid_disk_size | Size in GiB for each EBS volume of the RAID0 cluster on the NFS server VM | number | 128 | |
-| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: "standard", "gp2", "io1", "io2", "sc1" or "st1". |
-| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is "io1" or "io2". |
+| nfs_raid_disk_type | Disk type for the NFS server EBS volumes | string | "gp2" | Valid values are: `standard`, `gp2`, `io1`, `io2`, `sc1` or `st1`. |
+| nfs_raid_disk_iops | IOPS for the the NFS server EBS volumes | number | 0 | Only used when `nfs_raid_disk_type` is `io1` or `io2`. |
 
 ### AWS Elastic File System (EFS)
 
@@ -390,8 +391,8 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | server_version | The version of the PostgreSQL server | string | "15" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
-| instance_type | The VM type for the PostgreSQL Server | string | "db.m5.xlarge" | |
-| storage_size | Max storage allowed for the PostgreSQL server in MB | number | 50 |  |
+| instance_type | The VM type for the PostgreSQL Server | string | "db.m6idn.xlarge" | |
+| storage_size | Max storage allowed for the PostgreSQL server in GB | number | 128 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
 | storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
@@ -412,8 +413,8 @@ postgres_servers = {
     administrator_password       = "D0ntL00kTh1sWay"
   },
   cds-postgres = {
-    instance_type                = "db.m5.xlarge"
-    storage_size                 = 50
+    instance_type                = "db.m6idn.xlarge"
+    storage_size                 = 128
     storage_encrypted            = false
     backup_retention_days        = 7
     multi_az                     = false
@@ -423,8 +424,19 @@ postgres_servers = {
     server_version               = "15"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
-    parameters                   = [{ "apply_method": "immediate", "name": "foo" "value": "true" }, { "apply_method": "immediate", "name": "bar" "value": "false" }]
+    parameters                   = [{ "apply_method": "pending-reboot", "name": "shared_preload_libraries", "value": "PGAUDIT,PG_CRON,PG_STAT_STATEMENTS" }, { "apply_method": "pending-reboot", "name": "bar", "value": "false" }]
     options                      = []
   }
 }
 ```
+
+## Cluster Logging
+
+[CloudWatch](https://aws.amazon.com/cloudwatch/) can be enabled by setting the `cluster_enabled_log_types` configuration variable. The list of audits will be streamed to the CloudWatch Log Group.
+
+**NOTE**: This requires additional IAM policies to create and tag CloudWatch logs.
+
+<!--| Name | Description | Type | Default | Notes | -->
+| <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
+| :--- | :--- | :--- | :--- | :--- |
+| cluster_enabled_log_types | List of audits to record from EKS cluster in CloudWatch | list(string) | | More information on the audit types can be [found here.](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) |

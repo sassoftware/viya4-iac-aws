@@ -1,31 +1,38 @@
-# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2025, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 # This is customized based on - https://github.com/terraform-aws-modules/terraform-aws-vpc
 
 locals {
-  vpc_id           = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  # Determine the VPC ID to use, prioritizing the provided vpc_id variable, falling back to the first VPC in the aws_vpc.vpc data source
+  vpc_id = var.vpc_id == null ? aws_vpc.vpc[0].id : data.aws_vpc.vpc[0].id
+  # Check if there are existing subnets by evaluating the length of the existing_subnet_ids variable
   existing_subnets = length(var.existing_subnet_ids) > 0 ? true : false
 
+  # Check for the existence of public, private, database, and control plane subnets based on the provided existing_subnet_ids
   existing_public_subnets        = local.existing_subnets && contains(keys(var.existing_subnet_ids), "public") ? (length(var.existing_subnet_ids["public"]) > 0 ? true : false) : false
   existing_private_subnets       = local.existing_subnets && contains(keys(var.existing_subnet_ids), "private") ? (length(var.existing_subnet_ids["private"]) > 0 ? true : false) : false
   existing_database_subnets      = local.existing_subnets && contains(keys(var.existing_subnet_ids), "database") ? (length(var.existing_subnet_ids["database"]) > 0 ? true : false) : false
   existing_control_plane_subnets = local.existing_subnets && contains(keys(var.existing_subnet_ids), "control_plane") ? (length(var.existing_subnet_ids["control_plane"]) > 0 ? true : false) : false
 
-  #  public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
+  # Determine the subnets to use for various purposes, defaulting to private subnets if no existing subnets are found
+  # public_subnets  = local.existing_public_subnets ? data.aws_subnet.public : aws_subnet.public # not used keeping for ref
   private_subnets       = local.existing_private_subnets ? data.aws_subnet.private : aws_subnet.private
   control_plane_subnets = local.existing_control_plane_subnets ? data.aws_subnet.control_plane : aws_subnet.control_plane
 
   # Use private subnets if we are not creating db subnets and there are no existing db subnets
   database_subnets = local.existing_database_subnets ? data.aws_subnet.database : element(concat(aws_subnet.database[*].id, tolist([""])), 0) != "" ? aws_subnet.database : local.private_subnets
 
+  # BYON (Bring Your Own Network) tier and scenario determination based on the provided variables and existing resources
   byon_tier     = var.vpc_id == null ? 0 : local.existing_private_subnets ? (var.raw_sec_group_id == null && var.cluster_security_group_id == null && var.workers_security_group_id == null) ? 2 : 3 : 1
   byon_scenario = local.byon_tier
 
+  # NAT gateway and subnet creation flags based on the BYON scenario
   create_nat_gateway = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
   create_subnets     = (local.byon_scenario == 0 || local.byon_scenario == 1) ? true : false
 }
 
+# Data source to fetch existing VPC information based on the provided vpc_id
 data "aws_vpc" "vpc" {
   count = var.vpc_id == null ? 0 : 1
   id    = var.vpc_id
@@ -48,6 +55,7 @@ resource "aws_vpc" "vpc" {
   )
 }
 
+# Resource block to manage private VPC endpoints for various AWS services
 resource "aws_vpc_endpoint" "private_endpoints" {
   for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
   vpc_id              = local.vpc_id
@@ -68,21 +76,25 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   ] : null
 }
 
+# Data source to fetch existing public subnets based on the provided existing_subnet_ids
 data "aws_subnet" "public" {
   count = local.existing_public_subnets ? length(var.existing_subnet_ids["public"]) : 0
   id    = element(var.existing_subnet_ids["public"], count.index)
 }
 
+# Data source to fetch existing private subnets based on the provided existing_subnet_ids
 data "aws_subnet" "private" {
   count = local.existing_private_subnets ? length(var.existing_subnet_ids["private"]) : 0
   id    = element(var.existing_subnet_ids["private"], count.index)
 }
 
+# Data source to fetch existing database subnets based on the provided existing_subnet_ids
 data "aws_subnet" "database" {
   count = local.existing_database_subnets ? length(var.existing_subnet_ids["database"]) : 0
   id    = element(var.existing_subnet_ids["database"], count.index)
 }
 
+# Data source to fetch existing control plane subnets based on the provided existing_subnet_ids
 data "aws_subnet" "control_plane" {
   count = local.existing_control_plane_subnets ? length(var.existing_subnet_ids["control_plane"]) : 0
   id    = element(var.existing_subnet_ids["control_plane"], count.index)
@@ -148,6 +160,7 @@ resource "aws_route_table" "public" {
   )
 }
 
+# Route to allow internet access from the public subnets through the internet gateway
 resource "aws_route" "public_internet_gateway" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 
@@ -175,6 +188,7 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 ##########################
 # Route table association
 ##########################
+# Associate private subnets with the corresponding route table
 resource "aws_route_table_association" "private" {
   count = local.existing_private_subnets ? 0 : length(var.subnets["private"])
 
@@ -182,6 +196,7 @@ resource "aws_route_table_association" "private" {
   route_table_id = element(aws_route_table.private[*].id, 0)
 }
 
+# Associate public subnets with the corresponding route table
 resource "aws_route_table_association" "public" {
   count = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
 
@@ -189,6 +204,7 @@ resource "aws_route_table_association" "public" {
   route_table_id = element(aws_route_table.public[*].id, 0)
 }
 
+# Associate database subnets with the private route table
 resource "aws_route_table_association" "database" {
   count = local.existing_database_subnets ? 0 : local.create_subnets ? length(var.subnets["database"]) : 0
 
@@ -196,6 +212,7 @@ resource "aws_route_table_association" "database" {
   route_table_id = element(aws_route_table.private[*].id, 0)
 }
 
+# Associate control plane subnets with the private route table
 resource "aws_route_table_association" "control_plane" {
   count = local.existing_control_plane_subnets ? 0 : local.create_subnets ? length(var.subnets["control_plane"]) : 0
 
@@ -272,6 +289,7 @@ resource "aws_subnet" "database" {
   )
 }
 
+# Resource to manage the database subnet group for RDS, encompassing the created database subnets
 resource "aws_db_subnet_group" "database" {
   count = local.existing_database_subnets == false ? local.create_subnets ? contains(keys(var.subnets), "database") ? length(var.subnets["database"]) > 0 ? 1 : 0 : 0 : 0 : 0
 
@@ -311,6 +329,7 @@ resource "aws_subnet" "control_plane" {
   )
 }
 
+# Elastic IP resource for NAT Gateway, allowing internet access for resources in private subnets
 resource "aws_eip" "nat" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 
@@ -328,11 +347,13 @@ resource "aws_eip" "nat" {
   )
 }
 
+# Data resource to fetch existing NAT Gateway information based on the provided existing_nat_id
 data "aws_nat_gateway" "nat_gateway" {
   count = var.existing_nat_id != null ? 1 : 0
   id    = var.existing_nat_id # alt. support vpc_id or subnet_id where NAT
 }
 
+# NAT Gateway resource to provide internet access to private subnets, created in the public subnet
 resource "aws_nat_gateway" "nat_gateway" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 
@@ -353,6 +374,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   depends_on = [aws_internet_gateway.this]
 }
 
+# Route to enable internet access from private subnets through the NAT Gateway
 resource "aws_route" "private_nat_gateway" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 

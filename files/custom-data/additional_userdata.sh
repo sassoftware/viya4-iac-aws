@@ -1,4 +1,6 @@
-# Copyright 2021-2023, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+#!/usr/bin/env bash
+
+# Copyright 2021-2025, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
 ##
@@ -11,7 +13,7 @@
 ##
 
 # Install needed packages
-yum -y install nvme-cli mdadm
+dnf -y install nvme-cli mdadm
 
 # Setup ENV's for ease of use
 SSD_NVME_DEVICE_LIST=($(nvme list | grep "Amazon EC2 NVMe Instance Storage" | cut -d " " -f 1 || true))

@@ -1,6 +1,7 @@
-# Copyright © 2021-2024, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
+# Copyright © 2021-2025, SAS Institute Inc., Cary, NC, USA. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+# Data source to fetch the existing security group details if security_group_id is provided
 data "aws_security_group" "sg" {
   count = var.security_group_id == null ? 0 : 1
   id    = var.security_group_id
@@ -23,6 +24,7 @@ resource "aws_security_group" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
+# Egress rule to allow all outbound traffic from the security group
 resource "aws_vpc_security_group_egress_rule" "sg_ipv4" {
 
   security_group_id = local.security_group_id
@@ -61,9 +63,10 @@ resource "aws_vpc_security_group_ingress_rule" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
+# Ingress rule to allow SSH access to VMs from specified CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "vms" {
 
-  for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm)) ? toset(local.vm_public_access_cidrs) : toset([])
+  for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm) || (var.create_nfs_public_ip && var.storage_type == "standard")) ? toset(local.vm_public_access_cidrs) : toset([])
 
   security_group_id = local.security_group_id
 
@@ -74,6 +77,7 @@ resource "aws_vpc_security_group_ingress_rule" "vms" {
   cidr_ipv4   = each.key
 }
 
+# Ingress rule to allow internal communication within the same security group
 resource "aws_vpc_security_group_ingress_rule" "all" {
   security_group_id = local.security_group_id
 
@@ -82,6 +86,7 @@ resource "aws_vpc_security_group_ingress_rule" "all" {
   referenced_security_group_id = local.security_group_id
 }
 
+# Ingress rule to allow PostgreSQL traffic within the network
 resource "aws_vpc_security_group_ingress_rule" "postgres_internal" {
 
   for_each = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
@@ -94,6 +99,7 @@ resource "aws_vpc_security_group_ingress_rule" "postgres_internal" {
   referenced_security_group_id = local.security_group_id
 }
 
+# Ingress rule to allow PostgreSQL traffic from specified external CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "postgres_external" {
 
   for_each = (length(local.postgres_public_access_cidrs) > 0
@@ -111,6 +117,7 @@ resource "aws_vpc_security_group_ingress_rule" "postgres_external" {
   security_group_id = local.security_group_id
 }
 
+# Security group for the EKS cluster
 resource "aws_security_group" "cluster_security_group" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
@@ -123,6 +130,7 @@ resource "aws_security_group" "cluster_security_group" {
 
 }
 
+# Egress rule to allow all outbound traffic from the EKS cluster security group
 resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv4" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
@@ -143,6 +151,7 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6" {
   security_group_id = local.cluster_security_group_id
 }
 
+# Ingress rule to allow HTTPS access to the EKS cluster API server from specified CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
 
   for_each = var.cluster_security_group_id == null ? toset(local.cluster_endpoint_private_access_cidrs) : toset([])
@@ -156,6 +165,7 @@ resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
 }
 
 
+# Ingress rule to allow communication between EKS pods and the cluster API
 resource "aws_vpc_security_group_ingress_rule" "cluster_ingress" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
@@ -168,6 +178,7 @@ resource "aws_vpc_security_group_ingress_rule" "cluster_ingress" {
   security_group_id            = local.cluster_security_group_id
 }
 
+# Security group for the EKS worker nodes
 resource "aws_security_group" "workers_security_group" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -181,6 +192,7 @@ resource "aws_security_group" "workers_security_group" {
   )
 }
 
+# Egress rule to allow all outbound traffic from the EKS worker nodes security group
 resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv4" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -203,6 +215,7 @@ resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6" {
 
 }
 
+# Ingress rule to allow communication between EKS worker nodes
 resource "aws_vpc_security_group_ingress_rule" "worker_self" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -213,6 +226,7 @@ resource "aws_vpc_security_group_ingress_rule" "worker_self" {
   security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
+# Ingress rule to allow communication from the cluster control plane to worker pods
 resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -225,6 +239,7 @@ resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api" {
   security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
+# Ingress rule to allow communication from the cluster control plane to worker pods on port 443
 resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api_443" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -239,6 +254,7 @@ resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api_443" {
 
 # TODO: Make sure tags are applied to all resources
 
+# Ingress rule to allow SSH access to a private IP based Jump VM from specified CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22" {
 
   for_each = (length(local.vm_private_access_cidrs) > 0

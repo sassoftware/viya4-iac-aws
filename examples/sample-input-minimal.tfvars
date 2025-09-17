@@ -27,9 +27,9 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 # }
 
 ## Cluster config
-kubernetes_version           = "1.30"
+kubernetes_version           = "1.32"
 default_nodepool_node_count  = 1
-default_nodepool_vm_type     = "m5.large"
+default_nodepool_vm_type     = "r6in.2xlarge"
 default_nodepool_custom_data = ""
 
 ## General
@@ -40,8 +40,8 @@ storage_type         = "standard"
 cluster_node_pool_mode = "minimal"
 node_pools = {
   cas = {
-    "vm_type"      = "r5.xlarge"
-    "cpu_type"     = "AL2_x86_64"
+    "vm_type"      = "r6idn.2xlarge"
+    "cpu_type"     = "AL2023_x86_64_STANDARD"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -57,8 +57,8 @@ node_pools = {
     "metadata_http_put_response_hop_limit" = 1
   },
   generic = {
-    "vm_type"      = "m5.2xlarge"
-    "cpu_type"     = "AL2_x86_64"
+    "vm_type"      = "m6idn.xlarge"
+    "cpu_type"     = "AL2023_x86_64_STANDARD"
     "os_disk_type" = "gp2"
     "os_disk_size" = 200
     "os_disk_iops" = 0
@@ -85,4 +85,4 @@ jump_vm_type   = "t3.medium"
 # required ONLY when storage_type is "standard" to create NFS Server VM
 create_nfs_public_ip = false
 nfs_vm_admin         = "nfsuser"
-nfs_vm_type          = "m5.xlarge"
+nfs_vm_type          = "m6in.xlarge"
