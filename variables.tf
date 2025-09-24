@@ -759,16 +759,30 @@ variable "enable_efs_encryption" {
   default     = false
 }
 
-# The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1
+# The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1, MULTI_AZ_2, SINGLE_AZ_1, and SINGLE_AZ_2
 variable "aws_fsx_ontap_deployment_type" {
-  description = "The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1"
+  description = "The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1, MULTI_AZ_2, SINGLE_AZ_1, and SINGLE_AZ_2."
   type        = string
   default     = "SINGLE_AZ_1"
 
   validation {
-    condition     = contains(["single_az_1", "multi_az_1"], lower(var.aws_fsx_ontap_deployment_type))
-    error_message = "ERROR: Supported values for `fsx_ontap_deployment_type` are - SINGLE_AZ_1, MULTI_AZ_1."
+    condition     = contains(["single_az_1", "single_az_2", "multi_az_1", "multi_az_2"], lower(var.aws_fsx_ontap_deployment_type))
+    error_message = "ERROR: Supported values for `aws_fsx_ontap_deployment_type` are SINGLE_AZ_1, SINGLE_AZ_2, MULTI_AZ_1, and MULTI_AZ_2."
   }
+}
+
+# HA pair count (only for deployment types SINGLE_AZ_2 or MULTI_AZ_2).
+variable "aws_fsx_ontap_file_system_ha_pairs" {
+  description = "Number of HA pairs (two-node sets) for FSx ONTAP when aws_fsx_ontap_deployment_type is SINGLE_AZ_2 or MULTI_AZ_2; increases aggregate capacity and performance."
+  type        = number
+  default     = 1
+}
+
+# Throughput per HA pair in MB/s (only for deployment types SINGLE_AZ_2 or MULTI_AZ_2).
+variable "aws_fsx_ontap_file_system_throughput_capacity_per_ha_pair" {
+  description = "Provisioned throughput (MB/s) per HA pair when aws_fsx_ontap_deployment_type is SINGLE_AZ_2 or MULTI_AZ_2; total throughput = value * aws_fsx_ontap_file_system_ha_pairs."
+  type        = number
+  default     = 384
 }
 
 # The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API.
