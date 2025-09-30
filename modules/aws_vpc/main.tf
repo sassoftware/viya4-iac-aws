@@ -106,7 +106,7 @@ resource "aws_subnet" "public" {
   count                           = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
   vpc_id                          = local.vpc_id
   cidr_block                      = element(var.subnets["public"], count.index)
-  ipv6_cidr_block                 = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, count.index) : ""
+  ipv6_cidr_block                 = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone               = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
   availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
@@ -226,7 +226,7 @@ resource "aws_subnet" "private" {
   count                = local.existing_private_subnets ? 0 : length(var.subnets["private"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["private"], count.index)
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + count.index) : ""
+  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
@@ -272,7 +272,7 @@ resource "aws_subnet" "database" {
   count                = local.existing_database_subnets ? 0 : local.create_subnets ? length(var.subnets["database"]) : 0
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["database"], count.index)
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + count.index) : ""
+  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
@@ -313,7 +313,7 @@ resource "aws_subnet" "control_plane" {
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["control_plane"], count.index)
   assign_ipv6_address_on_creation = var.enable_ipv6
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + length(var.subnets["database"]) + count.index) : ""
+  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + length(var.subnets["database"]) + count.index) : null
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) > 0 ? element(var.control_plane_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) == 0 ? element(var.control_plane_subnet_azs, count.index) : null
 

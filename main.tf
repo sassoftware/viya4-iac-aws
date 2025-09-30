@@ -357,3 +357,25 @@ resource "aws_resourcegroups_group" "aws_rg" {
 JSON
 }
 }
+
+# AWS Load Balancer Controller Setup
+module "lb_controller" {
+  source        = "./modules/aws_lb_controller"
+  cluster_name  = local.cluster_name
+  region        = var.location
+  vpc_id        = module.vpc.vpc_id
+  controller_version   = var.lb_controller_version
+  cert_manager_version = var.cert_manager_version
+}
+
+# Example variable definitions (add to variables.tf or root module):
+# variable "lb_controller_version" {
+#   description = "AWS Load Balancer Controller Helm chart version"
+#   type        = string
+#   default     = "1.6.2"
+# }
+# variable "cert_manager_version" {
+#   description = "Cert Manager Helm chart version"
+#   type        = string
+#   default     = "v1.13.2"
+# }
