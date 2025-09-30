@@ -230,7 +230,7 @@ module "autoscaling" {
 # ebs - Resource to create EBS CSI driver for EKS. Used for dynamic volume provisioning.
 # This module creates the necessary IAM roles, policies, and Kubernetes resources for EBS CSI.
 module "ebs" {
-  source = "./modules/aws_ebs_csi"
+  source  = "./modules/aws_ebs_csi"
 
   prefix       = var.prefix                         # Resource name prefix
   cluster_name = local.cluster_name                 # EKS cluster name
@@ -360,13 +360,14 @@ JSON
 
 # AWS Load Balancer Controller Setup
 module "lb_controller" {
-  source        = "./modules/aws_lb_controller"
-  cluster_name  = local.cluster_name
-  region        = var.location
-  vpc_id        = module.vpc.vpc_id
-  controller_version   = var.lb_controller_version
-  cert_manager_version = var.cert_manager_version
+  source                = "./modules/aws_lb_controller"
+  cluster_name          = local.cluster_name
+  region                = var.location
+  vpc_id                = module.vpc.vpc_id
+  controller_version    = var.lb_controller_version
+  cert_manager_version  = var.cert_manager_version
   kubeconfig_depends_on = module.kubeconfig.kube_config
+  count                 = var.enable_ipv6 ? 1 : 0
 }
 
 # Example variable definitions (add to variables.tf or root module):
