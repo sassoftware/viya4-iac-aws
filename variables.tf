@@ -832,3 +832,15 @@ variable "admin_access_entry_role_arns" {
   type        = list(string)
   default     = null
 }
+
+variable "lb_controller_version" {
+  description = "AWS Load Balancer Controller Helm chart version"
+  type        = string
+  default     = "1.6.2"
+}
+
+variable "cert_manager_version" {
+  description = "Cert Manager Helm chart version"
+  type        = string
+  default     = "v1.13.2"
+}
