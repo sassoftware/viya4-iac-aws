@@ -63,6 +63,7 @@ resource "aws_vpc_ipv6_cidr_block_association" "this" {
 # Resource block to manage private VPC endpoints for various AWS services
 resource "aws_vpc_endpoint" "private_endpoints" {
   for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
+  vpc_id              = local.vpc_id
   private_dns_enabled = each.value == "Interface" ? each.key != "s3" ? true : null : false
 
   tags = merge(
