@@ -1,12 +1,12 @@
-ARG TERRAFORM_VERSION=1.9.6
-ARG AWS_CLI_VERSION=2.17.58
+ARG TERRAFORM_VERSION=1.10.5
+ARG AWS_CLI_VERSION=2.24.16
 FROM hashicorp/terraform:$TERRAFORM_VERSION AS terraform
 
 FROM almalinux:minimal AS amin
 WORKDIR /app
 USER root
-ARG KUBECTL_VERSION=1.30.6
-ARG KUBECTL_CHECKSUM=7a3adf80ca74b1b2afdfc7f4570f0005ca03c2812367ffb6ee2f731d66e45e61
+ARG KUBECTL_VERSION=1.32.6
+ARG KUBECTL_CHECKSUM=0e31ebf882578b50e50fe6c43e3a0e3db61f6a41c9cded46485bc74d03d576eb
 RUN /usr/bin/bash -eux \
   && curl -fSLO https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
   && chmod 755 ./kubectl \
