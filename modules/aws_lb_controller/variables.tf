@@ -1,3 +1,7 @@
+variable "kubeconfig_depends_on" {
+  description = "Resource to depend on for kubeconfig readiness (e.g., module.kubeconfig.kube_config)"
+  type        = any
+}
 variable "controller_version" {
   description = "AWS Load Balancer Controller Helm chart version"
   type        = string

@@ -241,7 +241,7 @@ module "ebs" {
 # ontap - Resource to create FSx for ONTAP file system. Used for shared storage.
 # This module creates the necessary IAM roles, policies, and Kubernetes resources for FSx ONTAP.
 module "ontap" {
-  source = "./modules/aws_fsx_ontap"
+  source  = "./modules/aws_fsx_ontap"
   count  = var.storage_type_backend == "ontap" ? 1 : 0
 
   prefix        = var.prefix                     # Resource name prefix
@@ -366,6 +366,7 @@ module "lb_controller" {
   vpc_id        = module.vpc.vpc_id
   controller_version   = var.lb_controller_version
   cert_manager_version = var.cert_manager_version
+  kubeconfig_depends_on = module.kubeconfig.kube_config
 }
 
 # Example variable definitions (add to variables.tf or root module):
