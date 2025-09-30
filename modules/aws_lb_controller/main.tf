@@ -6,10 +6,12 @@ resource "helm_release" "cert_manager" {
   chart      = "cert-manager"
   version    = var.cert_manager_version
   namespace  = "kube-system"
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
 }
 
 resource "helm_release" "aws_lb_controller" {
@@ -18,18 +20,20 @@ resource "helm_release" "aws_lb_controller" {
   chart      = "aws-load-balancer-controller"
   version    = var.controller_version
   namespace  = "kube-system"
-  set {
-    name  = "clusterName"
-    value = var.cluster_name
-  }
-  set {
-    name  = "region"
-    value = var.region
-  }
-  set {
-    name  = "vpcId"
-    value = var.vpc_id
-  }
+  set = [
+    {
+      name  = "clusterName"
+      value = var.cluster_name
+    },
+    {
+      name  = "region"
+      value = var.region
+    },
+    {
+      name  = "vpcId"
+      value = var.vpc_id
+    }
+  ]
   depends_on = [helm_release.cert_manager]
 }
 
