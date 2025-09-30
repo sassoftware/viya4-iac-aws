@@ -282,6 +282,10 @@ resource "aws_subnet" "database" {
     {
       "Name" = format(
         "%s-${var.database_subnet_suffix}-%s",
+        var.name,
+        element(var.database_subnet_azs, count.index),
+      )
+    },
     var.tags,
   )
 }
