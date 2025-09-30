@@ -12,6 +12,7 @@ resource "helm_release" "cert_manager" {
       value = "true"
     }
   ]
+  depends_on = [module.kubeconfig]
 }
 
 resource "helm_release" "aws_lb_controller" {
