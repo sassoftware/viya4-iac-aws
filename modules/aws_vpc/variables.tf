@@ -174,10 +174,6 @@ variable "region" {
 }
 
 # Security group ID for the VPC or subnets. Used for network access control.
-variable "security_group_id" {
-  description = "Security Group ID local variable value"
-  type        = string
-}
 
 # Raw security group ID input variable. Used for advanced or custom setups.
 variable "raw_sec_group_id" {
