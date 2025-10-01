@@ -70,7 +70,14 @@ resource "aws_vpc_endpoint" "private_endpoints" {
     var.tags,
   )
 
-  subnet_ids = (each.value == "Interface" || each.value == "GatewayLoadBalancer") ? [for subnet in local.private_subnets : subnet.id] : null
+  # Only set subnet_ids for Interface and GatewayLoadBalancer endpoints
+  # Terraform does not allow setting subnet_ids = null for Gateway endpoints, so we must conditionally include the argument
+  # This syntax is supported in Terraform 0.12+ for dynamic argument inclusion
+  # If the endpoint type is Interface or GatewayLoadBalancer, include subnet_ids, otherwise omit
+  # This is the only place subnet_ids is set for VPC endpoints
+  %{ if each.value == "Interface" || each.value == "GatewayLoadBalancer" }
+  subnet_ids = [for subnet in local.private_subnets : subnet.id]
+  %{ endif }
 }
 
 # Data source to fetch existing public subnets based on the provided existing_subnet_ids
