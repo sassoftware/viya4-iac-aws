@@ -72,7 +72,6 @@ module "vpc" {
   name                          = var.prefix                        # Resource name prefix
   vpc_id                        = var.vpc_id                        # Use existing VPC if provided
   region                        = var.location                      # AWS region
-  security_group_id             = local.security_group_id           # Main security group
   raw_sec_group_id              = var.security_group_id             # Raw input security group
   cluster_security_group_id     = var.cluster_security_group_id     # EKS cluster security group
   workers_security_group_id     = var.workers_security_group_id     # Node group security group
