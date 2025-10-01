@@ -55,10 +55,6 @@ resource "aws_vpc" "vpc" {
   )
 }
 
-resource "aws_vpc_ipv6_cidr_block_association" "this" {
-  count  = var.enable_ipv6 && var.vpc_id == null ? 1 : 0
-  vpc_id = aws_vpc.vpc[0].id
-}
 
 # Resource block to manage private VPC endpoints for various AWS services
 resource "aws_vpc_endpoint" "private_endpoints" {
