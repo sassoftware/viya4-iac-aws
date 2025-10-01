@@ -74,7 +74,7 @@ resource "aws_vpc_endpoint" "private_endpoints" {
     var.tags,
   )
 
-  subnet_ids = each.value == "Interface" ? [
+  subnet_ids = (each.value == "Interface" || each.value == "GatewayLoadBalancer") ? [
     for subnet in local.private_subnets : subnet.id
   ] : null
 }
