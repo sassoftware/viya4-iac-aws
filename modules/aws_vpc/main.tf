@@ -70,12 +70,7 @@ resource "aws_vpc_endpoint" "private_endpoints" {
     var.tags,
   )
 
-  dynamic "subnet_ids" {
-    for_each = (each.value == "Interface" || each.value == "GatewayLoadBalancer") ? [1] : []
-    content {
-      subnet_ids = [for subnet in local.private_subnets : subnet.id]
-    }
-  }
+  subnet_ids = (each.value == "Interface" || each.value == "GatewayLoadBalancer") ? [for subnet in local.private_subnets : subnet.id] : null
 }
 
 # Data source to fetch existing public subnets based on the provided existing_subnet_ids
