@@ -42,7 +42,7 @@ Once the cloud resources are provisioned, use the [viya4-deployment](https://git
 the SAS Viya platform in your cloud environment. For more information about SAS Viya platform requirements and documentation for the deployment
 process, refer to the [SAS Viya platform Operations Guide](https://documentation.sas.com/?cdcId=itopscdc&cdcVersion=default&docsetId=itopswlcm&docsetTarget=home.htm).
 
-**Note**: If you are not using [viya4-deployment](https://github.com/sassoftware/viya4-deployment) to deploy SAS Viya platform, install the Amazon EBS CSI driver and ensure the default StorageClass uses a supported provisioner (ebs.csi.eks.amazonaws.com when EKS Auto Mode is enabled, otherwise ebs.csi.aws.com); the in-tree kubernetes.io/aws-ebs is deprecated.
+**Note**: If you are using a deployment method other than [viya4-deployment](https://github.com/sassoftware/viya4-deployment) to deploy SAS Viya platform, install the Amazon EBS CSI driver and ensure the default StorageClass uses a supported provisioner (ebs.csi.eks.amazonaws.com when EKS Auto Mode is enabled, otherwise ebs.csi.aws.com); the in-tree kubernetes.io/aws-ebs is deprecated.
 
 ## Prerequisites
 
