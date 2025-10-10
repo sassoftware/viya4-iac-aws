@@ -34,7 +34,7 @@ default_nodepool_custom_data = ""
 
 ## General
 efs_performance_mode = "maxIO"
-storage_type         = "standard"
+storage_type         = "ha"
 
 ## Cluster Node Pools config
 node_pools = {
