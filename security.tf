@@ -35,6 +35,7 @@ resource "aws_vpc_security_group_egress_rule" "sg_ipv4" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "sg_ipv6" {
+  count = var.enable_ipv6 ? 1 : 0
 
   security_group_id = local.security_group_id
 
@@ -135,7 +136,7 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv4" {
 
 resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6" {
 
-  count = var.cluster_security_group_id == null ? 1 : 0
+  count = var.cluster_security_group_id == null && var.enable_ipv6 ? 1 : 0
 
   description       = "Allow all outbound traffic."
   ip_protocol       = "-1"
@@ -194,7 +195,7 @@ resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv4" {
 
 resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6" {
 
-  count = var.workers_security_group_id == null ? 1 : 0
+  count = var.workers_security_group_id == null && var.enable_ipv6 ? 1 : 0
 
   cidr_ipv6         = "::/0"
   security_group_id = local.workers_security_group_id

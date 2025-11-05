@@ -62,8 +62,8 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   vpc_id              = local.vpc_id
   service_name        = "com.amazonaws.${var.region}.${each.key}"
   vpc_endpoint_type   = each.value
-  security_group_ids  = each.value == "Interface" ? [local.security_group_id] : null
-  private_dns_enabled = each.value == "Interface" ? each.key != "s3" ? true : null : false
+  security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
+  private_dns_enabled = each.value == "Interface" ? (each.key != "s3" ? true : null) : false
 
   tags = merge(
     {
@@ -75,7 +75,6 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   subnet_ids = each.value == "Interface" ? [
     for subnet in local.private_subnets : subnet.id
   ] : null
-}
 }
 
 # Data source to fetch existing public subnets based on the provided existing_subnet_ids
@@ -176,7 +175,7 @@ resource "aws_route" "public_internet_gateway" {
 }
 
 resource "aws_route" "public_internet_gateway_ipv6" {
-  count = var.enable_ipv6 ? 1 : 0
+  count = var.enable_ipv6 && !local.existing_public_subnets && local.create_subnets ? 1 : 0
 
   route_table_id              = aws_route_table.public[0].id
   destination_ipv6_cidr_block = "::/0"
@@ -406,7 +405,7 @@ resource "aws_egress_only_internet_gateway" "ipv6_egress_igw" {
 }
 
 resource "aws_route" "private_nat_gateway_ipv6" {
-  count = var.enable_ipv6 ? 1 : 0
+  count = var.enable_ipv6 && !local.existing_private_subnets ? 1 : 0
 
   route_table_id              = element(aws_route_table.private[*].id, count.index)
   destination_ipv6_cidr_block = "::/0"
