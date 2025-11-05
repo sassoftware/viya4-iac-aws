@@ -80,7 +80,7 @@ output "vpc_cidr" {
 
 output "vpc_ipv6_cidr" {
   description = "IPv6 CIDR block of VPC"
-  value       = var.vpc_id == null ? null : data.aws_vpc.vpc[0].ipv6_cidr_block
+  value       = var.vpc_id == null ? (length(aws_vpc.vpc) > 0 ? aws_vpc.vpc[0].ipv6_cidr_block : null) : data.aws_vpc.vpc[0].ipv6_cidr_block
 }
 
 output "byon_scenario" {

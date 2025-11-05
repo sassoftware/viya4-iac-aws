@@ -61,6 +61,8 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
   vpc_id              = local.vpc_id
   service_name        = "com.amazonaws.${var.region}.${each.key}"
+  vpc_endpoint_type   = each.value
+  security_group_ids  = each.value == "Interface" ? [local.security_group_id] : null
   private_dns_enabled = each.value == "Interface" ? each.key != "s3" ? true : null : false
 
   tags = merge(
@@ -70,14 +72,10 @@ resource "aws_vpc_endpoint" "private_endpoints" {
     var.tags,
   )
 
-  # Only set subnet_ids for Interface and GatewayLoadBalancer endpoints
-  # Terraform does not allow setting subnet_ids = null for Gateway endpoints, so we must conditionally include the argument
-  # This syntax is supported in Terraform 0.12+ for dynamic argument inclusion
-  # If the endpoint type is Interface or GatewayLoadBalancer, include subnet_ids, otherwise omit
-  # This is the only place subnet_ids is set for VPC endpoints
-  %{ if each.value == "Interface" || each.value == "GatewayLoadBalancer" }
-  subnet_ids = [for subnet in local.private_subnets : subnet.id]
-  %{ endif }
+  subnet_ids = each.value == "Interface" ? [
+    for subnet in local.private_subnets : subnet.id
+  ] : null
+}
 }
 
 # Data source to fetch existing public subnets based on the provided existing_subnet_ids
@@ -110,7 +108,7 @@ resource "aws_subnet" "public" {
   count                           = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
   vpc_id                          = local.vpc_id
   cidr_block                      = element(var.subnets["public"], count.index)
-  ipv6_cidr_block                 = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, count.index) : null
+  ipv6_cidr_block                 = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone               = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
   availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
@@ -230,7 +228,7 @@ resource "aws_subnet" "private" {
   count                = local.existing_private_subnets ? 0 : length(var.subnets["private"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["private"], count.index)
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + count.index) : null
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
@@ -276,7 +274,7 @@ resource "aws_subnet" "database" {
   count                = local.existing_database_subnets ? 0 : local.create_subnets ? length(var.subnets["database"]) : 0
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["database"], count.index)
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + count.index) : null
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + count.index) : null
   assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
@@ -317,7 +315,7 @@ resource "aws_subnet" "control_plane" {
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["control_plane"], count.index)
   assign_ipv6_address_on_creation = var.enable_ipv6
-  ipv6_cidr_block      = var.enable_ipv6 ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + length(var.subnets["database"]) + count.index) : null
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + length(var.subnets["database"]) + count.index) : null
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) > 0 ? element(var.control_plane_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) == 0 ? element(var.control_plane_subnet_azs, count.index) : null
 

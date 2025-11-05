@@ -72,6 +72,7 @@ module "vpc" {
   name                          = var.prefix                        # Resource name prefix
   vpc_id                        = var.vpc_id                        # Use existing VPC if provided
   region                        = var.location                      # AWS region
+  security_group_id             = local.security_group_id           # Main security group
   raw_sec_group_id              = var.security_group_id             # Raw input security group
   cluster_security_group_id     = var.cluster_security_group_id     # EKS cluster security group
   workers_security_group_id     = var.workers_security_group_id     # Node group security group
@@ -359,14 +360,15 @@ JSON
 
 # AWS Load Balancer Controller Setup
 module "lb_controller" {
-  source                = "./modules/aws_lb_controller"
-  cluster_name          = local.cluster_name
-  region                = var.location
-  vpc_id                = module.vpc.vpc_id
-  controller_version    = var.lb_controller_version
-  cert_manager_version  = var.cert_manager_version
-  kubeconfig_depends_on = module.kubeconfig.kube_config
-  count                 = var.enable_ipv6 ? 1 : 0
+  source                  = "./modules/aws_lb_controller"
+  cluster_name            = local.cluster_name
+  region                  = var.location
+  vpc_id                  = module.vpc.vpc_id
+  controller_version      = var.lb_controller_version
+  cert_manager_version    = var.cert_manager_version
+  kubeconfig_depends_on   = module.kubeconfig.kube_config
+  cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
+  count                   = var.enable_ipv6 ? 1 : 0
 }
 
 # Example variable definitions (add to variables.tf or root module):

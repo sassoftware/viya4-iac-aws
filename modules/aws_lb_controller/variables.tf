@@ -26,3 +26,8 @@ variable "vpc_id" {
   description = "VPC ID"
   type        = string
 }
+
+variable "cluster_oidc_issuer_url" {
+  description = "The OIDC issuer URL for the EKS cluster"
+  type        = string
+}

@@ -1,5 +1,7 @@
 # AWS Load Balancer Controller Terraform module
 
+data "aws_caller_identity" "current" {}
+
 resource "helm_release" "cert_manager" {
   name       = "cert-manager"
   repository = "https://charts.jetstack.io"
@@ -33,26 +35,40 @@ resource "helm_release" "aws_lb_controller" {
     {
       name  = "vpcId"
       value = var.vpc_id
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = aws_iam_role.lb_controller_role.arn
+    },
+    {
+      name  = "enableServiceMutatorWebhook"
+      value = "false"
     }
   ]
   depends_on = [helm_release.cert_manager]
 }
 
 resource "aws_iam_policy" "lb_controller_policy" {
-  name        = "AWSLoadBalancerControllerIAMPolicy"
+  name        = "${var.cluster_name}-AWSLoadBalancerControllerIAMPolicy"
   path        = "/"
   description = "IAM policy for AWS Load Balancer Controller"
   policy      = file("${path.module}/iam_policy.json")
 }
 
 resource "aws_iam_role" "lb_controller_role" {
-  name = "AWSLoadBalancerControllerRole"
+  name = "${var.cluster_name}-AWSLoadBalancerControllerRole"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Principal = { Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(var.cluster_oidc_issuer_url, "https://", "")}" }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(var.cluster_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${replace(var.cluster_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+        }
+      }
     }]
   })
 }
