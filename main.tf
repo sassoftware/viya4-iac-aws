@@ -296,6 +296,7 @@ module "postgresql" {
   username = each.value.administrator_login    # DB admin username
   password = each.value.administrator_password # DB admin password
   port     = each.value.server_port            # DB port
+  db_name  = each.value.db_name
 
   vpc_security_group_ids = [local.security_group_id, local.workers_security_group_id] # Security groups
 
