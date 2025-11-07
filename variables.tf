@@ -341,6 +341,7 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
+      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=compute:NoSchedule"]
@@ -359,6 +360,7 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
+      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=stateless:NoSchedule"]
@@ -376,6 +378,7 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
+      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 3
       "node_taints"  = ["workload.sas.com/class=stateful:NoSchedule"]
