@@ -35,6 +35,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0" # Use Kubernetes provider version 2.x
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0" # Use Helm provider version 2.x
+    }
     tls = {
       source  = "hashicorp/tls"
       version = "~> 4.0" # Use TLS provider version 4.x

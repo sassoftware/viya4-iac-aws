@@ -65,6 +65,15 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token # Auth token for EKS
 }
 
+# Provider block for Helm. Configures the Helm provider to connect to the EKS cluster using the same configuration as Kubernetes provider.
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint             # EKS API endpoint
+    cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)  # Cluster CA cert (from locals.tf)
+    token                  = data.aws_eks_cluster_auth.cluster.token # Auth token for EKS
+  }
+}
+
 # VPC Setup
 module "vpc" {
   source = "./modules/aws_vpc"
@@ -368,6 +377,7 @@ module "lb_controller" {
   cert_manager_version    = var.cert_manager_version
   kubeconfig_depends_on   = module.kubeconfig.kube_config
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
+  enable_ipv6             = var.enable_ipv6
   count                   = var.enable_ipv6 ? 1 : 0
 }
 

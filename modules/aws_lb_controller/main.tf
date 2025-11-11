@@ -23,28 +23,60 @@ resource "helm_release" "aws_lb_controller" {
   chart      = "aws-load-balancer-controller"
   version    = var.controller_version
   namespace  = "kube-system"
-  set = [
-    {
-      name  = "clusterName"
-      value = var.cluster_name
-    },
-    {
-      name  = "region"
-      value = var.region
-    },
-    {
-      name  = "vpcId"
-      value = var.vpc_id
-    },
-    {
-      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-      value = aws_iam_role.lb_controller_role.arn
-    },
-    {
-      name  = "enableServiceMutatorWebhook"
-      value = "false"
+  
+  # Base configuration for all deployments
+  set {
+    name  = "clusterName"
+    value = var.cluster_name
+  }
+  
+  set {
+    name  = "region"
+    value = var.region
+  }
+  
+  set {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
+  
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.lb_controller_role.arn
+  }
+  
+  set {
+    name  = "enableServiceMutatorWebhook"
+    value = "false"
+  }
+  
+  set {
+    name  = "defaultSSLPolicy"
+    value = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  }
+  
+  set {
+    name  = "defaultTargetType"
+    value = "ip"
+  }
+  
+  # IPv6-specific configuration
+  dynamic "set" {
+    for_each = var.enable_ipv6 ? [1] : []
+    content {
+      name  = "defaultAddressType"
+      value = "ipv6"
     }
-  ]
+  }
+  
+  dynamic "set" {
+    for_each = var.enable_ipv6 ? [1] : []
+    content {
+      name  = "enableIPv6"
+      value = "true"
+    }
+  }
+  
   depends_on = [helm_release.cert_manager]
 }
 
