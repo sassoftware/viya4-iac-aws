@@ -34,16 +34,17 @@ resource "aws_vpc_security_group_egress_rule" "sg_ipv4" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv4" })
 }
 
-resource "aws_vpc_security_group_egress_rule" "sg_ipv6" {
+# IPv6 egress rule for VPC-local traffic (more restrictive than ::/0)
+# Allows IPv6 pods to communicate within VPC and to AWS services
+resource "aws_vpc_security_group_egress_rule" "sg_ipv6_vpc" {
   count = var.enable_ipv6 ? 1 : 0
 
   security_group_id = local.security_group_id
+  description       = "Allow IPv6 outbound traffic within VPC CIDR"
+  ip_protocol       = "-1" 
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
 
-  description = "Allow all outbound traffic."
-  ip_protocol = "-1"
-  cidr_ipv6   = "::/0"
-
-  tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv6" })
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv6-vpc" })
 }
 
 # Only create this/these ingress rule(s) if we are using VPC Endpoints
@@ -134,13 +135,13 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv4" {
   security_group_id = local.cluster_security_group_id
 }
 
-resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6" {
-
+# IPv6 egress rule for EKS cluster (VPC-local traffic)
+resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6_vpc" {
   count = var.cluster_security_group_id == null && var.enable_ipv6 ? 1 : 0
 
-  description       = "Allow all outbound traffic."
+  description       = "Allow IPv6 outbound traffic within VPC CIDR"
   ip_protocol       = "-1"
-  cidr_ipv6         = "::/0"
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
   security_group_id = local.cluster_security_group_id
 }
 
@@ -193,16 +194,15 @@ resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv4" {
 
 }
 
-resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6" {
-
+# IPv6 egress rule for worker nodes (VPC-local traffic)
+resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6_vpc" {
   count = var.workers_security_group_id == null && var.enable_ipv6 ? 1 : 0
 
-  cidr_ipv6         = "::/0"
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
   security_group_id = local.workers_security_group_id
-  description       = "Allow cluster egress access to the Internet."
+  description       = "Allow IPv6 cluster egress access within VPC CIDR"
   ip_protocol       = "-1"
-
-}
+}  
 
 resource "aws_vpc_security_group_ingress_rule" "worker_self" {
 

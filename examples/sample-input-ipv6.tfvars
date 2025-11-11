@@ -28,11 +28,15 @@ lb_controller_version = "1.9.1"   # AWS Load Balancer Controller Helm chart vers
 cert_manager_version  = "v1.13.2" # cert-manager Helm chart version (required dependency)
 
 # LOAD BALANCER BEHAVIOR with enable_ipv6 = true:
-# - EKS cluster is configured for IPv6-only mode (cluster_ip_family = "ipv6")
-# - Pods receive IPv6 addresses only (e.g., fd08:6f36:f002::3b3b)
-# - IPv6 services: Supported via annotations (aws-load-balancer-ip-address-type: "ipv6")
-# - IPv4 services: NOT supported in IPv6-only cluster
-# - Dualstack services: NOT supported in IPv6-only cluster
+# AWS EKS Configuration: IPv6 single-stack cluster for IPv6 pods and services
+# - EKS cluster: IPv6 single-stack (cluster_ip_family = "ipv6") 
+# - Pods: IPv6 addresses (e.g., 2001:db8::1:3b3b)
+# - Services: IPv6 addresses by default
+# - Load Balancers: IPv6 and dualstack support via annotations
+#   * IPv4 LB: aws-load-balancer-ip-address-type: "ipv4" (to override default IPv6)
+#   * IPv6 LB: No annotations needed (default with IPv6 cluster)
+#   * Dualstack LB: aws-load-balancer-ip-address-type: "dualstack"
+# - IPv6 infrastructure: VPC, subnets, routing configured for IPv6
 # See examples/simple-dualstack-test.yaml for working IPv6 service configuration
 # ****************  IPv6 CONFIGURATION  ****************
 

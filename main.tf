@@ -112,7 +112,7 @@ module "eks" {
   cluster_endpoint_private_access      = true                                                                       # Always enable private endpoint
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false                            # Enable public endpoint if requested
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs                                 # CIDRs allowed for public endpoint
-  cluster_ip_family                    = "ipv4"  # Use IPv4 cluster with IPv6 infrastructure support
+  cluster_ip_family                    = var.enable_ipv6 ? "ipv6" : "ipv4"  # IPv6 pods when IPv6 is enabled, IPv4 otherwise
 
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
   control_plane_subnet_ids = module.vpc.control_plane_subnets # Subnets for EKS control plane

@@ -430,7 +430,7 @@ variable "subnets" {
 }
 
 variable "enable_ipv6" {
-  description = "Enable IPv6 on subnets, VPC, and EKS"
+  description = "Enable IPv6 on VPC, subnets, and EKS. When true, EKS cluster uses IPv6 single-stack (pods get IPv6 addresses). Load balancers support IPv6 and dualstack configurations."
   type        = bool
   default     = false
 }
