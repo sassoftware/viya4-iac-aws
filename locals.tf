@@ -130,7 +130,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned" }, { "k8s.io/cluster-autoscaler/enabled" = "true" }) : local.tags
 
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
@@ -181,7 +181,7 @@ locals {
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
+      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned" }, { "k8s.io/cluster-autoscaler/enabled" = "true" }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"
