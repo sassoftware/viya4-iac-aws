@@ -24,8 +24,16 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 enable_ipv6 = true
 
 # AWS Load Balancer Controller versions (automatically installed when IPv6 is enabled)
-lb_controller_version = "1.6.2"   # AWS Load Balancer Controller Helm chart version
+lb_controller_version = "1.9.1"   # AWS Load Balancer Controller Helm chart version (for better IPv6 support)
 cert_manager_version  = "v1.13.2" # cert-manager Helm chart version (required dependency)
+
+# LOAD BALANCER BEHAVIOR with enable_ipv6 = true:
+# - EKS cluster is configured for IPv6-only mode (cluster_ip_family = "ipv6")
+# - Pods receive IPv6 addresses only (e.g., fd08:6f36:f002::3b3b)
+# - IPv6 services: Supported via annotations (aws-load-balancer-ip-address-type: "ipv6")
+# - IPv4 services: NOT supported in IPv6-only cluster
+# - Dualstack services: NOT supported in IPv6-only cluster
+# See examples/simple-dualstack-test.yaml for working IPv6 service configuration
 # ****************  IPv6 CONFIGURATION  ****************
 
 # Postgres config - By having this entry a database server is created. If you do not

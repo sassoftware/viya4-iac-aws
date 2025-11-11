@@ -31,9 +31,3 @@ variable "cluster_oidc_issuer_url" {
   description = "The OIDC issuer URL for the EKS cluster"
   type        = string
 }
-
-variable "enable_ipv6" {
-  description = "Enable IPv6 configuration for AWS Load Balancer Controller"
-  type        = bool
-  default     = false
-}
