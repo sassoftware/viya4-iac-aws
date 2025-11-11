@@ -8,12 +8,12 @@ resource "helm_release" "cert_manager" {
   chart      = "cert-manager"
   version    = var.cert_manager_version
   namespace  = "kube-system"
-  set = [
-    {
-      name  = "installCRDs"
-      value = "true"
-    }
-  ]
+  
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+  
   depends_on = [var.kubeconfig_depends_on]
 }
 
