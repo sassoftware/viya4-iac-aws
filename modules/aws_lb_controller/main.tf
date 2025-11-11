@@ -60,23 +60,6 @@ resource "helm_release" "aws_lb_controller" {
     value = "ip"
   }
   
-  # IPv6-specific configuration
-  dynamic "set" {
-    for_each = var.enable_ipv6 ? [1] : []
-    content {
-      name  = "defaultAddressType"
-      value = "ipv6"
-    }
-  }
-  
-  dynamic "set" {
-    for_each = var.enable_ipv6 ? [1] : []
-    content {
-      name  = "enableIPv6"
-      value = "true"
-    }
-  }
-  
   depends_on = [helm_release.cert_manager]
 }
 
