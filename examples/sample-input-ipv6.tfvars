@@ -24,7 +24,7 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 enable_ipv6 = true
 
 # AWS Load Balancer Controller versions (automatically installed when IPv6 is enabled)
-lb_controller_version = "1.9.1"   # AWS Load Balancer Controller Helm chart version (for better IPv6 support)
+lb_controller_version = "1.14.1"   # AWS Load Balancer Controller Helm chart version (latest with enhanced IPv6 support)
 cert_manager_version  = "v1.13.2" # cert-manager Helm chart version (required dependency)
 
 # LOAD BALANCER BEHAVIOR with enable_ipv6 = true:

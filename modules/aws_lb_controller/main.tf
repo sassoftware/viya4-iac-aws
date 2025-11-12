@@ -60,6 +60,17 @@ resource "helm_release" "aws_lb_controller" {
     value = "ip"
   }
   
+  # Enhanced IPv6 support configuration
+  set {
+    name  = "enableIPv6"
+    value = "true"
+  }
+  
+  set {
+    name  = "logLevel"
+    value = "info"
+  }
+  
   depends_on = [helm_release.cert_manager]
 }
 

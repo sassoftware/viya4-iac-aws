@@ -160,7 +160,7 @@ module "eks" {
       to_port          = 0
       type             = "egress"
       cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
+      ipv6_cidr_blocks = var.enable_ipv6 ? ["::/0"] : []
     }
   }
   # We already set our own rules above, no need to use Amazon's defaults.
