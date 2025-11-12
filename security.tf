@@ -42,7 +42,7 @@ resource "aws_vpc_security_group_egress_rule" "sg_ipv6_vpc" {
   security_group_id = local.security_group_id
   description       = "Allow IPv6 outbound traffic within VPC CIDR"
   ip_protocol       = "-1" 
-  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
 
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv6-vpc" })
 }
@@ -141,7 +141,7 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6_vpc" 
 
   description       = "Allow IPv6 outbound traffic within VPC CIDR"
   ip_protocol       = "-1"
-  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
   security_group_id = local.cluster_security_group_id
 }
 
@@ -198,7 +198,7 @@ resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv4" {
 resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6_vpc" {
   count = var.workers_security_group_id == null && var.enable_ipv6 ? 1 : 0
 
-  cidr_ipv6         = module.vpc.vpc_ipv6_cidr_block
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
   security_group_id = local.workers_security_group_id
   description       = "Allow IPv6 cluster egress access within VPC CIDR"
   ip_protocol       = "-1"
