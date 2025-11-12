@@ -192,6 +192,26 @@ module "eks" {
   eks_managed_node_groups = local.node_groups # Node group definitions (from locals)
 }
 
+# Tag the EKS created ASGs - ensures tags are explicitly applied to AutoScalingGroups
+# This is more reliable than relying solely on EKS module propagation
+resource "aws_autoscaling_group_tag" "node_group_tags" {
+  # The for_each loop results in one resource created per node group per tag
+  for_each = {
+    for item in local.node_group_tags :
+    "${item.node_group}-${item.key}" => item
+  }
+  # Reference the single ASG for this node group
+  autoscaling_group_name = module.eks.eks_managed_node_groups[each.value.node_group].node_group_autoscaling_group_names[0]
+
+  tag {
+    key                 = each.value.key
+    value               = each.value.value
+    propagate_at_launch = true
+  }
+
+  depends_on = [module.eks]
+}
+
 # Resource to create EKS access entries for admin IAM roles. Used for EKS RBAC.
 resource "aws_eks_access_entry" "instance" {
   for_each = toset(coalesce(var.admin_access_entry_role_arns, []))
