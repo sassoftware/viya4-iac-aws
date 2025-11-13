@@ -305,7 +305,6 @@ variable "node_pools" {
     os_disk_type                         = string
     os_disk_size                         = number
     os_disk_iops                         = number
-    subnet_number                        = number
     min_nodes                            = number
     max_nodes                            = number
     node_taints                          = list(string)
@@ -323,7 +322,6 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=cas:NoSchedule"]
@@ -341,7 +339,6 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=compute:NoSchedule"]
@@ -360,7 +357,6 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 5
       "node_taints"  = ["workload.sas.com/class=stateless:NoSchedule"]
@@ -378,7 +374,6 @@ variable "node_pools" {
       "os_disk_type" = "gp2"
       "os_disk_size" = 200
       "os_disk_iops" = 0
-      "subnet_number" = 0
       "min_nodes"    = 1
       "max_nodes"    = 3
       "node_taints"  = ["workload.sas.com/class=stateful:NoSchedule"]
@@ -608,7 +603,6 @@ variable "postgres_server_defaults" {
     backup_retention_days   = 7
     multi_az                = false
     deletion_protection     = false
-    db_name                 = "SharedServices"
     administrator_login     = "pgadmin"
     administrator_password  = "my$up3rS3cretPassw0rd"
     server_version          = "15"

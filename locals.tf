@@ -177,7 +177,6 @@ locals {
         http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
       }
 
-      subnet_ids = module.vpc.private_subnets[np_value.subnet_number]
       # Launch Template configuration
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
