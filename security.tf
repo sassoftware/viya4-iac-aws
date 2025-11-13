@@ -26,7 +26,7 @@ resource "aws_security_group" "sg" {
 
 # Egress rule to allow all outbound traffic from the security group
 resource "aws_vpc_security_group_egress_rule" "sg" {
-
+  count = var.security_group_id == null && var.vpc_private_endpoints_enabled ? 1 : 0
   security_group_id = local.security_group_id
 
   description = "Allow all outbound traffic."
