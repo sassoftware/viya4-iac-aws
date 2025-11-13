@@ -33,7 +33,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
   throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
-  route_table_ids     = module.vpc.private_route_table_ids
+  route_table_ids     = var.aws_fsx_ontap_deployment_type == "MULTI_AZ_1" ? module.vpc.private_route_table_ids : null
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
 
   depends_on = [module.ontap]
