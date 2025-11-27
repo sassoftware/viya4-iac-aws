@@ -179,7 +179,7 @@ variable "efs_throughput_rate" {
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.32"
+  default     = "1.33"
 }
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
