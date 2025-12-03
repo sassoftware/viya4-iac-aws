@@ -39,16 +39,9 @@ storage_type         = "standard"
 # ****************  OPTIONAL CAS CONFIGURATION  ****************
 # This configuration is optimized for SAS Viya Programming-only deployments.
 # 
-# Two options for making CAS optional:
-# 1. Keep the cas block commented out (no CAS node pool created)
-#    - No CAS node pool created
-#    - CAS cannot be deployed without infrastructure changes
-#
-# 2. Set min_nodes=0 for cas node pool (uncomment the cas block below)
-#    - Creates just node pool metadata
-#    - No VMs provisioned until CAS workload is deployed
-#    - Autoscaler provisions nodes on-demand when needed
-#    - Enables CAS deployment without infrastructure changes
+# Keep the cas block commented out to avoid CAS node pool creation:
+#    - No CAS node pool or EC2 instances created
+#    - Zero cost for CAS infrastructure
 # ******************************************************************
 
 ## Cluster Node Pools config
