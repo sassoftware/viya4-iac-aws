@@ -128,3 +128,6 @@ jump_vm_type   = "t3.medium"
 create_nfs_public_ip = false
 nfs_vm_admin         = "nfsuser"
 nfs_vm_type          = "m6in.xlarge"
+
+# NOTE: For multi-zone deployments, keep the CAS configuration changes above
+#       and refer to sample-input-multizone.tfvars for additional zone settings
