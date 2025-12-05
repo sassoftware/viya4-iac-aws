@@ -33,6 +33,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
   throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
+  route_table_ids     = var.aws_fsx_ontap_deployment_type == "MULTI_AZ_1" ? module.vpc.private_route_table_ids : null
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
 
   depends_on = [module.ontap]
@@ -41,10 +42,11 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
 # ONTAP storage virtual machine and volume resources
 
 resource "aws_fsx_ontap_storage_virtual_machine" "ontap-svm" {
-  count          = local.storage_type_backend == "ontap" ? 1 : 0
-  file_system_id = aws_fsx_ontap_file_system.ontap-fs[0].id
-  name           = "${var.prefix}-ontap-svm"
-  tags           = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
+  count               = local.storage_type_backend == "ontap" ? 1 : 0
+  file_system_id      = aws_fsx_ontap_file_system.ontap-fs[0].id
+  svm_admin_password  = var.aws_fsx_ontap_svmadmin_password
+  name                = "${var.prefix}-ontap-svm"
+  tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-svm" })
 }
 
 # A default volume gets created with the svm, we may want another

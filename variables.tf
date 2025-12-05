@@ -778,6 +778,13 @@ variable "aws_fsx_ontap_fsxadmin_password" {
   default     = "v3RyS3cretPa$sw0rd"
 }
 
+# The ONTAP administrative password for the svmadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API.
+variable "aws_fsx_ontap_svmadmin_password" {
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API."
+  type        = string
+  default     = "v3RyS3cretPa$sw0rd"
+}
+
 # The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608.
 variable "aws_fsx_ontap_file_system_storage_capacity" {
   description = "The storage capacity (GiB) of the ONTAP file system. Valid values between 1024 and 196608."
