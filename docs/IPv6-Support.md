@@ -23,6 +23,7 @@ AWS EKS supports single-stack IPv6 for Pods and Services (unlike Azure and GCP w
 ### ✅ EKS IPv6 Configuration
 - **Cluster IP Family**: Automatically set to "ipv6" when IPv6 is enabled
 - **CNI IPv6 Policy**: Required IAM policy for IPv6 pod networking
+- **Dual-Stack VPC CNI**: IPv4 is enabled in VPC CNI alongside IPv6 for CSI driver compatibility
 - **Compatible Node Groups**: All node groups support IPv6 addressing
 
 ### ✅ AWS Load Balancer Controller Automation
@@ -101,6 +102,27 @@ The AWS Load Balancer Controller installed by this project will automatically ha
 1. **Ingress Not Working**: Ensure you're using the viya4-deployment `ipv6` branch which configures ingress-nginx for IPv6
 2. **NLB Creation Fails**: The AWS Load Balancer Controller should be automatically installed; verify it's running in `kube-system` namespace
 3. **IPv6 Connectivity**: Ensure your local network and AWS Security Groups allow IPv6 traffic
+4. **EBS CSI Topology Errors**: If you see `no topology key found on CSINode` errors, this is automatically resolved by enabling IPv4 in the VPC CNI (configured during deployment)
+
+### EBS CSI Driver with IPv6
+
+When using IPv6, the EBS CSI driver requires topology information from the VPC CNI. This project automatically configures dual-stack mode in the VPC CNI by setting `ENABLE_IPv4=true` on the `aws-node` daemonset. This allows:
+
+- Pods to use IPv6 addresses (primary)
+- CSI drivers to receive proper topology information via IPv4
+- Full compatibility with AWS EBS volumes
+
+**Manual verification (if needed):**
+
+```bash
+# Check that IPv4 is enabled in VPC CNI
+kubectl get daemonset aws-node -n kube-system -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="ENABLE_IPv4")].value}'
+# Should output: true
+
+# Verify CSINode has topology keys
+kubectl get csinode <node-name> -o yaml | grep topology
+# Should show topology.ebs.csi.aws.com/zone
+```
 
 ### Verification Commands
 

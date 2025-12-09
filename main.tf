@@ -288,6 +288,18 @@ resource "terraform_data" "run_command" {
   depends_on = [module.kubeconfig.kube_config] # Wait for kubeconfig
 }
 
+# Enable IPv4 in VPC CNI for dual-stack support when IPv6 is enabled
+# This is required for EBS CSI driver to work properly with IPv6 clusters
+# The VPC CNI needs IPv4 enabled to provide topology information to CSI drivers
+resource "terraform_data" "enable_ipv4_vpc_cni" {
+  count = var.enable_ipv6 ? 1 : 0
+  provisioner "local-exec" {
+    command = "kubectl --kubeconfig=${local.kubeconfig_path} set env daemonset aws-node -n kube-system ENABLE_IPv4=true"
+  }
+
+  depends_on = [module.kubeconfig.kube_config] # Wait for kubeconfig
+}
+
 # Database Setup - https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/6.2.0
 module "postgresql" {
   source  = "terraform-aws-modules/rds/aws"
