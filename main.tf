@@ -94,7 +94,7 @@ module "vpc" {
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
   source                               = "terraform-aws-modules/eks/aws"
-  version                              = "~> 20.0"
+  version                              = "~> 21.6"
   cluster_name                         = local.cluster_name                                                         # EKS cluster name
   cluster_version                      = var.kubernetes_version                                                     # Kubernetes version
   cluster_enabled_log_types            = var.cluster_enabled_log_types == null ? [] : var.cluster_enabled_log_types # EKS audit log types
