@@ -14,6 +14,8 @@ locals {
     : local.storage_type_backend == "efs" ? "/"
     : local.storage_type_backend == "ontap" ? "/ontap" : "/export"
   )
+  # Flag to distinguish FSx ONTAP Gen2 deployment types
+  fsx_is_gen2 = contains(["SINGLE_AZ_2", "MULTI_AZ_2"], var.aws_fsx_ontap_deployment_type)
 }
 
 # ONTAP File System - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fsx_ontap_file_system
@@ -29,8 +31,13 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
   # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
   # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs, there is a 2 subnet ID maximum
-  subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
-  throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
+  subnet_ids = contains(["SINGLE_AZ_1", "SINGLE_AZ_2"], var.aws_fsx_ontap_deployment_type) ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+
+  # Gen1 uses throughput_capacity. Gen2 uses ha_pairs + throughput_capacity_per_ha_pair.
+  throughput_capacity             = local.fsx_is_gen2 ? null : var.aws_fsx_ontap_file_system_throughput_capacity
+  throughput_capacity_per_ha_pair = local.fsx_is_gen2 ? var.aws_fsx_ontap_file_system_throughput_capacity_per_ha_pair : null
+  ha_pairs                        = local.fsx_is_gen2 ? var.aws_fsx_ontap_file_system_ha_pairs : null
+
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
   tags                = merge(local.tags, { "Name" : "${var.prefix}-ontap-fs" })
