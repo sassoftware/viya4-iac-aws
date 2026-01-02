@@ -143,6 +143,14 @@ variable "ssh_public_key" {
   default     = "~/.ssh/id_rsa.pub"
 }
 
+## Security
+# Enable Federal Information Processing Standard (FIPS) 140-2 for all nodes
+variable "fips_enabled" {
+  description = "Enables the Federal Information Processing Standard for all the nodes in this cluster. Changing this forces a new resource to be created."
+  type        = bool
+  default     = false
+}
+
 # EFS (Elastic File System) performance mode. Can be 'generalPurpose' or 'maxIO'.
 variable "efs_performance_mode" {
   description = "EFS performance mode. Supported values are `generalPurpose` or `maxIO`."

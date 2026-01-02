@@ -75,6 +75,14 @@ locals {
     : null
   )
 
+  # FIPS AMI Type Mapping
+  # Maps standard AMI types to their FIPS 140-2 enabled equivalents
+  # Only AL2023 is supported - AL2 does NOT have FIPS variants
+  fips_ami_mapping = {
+    "AL2023_x86_64_STANDARD" = "AL2023_x86_64_FIPS_140_2_ENABLED"
+    "AL2023_ARM_64_STANDARD" = "AL2023_ARM_64_FIPS_140_2_ENABLED"
+  }
+
   # Storage
   # Determine the backend type for storage based on the selected storage type
   storage_type_backend = (var.storage_type == "none" ? "none"
@@ -91,10 +99,11 @@ locals {
 
   # Mapping node_pools to node_groups
   # Default node pool configuration
-  default_node_pool = {
+  default_node_pool = var.create_default_nodepool ? {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
+      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, "AL2023_x86_64_STANDARD", "AL2023_x86_64_STANDARD") : null
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -143,7 +152,7 @@ locals {
     key => {
       name           = key
       instance_types = [np_value.vm_type]
-      ami_type       = np_value.cpu_type
+      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, np_value.cpu_type, np_value.cpu_type) : np_value.cpu_type
       disk_size      = np_value.os_disk_size
       block_device_mappings = {
         xvda = {

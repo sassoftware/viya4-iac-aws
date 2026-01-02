@@ -33,6 +33,9 @@ This project contains Terraform scripts to provision the AWS cloud infrastructur
   >- Amazon FSx for NetApp ONTAP File System
   >- Amazon Relational Database Service (RDS)
 
+**Features**:
+- **FIPS 140-2 Compliance**: Optional FIPS mode for government and regulated industries using Amazon Linux 2023. Set `fips_enabled=true` to deploy FIPS-validated nodes. See [FIPS Implementation](./docs/FIPS-Implementation-Investigation.md) for details.
+
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 
 This project helps you to automate the cluster-provisioning phase of SAS Viya platform deployment. To learn about all phases and options of the
