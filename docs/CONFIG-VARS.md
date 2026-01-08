@@ -83,7 +83,6 @@ Federal Information Processing Standard (FIPS) 140-2 is required for U.S. govern
 
 **Supported AMI Types**:
 - `AL2023_x86_64_STANDARD` → `AL2023_x86_64_FIPS_140_2_ENABLED`
-- `AL2023_ARM_64_STANDARD` → `AL2023_ARM_64_FIPS_140_2_ENABLED`
 
 **Not Supported**:
 - Amazon Linux 2 (AL2) AMI types do NOT have FIPS variants
