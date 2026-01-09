@@ -72,42 +72,46 @@ You can use either static credentials or the name of an AWS profile. If both are
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | ssh_public_key | SSH public key used to access VMs | string | "~/.ssh/id_rsa.pub" | |
-| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Only AL2023 supports FIPS. Amazon Linux 2 (AL2) does NOT support FIPS mode. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
+| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Automatically switches nodes to Bottlerocket FIPS AMIs. AWS EKS only provides FIPS-validated AMIs for Bottlerocket. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
 
 ### FIPS 140-2 Compliance
 
 Federal Information Processing Standard (FIPS) 140-2 is required for U.S. government agencies and contractors. When `fips_enabled=true`:
 
-- FIPS mode is enabled on all EKS managed node groups via pre-bootstrap user data
+- All node groups automatically switch to Bottlerocket FIPS AMI types
 - Cryptographic operations on nodes use FIPS 140-2 validated modules
 - Node-to-control-plane communication uses FIPS-validated TLS libraries
 - EKS control plane (API endpoint) already runs on FIPS-validated AWS infrastructure
 
 **Implementation Details**:
-- Uses `AL2023_x86_64_STANDARD` AMI type with FIPS enablement via `fips-mode-setup --enable`
-- Nodes automatically reboot once during initialization to activate FIPS mode
-- No special AMI types required - FIPS is configured at node startup
+- AWS EKS only provides FIPS-validated AMIs for **Bottlerocket**, not Amazon Linux
+- When FIPS is enabled, node pools automatically switch to Bottlerocket FIPS AMIs:
+  - `AL2023_x86_64_STANDARD` → `BOTTLEROCKET_x86_64_FIPS`
+  - `AL2023_ARM_64_STANDARD` → `BOTTLEROCKET_ARM_64_FIPS`
+  - `BOTTLEROCKET_x86_64` → `BOTTLEROCKET_x86_64_FIPS`
+  - `BOTTLEROCKET_ARM_64` → `BOTTLEROCKET_ARM_64_FIPS`
+- Bottlerocket is a minimal, container-focused OS purpose-built for Kubernetes
+- Configuration uses Bottlerocket's API instead of traditional userdata
 
 **Supported Operating Systems**:
-- ✅ Amazon Linux 2023 (AL2023) - Full FIPS support
-- ❌ Amazon Linux 2 (AL2) - No FIPS support available
+- ✅ Bottlerocket - Official FIPS 140-2 validated AMIs available
+- ❌ Amazon Linux 2023 (AL2023) - No FIPS AMIs for EKS
+- ❌ Amazon Linux 2 (AL2) - No FIPS AMIs for EKS
 
-**Migration from AL2 to AL2023**:
-If currently using AL2 AMI types, you must migrate to AL2023 before enabling FIPS:
-1. Test workloads on AL2023 in a non-production environment
-2. Update `cpu_type` values in `node_pools` variable to `AL2023_x86_64_STANDARD`
-3. Set `fips_enabled=true`
-4. Run `terraform apply` (this will recreate node groups)
+**Important Notes**:
+- Bottlerocket uses a different configuration approach than Amazon Linux
+- See [AWS Bottlerocket documentation](https://aws.amazon.com/bottlerocket/) for details
+- Changing `fips_enabled` requires recreating all node groups
+- Test Bottlerocket compatibility with your workloads before production use
 
 **Validation**:
 After deployment, verify FIPS mode is active on a node:
 ```bash
-# Connect to a node via kubectl exec or SSH
-cat /proc/sys/crypto/fips_enabled
+# For Bottlerocket nodes, FIPS is built into the AMI
+# Verify using a privileged pod or node shell:
+kubectl exec -it <pod-name> -n kube-system -- \
+  apiclient exec admin sheltie -- cat /proc/sys/crypto/fips_enabled
 # Should output: 1 (FIPS enabled)
-
-# Verify FIPS mode status
-fips-mode-setup --check
 # Should output: FIPS mode is enabled.
 ```
 

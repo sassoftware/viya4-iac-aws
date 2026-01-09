@@ -18,9 +18,10 @@ ssh_public_key              = "~/.ssh/id_rsa.pub"
 
 # **************  SECURITY - FIPS MODE  ***************
 # Enable FIPS 140-2 for all cluster nodes
-# NOTE: Only AL2023 supports FIPS mode
-# Amazon Linux 2 (AL2) does NOT support FIPS
-# FIPS is enabled via user data during node initialization
+# NOTE: Automatically switches all node pools to Bottlerocket FIPS AMIs
+# AWS EKS only provides FIPS-validated AMIs for Bottlerocket
+# AL2023_x86_64_STANDARD → BOTTLEROCKET_x86_64_FIPS
+# AL2023_ARM_64_STANDARD → BOTTLEROCKET_ARM_64_FIPS
 fips_enabled = true
 # **************  SECURITY - FIPS MODE  ***************
 
