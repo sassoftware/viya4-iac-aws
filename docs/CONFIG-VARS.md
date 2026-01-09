@@ -72,41 +72,43 @@ You can use either static credentials or the name of an AWS profile. If both are
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | ssh_public_key | SSH public key used to access VMs | string | "~/.ssh/id_rsa.pub" | |
-| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Only AL2023 AMI types support FIPS. Amazon Linux 2 (AL2) does NOT have FIPS variants. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
+| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Only AL2023 supports FIPS. Amazon Linux 2 (AL2) does NOT support FIPS mode. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
 
 ### FIPS 140-2 Compliance
 
 Federal Information Processing Standard (FIPS) 140-2 is required for U.S. government agencies and contractors. When `fips_enabled=true`:
 
-- All EKS managed node groups use FIPS-enabled AMI types
+- FIPS mode is enabled on all EKS managed node groups via pre-bootstrap user data
 - Cryptographic operations on nodes use FIPS 140-2 validated modules
 - Node-to-control-plane communication uses FIPS-validated TLS libraries
 - EKS control plane (API endpoint) already runs on FIPS-validated AWS infrastructure
 
-**Supported AMI Types**:
-- `AL2023_x86_64_STANDARD` → `AL2023_x86_64_FIPS_140_2_ENABLED`
+**Implementation Details**:
+- Uses `AL2023_x86_64_STANDARD` AMI type with FIPS enablement via `fips-mode-setup --enable`
+- Nodes automatically reboot once during initialization to activate FIPS mode
+- No special AMI types required - FIPS is configured at node startup
 
-**Not Supported**:
-- Amazon Linux 2 (AL2) AMI types do NOT have FIPS variants
-- Using AL2 with `fips_enabled=true` will fail during terraform apply
+**Supported Operating Systems**:
+- ✅ Amazon Linux 2023 (AL2023) - Full FIPS support
+- ❌ Amazon Linux 2 (AL2) - No FIPS support available
 
 **Migration from AL2 to AL2023**:
 If currently using AL2 AMI types, you must migrate to AL2023 before enabling FIPS:
 1. Test workloads on AL2023 in a non-production environment
-2. Update `cpu_type` values in `node_pools` variable from AL2 to AL2023
+2. Update `cpu_type` values in `node_pools` variable to `AL2023_x86_64_STANDARD`
 3. Set `fips_enabled=true`
 4. Run `terraform apply` (this will recreate node groups)
 
 **Validation**:
-After deployment, verify FIPS mode on a node:
+After deployment, verify FIPS mode is active on a node:
 ```bash
 # Connect to a node via kubectl exec or SSH
 cat /proc/sys/crypto/fips_enabled
-# Should output: 1
+# Should output: 1 (FIPS enabled)
 
-# Verify kernel is FIPS build
-uname -r
-# Should contain 'fips' in version string
+# Verify FIPS mode status
+fips-mode-setup --check
+# Should output: FIPS mode is enabled.
 ```
 
 For a complete FIPS configuration example, see [examples/sample-input-fips.tfvars](../examples/sample-input-fips.tfvars).

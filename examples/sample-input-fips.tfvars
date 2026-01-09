@@ -18,8 +18,9 @@ ssh_public_key              = "~/.ssh/id_rsa.pub"
 
 # **************  SECURITY - FIPS MODE  ***************
 # Enable FIPS 140-2 for all cluster nodes
-# NOTE: Only AL2023 AMI types support FIPS
-# Amazon Linux 2 (AL2) does NOT have FIPS variants
+# NOTE: Only AL2023 supports FIPS mode
+# Amazon Linux 2 (AL2) does NOT support FIPS
+# FIPS is enabled via user data during node initialization
 fips_enabled = true
 # **************  SECURITY - FIPS MODE  ***************
 
@@ -42,12 +43,12 @@ default_nodepool_labels              = {}
 default_nodepool_custom_data         = ""
 
 # Additional Node Pools
-# NOTE: Only AL2023 AMI types support FIPS
-# cpu_type values below will be automatically mapped to FIPS equivalents when fips_enabled=true
+# NOTE: Using AL2023_x86_64_STANDARD with fips_enabled=true
+# FIPS mode will be automatically enabled via user data at node startup
 node_pools = {
   cas = {
     "vm_type"      = "m5.2xlarge"
-    "cpu_type"     = "AL2023_x86_64_STANDARD" # Will map to AL2023_x86_64_FIPS_140_2_ENABLED
+    "cpu_type"     = "AL2023_x86_64_STANDARD" # FIPS enabled via user data
     "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 3000
@@ -61,7 +62,7 @@ node_pools = {
   },
   compute = {
     "vm_type"      = "m5.8xlarge"
-    "cpu_type"     = "AL2023_x86_64_STANDARD" # Will map to AL2023_x86_64_FIPS_140_2_ENABLED
+    "cpu_type"     = "AL2023_x86_64_STANDARD" # FIPS enabled via user data
     "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 3000
@@ -76,7 +77,7 @@ node_pools = {
   },
   stateless = {
     "vm_type"      = "m5.4xlarge"
-    "cpu_type"     = "AL2023_x86_64_STANDARD" # Will map to AL2023_x86_64_FIPS_140_2_ENABLED
+    "cpu_type"     = "AL2023_x86_64_STANDARD" # FIPS enabled via user data
     "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 3000
@@ -90,7 +91,7 @@ node_pools = {
   },
   stateful = {
     "vm_type"      = "m5.4xlarge"
-    "cpu_type"     = "AL2023_x86_64_STANDARD" # Will map to AL2023_x86_64_FIPS_140_2_ENABLED
+    "cpu_type"     = "AL2023_x86_64_STANDARD" # FIPS enabled via user data
     "os_disk_type" = "gp3"
     "os_disk_size" = "200"
     "os_disk_iops" = 3000
