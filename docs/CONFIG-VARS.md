@@ -10,6 +10,8 @@ Supported configuration variables are listed in the tables below.  All variables
     - [AWS Authentication](#aws-authentication)
       - [Using Static Credentials](#using-static-credentials)
       - [Using AWS Profile](#using-aws-profile)
+  - [Security](#security)
+    - [FIPS 140-2 Compliance](#fips-140-2-compliance)
   - [Admin Access](#admin-access)
     - [Public Access CIDRs](#public-access-cidrs)
     - [Private Access CIDRs](#private-access-cidrs)
