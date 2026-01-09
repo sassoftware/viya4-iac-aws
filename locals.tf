@@ -78,11 +78,12 @@ locals {
   # FIPS User Data
   # Pre-bootstrap script to enable FIPS mode on AL2023 nodes
   fips_user_data = var.fips_enabled ? <<-EOT
-    #!/bin/bash
-    # Enable FIPS mode for Amazon Linux 2023
-    fips-mode-setup --enable
-    reboot
-  EOT : ""
+#!/bin/bash
+# Enable FIPS mode for Amazon Linux 2023
+fips-mode-setup --enable
+reboot
+EOT
+ : ""
 
   # Storage
   # Determine the backend type for storage based on the selected storage type
