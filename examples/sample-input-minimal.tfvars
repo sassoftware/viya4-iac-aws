@@ -27,7 +27,7 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 # }
 
 ## Cluster config
-kubernetes_version           = "1.32"
+kubernetes_version           = "1.33"
 default_nodepool_node_count  = 1
 default_nodepool_vm_type     = "r6in.2xlarge"
 default_nodepool_custom_data = ""
