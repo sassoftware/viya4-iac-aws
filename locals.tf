@@ -124,7 +124,7 @@ locals {
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : local.fips_user_data
+      pre_bootstrap_user_data = var.default_nodepool_custom_data != "" ? "${local.fips_user_data}${file(var.default_nodepool_custom_data)}" : local.fips_user_data
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -174,7 +174,7 @@ locals {
       labels = np_value.node_labels
       # User data for bootstrapping the node
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = np_value.custom_data != "" ? file(np_value.custom_data) : local.fips_user_data
+      pre_bootstrap_user_data = np_value.custom_data != "" ? "${local.fips_user_data}${file(np_value.custom_data)}" : local.fips_user_data
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
