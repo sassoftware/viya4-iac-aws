@@ -103,7 +103,7 @@ locals {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
-      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, "AL2023_x86_64_STANDARD", "AL2023_x86_64_STANDARD") : null
+      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, "AL2023_x86_64_STANDARD", "AL2023_x86_64_STANDARD") : "AL2023_x86_64_STANDARD"
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -144,7 +144,7 @@ locals {
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-default-eks-node-group"
     }
-  }
+  } : {}
 
   # User-defined node pools configuration
   user_node_pool = {
