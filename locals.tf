@@ -83,7 +83,7 @@ locals {
 fips-mode-setup --enable
 reboot
 EOT
- : ""
+  : ""
 
   # Storage
   # Determine the backend type for storage based on the selected storage type
