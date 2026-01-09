@@ -80,7 +80,7 @@ locals {
   # Only AL2023 is supported - AL2 does NOT have FIPS variants
   fips_ami_mapping = {
     "AL2023_x86_64_STANDARD" = "AL2023_x86_64_FIPS_140_2_ENABLED"
-    "AL2023_ARM_64_STANDARD" = "AL2023_ARM_64_FIPS_140_2_ENABLED"
+
   }
 
   # Storage
