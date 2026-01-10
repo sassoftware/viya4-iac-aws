@@ -1,0 +1,2 @@
+[settings.aws.config]
+use-fips-endpoint = true

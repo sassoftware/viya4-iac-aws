@@ -127,15 +127,11 @@ locals {
       }
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
+      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
       pre_bootstrap_user_data = var.fips_enabled ? "" : (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? base64encode(<<-EOT
-[settings.aws.config]
-use-fips-endpoint = true
-EOT
-      ) : null
+      user_data = var.fips_enabled ? base64encode(templatefile("${path.module}/files/bottlerocket-fips.toml", {})) : null
       
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
@@ -185,15 +181,11 @@ EOT
       }
       labels = np_value.node_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
+      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
       pre_bootstrap_user_data = var.fips_enabled ? "" : (np_value.custom_data != "" ? file(np_value.custom_data) : "")
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? base64encode(<<-EOT
-[settings.aws.config]
-use-fips-endpoint = true
-EOT
-      ) : null
+      user_data = var.fips_enabled ? base64encode(templatefile("${path.module}/files/bottlerocket-fips.toml", {})) : null
       
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
