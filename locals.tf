@@ -132,7 +132,7 @@ locals {
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
       user_data = var.fips_enabled ? {
-        "" = encodebase64(<<-EOT
+        "" = base64encode(<<-EOT
           [settings.aws.config]
           use-fips-endpoint = true
         EOT
@@ -192,7 +192,7 @@ locals {
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
       user_data = var.fips_enabled ? {
-        "" = encodebase64(<<-EOT
+        "" = base64encode(<<-EOT
           [settings.aws.config]
           use-fips-endpoint = true
         EOT
