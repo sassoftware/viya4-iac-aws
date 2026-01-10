@@ -131,13 +131,11 @@ locals {
       pre_bootstrap_user_data = var.fips_enabled ? "" : (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? {
-        "" = base64encode(<<-EOT
-          [settings.aws.config]
-          use-fips-endpoint = true
-        EOT
-        )
-      } : {}
+      user_data = var.fips_enabled ? base64encode(<<-EOT
+        [settings.aws.config]
+        use-fips-endpoint = true
+      EOT
+      ) : null
       
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
@@ -191,13 +189,12 @@ locals {
       pre_bootstrap_user_data = var.fips_enabled ? "" : (np_value.custom_data != "" ? file(np_value.custom_data) : "")
       
       # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? {
-        "" = base64encode(<<-EOT
-          [settings.aws.config]
-          use-fips-endpoint = true
-        EOT
-        )
-      } : {}
+      user_data = var.fips_enabled ? base64encode(<<-EOT
+        [settings.aws.config]
+        use-fips-endpoint = true
+      EOT
+      ) : null
+      
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
