@@ -72,50 +72,57 @@ You can use either static credentials or the name of an AWS profile. If both are
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
 | ssh_public_key | SSH public key used to access VMs | string | "~/.ssh/id_rsa.pub" | |
-| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Enables FIPS mode via pre-bootstrap user data script on AL2023 nodes. Nodes will reboot once during initialization. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
+| fips_enabled | Enables the Federal Information Processing Standard for all the nodes in this cluster | bool | false | **Important**: Automatically switches nodes to Bottlerocket FIPS AMIs. AWS provides official FIPS-validated AMIs only for Bottlerocket. Changing this value forces recreation of all node groups. See [FIPS 140-2 Compliance](#fips-140-2-compliance) section below. |
 
 ### FIPS 140-2 Compliance
 
 Federal Information Processing Standard (FIPS) 140-2 is required for U.S. government agencies and contractors. When `fips_enabled=true`:
 
-- FIPS mode is enabled on all EKS managed node groups via pre-bootstrap user data
+- All node groups automatically switch to Bottlerocket FIPS AMI types
 - Cryptographic operations on nodes use FIPS 140-2 validated modules
 - Node-to-control-plane communication uses FIPS-validated TLS libraries
 - EKS control plane (API endpoint) already runs on FIPS-validated AWS infrastructure
 
 **Implementation Details**:
-- Uses `AL2023_x86_64_STANDARD` AMI type with FIPS enablement via `fips-mode-setup --enable`
-- Nodes automatically reboot once during initialization to activate FIPS mode
-- User data script runs in pre-bootstrap phase before node joins cluster
-- Compatible with custom user data - FIPS script is prepended automatically
+- AWS EKS only provides FIPS-validated AMIs for **Bottlerocket**, not Amazon Linux
+- When FIPS is enabled, node pools automatically switch to Bottlerocket FIPS AMIs:
+  - `AL2023_x86_64_STANDARD` → `BOTTLEROCKET_x86_64_NVIDIA` (FIPS)
+  - `AL2023_ARM_64_STANDARD` → `BOTTLEROCKET_ARM_64` (FIPS)
+- Bottlerocket is a minimal, container-focused OS purpose-built for Kubernetes
+- FIPS is built into the AMI - no runtime configuration or reboot needed
 
 **Supported Operating Systems**:
-- ✅ Amazon Linux 2023 (AL2023) - Full FIPS support
-- ❌ Amazon Linux 2 (AL2) - No FIPS support available
+- ✅ Bottlerocket - Official FIPS 140-2 validated AMIs available
+- ❌ Amazon Linux 2023 (AL2023) - No reliable FIPS support for EKS managed nodes
+- ❌ Amazon Linux 2 (AL2) - No FIPS AMIs for EKS
 
 **Usage**:
 ```hcl
 fips_enabled = true
-# That's it! FIPS will be automatically enabled on all AL2023 nodes
+# That's it! Nodes will use Bottlerocket FIPS AMIs automatically
 ```
 
 **Validation**:
-After deployment, verify FIPS mode is active on a node:
+After deployment, verify FIPS mode is active on Bottlerocket nodes:
 ```bash
-# Connect to a node via kubectl exec
-kubectl exec -it <pod-name> -n kube-system -- cat /proc/sys/crypto/fips_enabled
-# Should output: 1 (FIPS enabled)
+# Get nodes
+kubectl get nodes
 
-# Verify FIPS mode status
-kubectl exec -it <pod-name> -n kube-system -- fips-mode-setup --check
-# Should show: FIPS mode is enabled
+# For Bottlerocket, FIPS is built into the OS
+# Check via a debug pod or system pod
+kubectl debug node/<node-name> -it --image=busybox
+# In the debug session:
+chroot /host
+cat /proc/sys/crypto/fips_enabled
+# Should output: 1 (FIPS enabled)
 ```
 
 **Important Notes**:
-- Nodes will reboot once during initial provisioning (adds ~2-3 minutes to node startup)
-- FIPS user data is automatically prepended to any custom user data scripts
-- Only AL2023 AMI types support FIPS mode via this method
-- Test FIPS configuration in non-production before production deployment
+- Bottlerocket uses a different configuration approach than Amazon Linux
+- No custom user data scripts supported when using Bottlerocket FIPS
+- Bottlerocket is immutable and optimized for containers
+- See [AWS Bottlerocket documentation](https://aws.amazon.com/bottlerocket/) for details
+- Test Bottlerocket compatibility with your workloads before production deployment
 
 **Validation**:
 After deployment, verify FIPS mode is active on a node:

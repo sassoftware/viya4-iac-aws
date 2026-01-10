@@ -243,3 +243,13 @@ output "enable_nist_features" {
   description = "Flag to enable NIST features."
   value       = var.enable_nist_features
 }
+
+output "fips_enabled" {
+  description = "FIPS 140-2 mode enabled status for EKS nodes."
+  value       = var.fips_enabled
+}
+
+output "fips_validation_command" {
+  description = "Command to validate FIPS mode is enabled on nodes."
+  value = var.fips_enabled ? "kubectl get nodes -o wide && kubectl exec -it <pod-name> -n kube-system -- cat /proc/sys/crypto/fips_enabled" : "FIPS is not enabled"
+}
