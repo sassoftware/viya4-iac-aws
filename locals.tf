@@ -75,14 +75,6 @@ locals {
     : null
   )
 
-  # FIPS AMI Type Mapping
-  # Maps standard AMI types to their FIPS-enabled Bottlerocket equivalents
-  # Only Bottlerocket has official FIPS AMI types in AWS EKS
-  fips_ami_mapping = {
-    "AL2023_x86_64_STANDARD" = "BOTTLEROCKET_x86_64"
-    "AL2023_ARM_64_STANDARD" = "BOTTLEROCKET_ARM_64"
-  }
-
   # Storage
   # Determine the backend type for storage based on the selected storage type
   storage_type_backend = (var.storage_type == "none" ? "none"
@@ -103,7 +95,7 @@ locals {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
-      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, "AL2023_x86_64_STANDARD", "BOTTLEROCKET_x86_64_NVIDIA") : "AL2023_x86_64_STANDARD"
+      ami_type       = var.fips_enabled ? "BOTTLEROCKET_x86_64_FIPS" : "AL2023_x86_64_STANDARD"
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -156,7 +148,7 @@ locals {
     key => {
       name           = key
       instance_types = [np_value.vm_type]
-      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, np_value.cpu_type, np_value.cpu_type) : np_value.cpu_type
+      ami_type       = var.fips_enabled ? (np_value.cpu_type == "AL2023_ARM_64_STANDARD" ? "BOTTLEROCKET_ARM_64_FIPS" : "BOTTLEROCKET_x86_64_FIPS") : np_value.cpu_type
       disk_size      = np_value.os_disk_size
       block_device_mappings = {
         xvda = {
