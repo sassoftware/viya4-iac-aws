@@ -86,10 +86,11 @@ Federal Information Processing Standard (FIPS) 140-2 is required for U.S. govern
 **Implementation Details**:
 - AWS EKS only provides FIPS-validated AMIs for **Bottlerocket**, not Amazon Linux
 - When FIPS is enabled, node pools automatically switch to Bottlerocket FIPS AMIs:
-  - `AL2023_x86_64_STANDARD` → `BOTTLEROCKET_x86_64_NVIDIA` (FIPS)
+  - `AL2023_x86_64_STANDARD` → `BOTTLEROCKET_x86_64` (FIPS)
   - `AL2023_ARM_64_STANDARD` → `BOTTLEROCKET_ARM_64` (FIPS)
 - Bottlerocket is a minimal, container-focused OS purpose-built for Kubernetes
 - FIPS is built into the AMI - no runtime configuration or reboot needed
+- Bottlerocket FIPS AMIs automatically use FIPS-compliant AWS API endpoints
 
 **Supported Operating Systems**:
 - ✅ Bottlerocket - Official FIPS 140-2 validated AMIs available

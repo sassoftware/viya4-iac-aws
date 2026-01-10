@@ -79,7 +79,7 @@ locals {
   # Maps standard AMI types to their FIPS-enabled Bottlerocket equivalents
   # Only Bottlerocket has official FIPS AMI types in AWS EKS
   fips_ami_mapping = {
-    "AL2023_x86_64_STANDARD" = "BOTTLEROCKET_x86_64_NVIDIA"
+    "AL2023_x86_64_STANDARD" = "BOTTLEROCKET_x86_64"
     "AL2023_ARM_64_STANDARD" = "BOTTLEROCKET_ARM_64"
   }
 
@@ -127,8 +127,18 @@ locals {
       }
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
+      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
       pre_bootstrap_user_data = var.fips_enabled ? "" : (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      
+      # Bottlerocket FIPS configuration - use TOML format for user_data
+      user_data = var.fips_enabled ? {
+        "" = encodebase64(<<-EOT
+          [settings.aws.config]
+          use-fips-endpoint = true
+        EOT
+        )
+      } : {}
+      
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -177,8 +187,17 @@ locals {
       }
       labels = np_value.node_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
+      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
       pre_bootstrap_user_data = var.fips_enabled ? "" : (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+      
+      # Bottlerocket FIPS configuration - use TOML format for user_data
+      user_data = var.fips_enabled ? {
+        "" = encodebase64(<<-EOT
+          [settings.aws.config]
+          use-fips-endpoint = true
+        EOT
+        )
+      } : {}
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
