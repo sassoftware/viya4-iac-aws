@@ -75,15 +75,9 @@ locals {
     : null
   )
 
-  # FIPS AMI Type Mapping
-  # Maps standard AMI types to their FIPS-enabled equivalents
-  # Only Bottlerocket has official FIPS AMI types in AWS EKS
-  fips_ami_mapping = {
-    "BOTTLEROCKET_x86_64"       = "BOTTLEROCKET_x86_64_FIPS"
-    "BOTTLEROCKET_ARM_64"       = "BOTTLEROCKET_ARM_64_FIPS"
-    "AL2023_x86_64_STANDARD"    = "BOTTLEROCKET_x86_64_FIPS"
-    "AL2023_ARM_64_STANDARD"    = "BOTTLEROCKET_ARM_64_FIPS"
-  }
+  # FIPS User Data
+  # Pre-bootstrap script to enable FIPS mode on AL2023 nodes
+  fips_user_data = var.fips_enabled ? "#!/bin/bash\n# Enable FIPS mode for Amazon Linux 2023\nfips-mode-setup --enable\nreboot\n" : ""
 
   # Storage
   # Determine the backend type for storage based on the selected storage type
@@ -105,7 +99,7 @@ locals {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
-      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, "AL2023_x86_64_STANDARD", "BOTTLEROCKET_x86_64_FIPS") : "AL2023_x86_64_STANDARD"
+      ami_type       = "AL2023_x86_64_STANDARD"
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -130,7 +124,7 @@ locals {
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : ""
+      pre_bootstrap_user_data = var.default_nodepool_custom_data != "" ? "${local.fips_user_data}${file(var.default_nodepool_custom_data)}" : local.fips_user_data
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -154,7 +148,7 @@ locals {
     key => {
       name           = key
       instance_types = [np_value.vm_type]
-      ami_type       = var.fips_enabled ? lookup(local.fips_ami_mapping, np_value.cpu_type, np_value.cpu_type) : np_value.cpu_type
+      ami_type       = np_value.cpu_type
       disk_size      = np_value.os_disk_size
       block_device_mappings = {
         xvda = {
@@ -180,7 +174,7 @@ locals {
       labels = np_value.node_labels
       # User data for bootstrapping the node
       bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = np_value.custom_data != "" ? file(np_value.custom_data) : ""
+      pre_bootstrap_user_data = np_value.custom_data != "" ? "${local.fips_user_data}${file(np_value.custom_data)}" : local.fips_user_data
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
