@@ -18,11 +18,11 @@ ssh_public_key              = "~/.ssh/id_rsa.pub"
 
 # **************  SECURITY - FIPS MODE  ***************
 # Enable FIPS 140-2 for all cluster nodes
-# NOTE: Automatically switches all node pools to Bottlerocket FIPS AMIs
-# AWS EKS only provides FIPS-validated AMIs for Bottlerocket
-# AL2023_x86_64_STANDARD → BOTTLEROCKET_x86_64_NVIDIA (FIPS)
-# AL2023_ARM_64_STANDARD → BOTTLEROCKET_ARM_64 (FIPS)
-fips_enabled = true
+# NOTE: Requires a custom FIPS-enabled AL2023 AMI
+# You must first create the AMI using files/tools/create_fips_ami.sh
+# The script will store the AMI ID in SSM Parameter Store
+fips_enabled           = true
+fips_ami_ssm_parameter = "/viya4/fips/al2023-ami-id"  # SSM parameter path containing your FIPS AMI ID
 # **************  SECURITY - FIPS MODE  ***************
 
 # Kubernetes Version

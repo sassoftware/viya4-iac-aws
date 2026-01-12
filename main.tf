@@ -28,6 +28,12 @@ data "aws_availability_zones" "available" {}
 # Data source to get information about the current AWS caller identity (account, user, etc).
 data "aws_caller_identity" "terraform" {}
 
+# Data source to get custom FIPS AMI ID from SSM Parameter Store when FIPS is enabled
+data "aws_ssm_parameter" "fips_ami" {
+  count = var.fips_enabled && var.fips_ami_ssm_parameter != "" ? 1 : 0
+  name  = var.fips_ami_ssm_parameter
+}
+
 # Data source to get the current git commit hash for build info. Uses an external script.
 data "external" "git_hash" {
   program = ["files/tools/iac_git_info.sh"]

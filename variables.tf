@@ -151,6 +151,13 @@ variable "fips_enabled" {
   default     = false
 }
 
+# SSM Parameter path for custom FIPS-enabled AMI
+variable "fips_ami_ssm_parameter" {
+  description = "AWS SSM Parameter Store path containing the custom FIPS-enabled AL2023 AMI ID. Required when fips_enabled=true. Example: /viya4/fips/al2023-ami-id"
+  type        = string
+  default     = ""
+}
+
 # EFS (Elastic File System) performance mode. Can be 'generalPurpose' or 'maxIO'.
 variable "efs_performance_mode" {
   description = "EFS performance mode. Supported values are `generalPurpose` or `maxIO`."

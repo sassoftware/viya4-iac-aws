@@ -89,13 +89,17 @@ locals {
   # Certificate authority data for the Kubernetes cluster
   kubeconfig_ca_cert = module.eks.cluster_certificate_authority_data
 
+  # FIPS AMI ID from SSM Parameter Store
+  fips_ami_id = var.fips_enabled && var.fips_ami_ssm_parameter != "" ? data.aws_ssm_parameter.fips_ami[0].value : null
+
   # Mapping node_pools to node_groups
   # Default node pool configuration
   default_node_pool = var.create_default_nodepool ? {
     default = {
       name           = "default"
       instance_types = [var.default_nodepool_vm_type]
-      ami_type       = var.fips_enabled ? "BOTTLEROCKET_x86_64_FIPS" : "AL2023_x86_64_STANDARD"
+      ami_type       = var.fips_enabled && local.fips_ami_id != null ? null : "AL2023_x86_64_STANDARD"
+      ami_id         = var.fips_enabled && local.fips_ami_id != null ? local.fips_ami_id : null
       block_device_mappings = {
         xvda = {
           device_name = "/dev/xvda"
@@ -119,11 +123,8 @@ locals {
       }
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = var.fips_enabled ? "" : (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
-      
-      # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? base64encode(templatefile("${path.module}/files/bottlerocket-fips.toml", {})) : null
+      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
+      pre_bootstrap_user_data = var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : ""
       
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
@@ -148,7 +149,8 @@ locals {
     key => {
       name           = key
       instance_types = [np_value.vm_type]
-      ami_type       = var.fips_enabled ? (np_value.cpu_type == "AL2023_ARM_64_STANDARD" ? "BOTTLEROCKET_ARM_64_FIPS" : "BOTTLEROCKET_x86_64_FIPS") : np_value.cpu_type
+      ami_type       = var.fips_enabled && local.fips_ami_id != null ? null : np_value.cpu_type
+      ami_id         = var.fips_enabled && local.fips_ami_id != null ? local.fips_ami_id : null
       disk_size      = np_value.os_disk_size
       block_device_mappings = {
         xvda = {
@@ -173,11 +175,8 @@ locals {
       }
       labels = np_value.node_labels
       # User data for bootstrapping the node
-      bootstrap_extra_args    = var.fips_enabled ? "" : "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = var.fips_enabled ? "" : (np_value.custom_data != "" ? file(np_value.custom_data) : "")
-      
-      # Bottlerocket FIPS configuration - use TOML format for user_data
-      user_data = var.fips_enabled ? base64encode(templatefile("${path.module}/files/bottlerocket-fips.toml", {})) : null
+      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
+      pre_bootstrap_user_data = np_value.custom_data != "" ? file(np_value.custom_data) : ""
       
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
