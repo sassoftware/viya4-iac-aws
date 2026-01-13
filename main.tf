@@ -28,10 +28,36 @@ data "aws_availability_zones" "available" {}
 # Data source to get information about the current AWS caller identity (account, user, etc).
 data "aws_caller_identity" "terraform" {}
 
+# Automatically create FIPS-enabled AMI if enabled and SSM parameter doesn't exist
+resource "null_resource" "create_fips_ami" {
+  count = var.fips_enabled && var.fips_ami_ssm_parameter != "" ? 1 : 0
+
+  # Check if SSM parameter exists, if not create the AMI
+  provisioner "local-exec" {
+    command     = <<-EOT
+      # Check if SSM parameter already exists
+      if ! aws ssm get-parameter --name "${var.fips_ami_ssm_parameter}" --region "${var.location}" 2>/dev/null; then
+        echo "SSM parameter not found. Creating FIPS-enabled AMI..."
+        bash ${path.module}/files/tools/create_fips_ami.sh "${var.location}" "${var.fips_ami_ssm_parameter}"
+      else
+        echo "SSM parameter ${var.fips_ami_ssm_parameter} already exists. Skipping AMI creation."
+      fi
+    EOT
+    interpreter = ["bash", "-c"]
+  }
+
+  triggers = {
+    fips_enabled       = var.fips_enabled
+    ssm_parameter_path = var.fips_ami_ssm_parameter
+    region             = var.location
+  }
+}
+
 # Data source to get custom FIPS AMI ID from SSM Parameter Store when FIPS is enabled
 data "aws_ssm_parameter" "fips_ami" {
-  count = var.fips_enabled && var.fips_ami_ssm_parameter != "" ? 1 : 0
-  name  = var.fips_ami_ssm_parameter
+  count      = var.fips_enabled && var.fips_ami_ssm_parameter != "" ? 1 : 0
+  name       = var.fips_ami_ssm_parameter
+  depends_on = [null_resource.create_fips_ami]
 }
 
 # Data source to get the current git commit hash for build info. Uses an external script.

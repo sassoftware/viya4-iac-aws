@@ -147,13 +147,6 @@ chroot /host
 cat /proc/sys/crypto/fips_enabled
 ```
 
-**Important Notes**:
-- Bottlerocket uses a different configuration approach than Amazon Linux
-- No custom user data scripts supported when using Bottlerocket FIPS
-- Bottlerocket is immutable and optimized for containers
-- See [AWS Bottlerocket documentation](https://aws.amazon.com/bottlerocket/) for details
-- Test Bottlerocket compatibility with your workloads before production deployment
-
 **Validation**:
 After deployment, verify FIPS mode is active on a node:
 ```bash
