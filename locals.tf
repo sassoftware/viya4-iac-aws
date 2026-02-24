@@ -118,7 +118,9 @@ locals {
       }
       labels = var.default_nodepool_labels
       # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
-      cloudinit_pre_nodeadm = [
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
         {
           content_type = "application/node.eks.aws"
           content      = <<-EOT
@@ -132,13 +134,13 @@ locals {
                   - "--register-with-taints=${join(",", var.default_nodepool_taints)}"
           EOT
         }
-      ]
-      cloudinit_post_nodeadm = var.default_nodepool_custom_data != "" ? [
+      ], var.default_nodepool_custom_data != "" ? [
         {
           content_type = "text/x-shellscript; charset=\"us-ascii\""
           content      = file(var.default_nodepool_custom_data)
         }
-      ] : []
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -187,7 +189,9 @@ locals {
       }
       labels = np_value.node_labels
       # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
-      cloudinit_pre_nodeadm = [
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
         {
           content_type = "application/node.eks.aws"
           content      = <<-EOT
@@ -201,13 +205,13 @@ locals {
                   - "--register-with-taints=${join(",", np_value.node_taints)}"
           EOT
         }
-      ]
-      cloudinit_post_nodeadm = np_value.custom_data != "" ? [
+      ], np_value.custom_data != "" ? [
         {
           content_type = "text/x-shellscript; charset=\"us-ascii\""
           content      = file(np_value.custom_data)
         }
-      ] : []
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
