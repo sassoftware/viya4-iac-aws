@@ -54,6 +54,30 @@ AWS EKS supports single-stack IPv6 for Pods and Services (unlike Azure and GCP w
    terraform apply -var-file=terraform.tfvars
    ```
 
+### Docker Deployment
+
+When deploying with Docker, ensure you include a volume mount for the Helm cache. This prevents permission errors when Helm tries to download chart repositories:
+
+```bash
+docker run --rm --group-add root \
+  --user "$(id -u):$(id -g)" \
+  --env-file $(pwd)/.aws_docker_creds.env \
+  --volume $HOME/.ssh:/.ssh \
+  --volume $HOME/.cache:/root/.cache \
+  --volume $(pwd):/workspace \
+  viya4-iac-aws apply -auto-approve \
+  -var-file /workspace/terraform.tfvars \
+  -state /workspace/terraform.tfstate
+```
+
+**Key addition**: `--volume $HOME/.cache:/root/.cache`
+
+This volume mount:
+- Persists Helm repository cache across Docker runs
+- Prevents "permission denied" errors on `/.cache/helm/`
+- Speeds up subsequent deployments
+- Works in all environments (local, CI/CD, Kubernetes)
+
 ### Key Variables
 
 | Variable | Description | Default |
