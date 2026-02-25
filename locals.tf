@@ -117,9 +117,30 @@ locals {
         }
       }
       labels = var.default_nodepool_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", var.default_nodepool_taints)}"
+          EOT
+        }
+      ], var.default_nodepool_custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(var.default_nodepool_custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -167,9 +188,30 @@ locals {
         }
       }
       labels = np_value.node_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", np_value.node_taints)}"
+          EOT
+        }
+      ], np_value.custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(np_value.custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
