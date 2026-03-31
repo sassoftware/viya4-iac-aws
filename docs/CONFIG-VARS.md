@@ -349,7 +349,7 @@ When `storage_type=ha` and `storage_type_backend=ontap`, an [AWS FSx for NetApp 
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| aws_fsx_ontap_deployment_type | The FSx file system availability zone deployment type. | string | SINGLE_AZ_1 | Supported values are `MULTI_AZ_1` and `SINGLE_AZ_1`. |
+| aws_fsx_ontap_deployment_type | The FSx file system availability zone deployment type. | string | SINGLE_AZ_1 | Supported values are `MULTI_AZ_1`, `MULTI_AZ_2`, `SINGLE_AZ_1`, and `SINGLE_AZ_2`. |
 | aws_fsx_ontap_file_system_storage_capacity | The storage capacity of the ONTAP file system in GiB. | number | 1024 | Valid values range from  1024 to 196608. |
 | aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 256 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
 | aws_fsx_ontap_fsxadmin_password | The ONTAP administrative password for the fsxadmin user. | string | "v3RyS3cretPa$sw0rd" | |
