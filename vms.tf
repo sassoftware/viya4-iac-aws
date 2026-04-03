@@ -29,7 +29,7 @@ resource "aws_fsx_ontap_file_system" "ontap-fs" {
 
   # If deployment_type is SINGLE_AZ_1 then subnet_ids should have 1 subnet ID
   # If deployment_type is MULTI_AZ_1 then subnet_ids should have 2 subnet IDs, there is a 2 subnet ID maximum
-  subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+  subnet_ids          = var.aws_fsx_ontap_deployment_type == "SINGLE_AZ_1" ? [module.vpc.private_subnets[0]] : slice(module.vpc.private_subnets, 0, 2)
   throughput_capacity = var.aws_fsx_ontap_file_system_throughput_capacity
   preferred_subnet_id = module.vpc.private_subnets[0]
   security_group_ids  = [local.workers_security_group_id]
