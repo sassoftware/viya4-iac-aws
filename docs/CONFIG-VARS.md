@@ -184,12 +184,13 @@ subnet_ids = {
 
 ## IAM
 
-By default, two custom IAM policies and two custom IAM roles (with instance profiles) are created. If your site security protocol does not allow for automatic creation of IAM resources, you can provide pre-created roles using the following options:
+By default, three custom IAM policies and three custom IAM roles (with instance profiles) are created. If your site security protocol does not allow for automatic creation of IAM resources, you can provide pre-created roles using the following options:
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | cluster_iam_role_arn | Amazon Resource Name (ARN) of the pre-existing IAM role for the EKS cluster | string | null | If an existing EKS cluster IAM role is being used, the IAM role's 'ARN' is required. |
 | workers_iam_role_arn | ARN of the pre-existing IAM role for the cluster node VMs | string | null | If an existing EKS node IAM role is being used, the IAM role's 'ARN' is required. |
+| autoscaling_enabled | Enables or disables automatic creation of IAM policies and roles for autoscaler | bool | true | IaC does not deploy the autoscaler. The DaC deploys it and uses the ARN created by the IaC. |
 
 The cluster IAM role must include three AWS-managed policies and one custom policy.
 
@@ -253,6 +254,8 @@ Custom policy:
   ]
 ```
 
+The Autoscaler IAM role must include the permissions based off the [IAM Policy recommended by kubernetes/autoscaler](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-chart-9.36.0/cluster-autoscaler/cloudprovider/aws/README.md).
+
 ## General
 
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
@@ -264,7 +267,6 @@ Custom policy:
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
 | tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | If left unspecified, or if a null or empty tags map value is provided, the tags variable will be set to the default value.|
-| autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
