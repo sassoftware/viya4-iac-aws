@@ -263,7 +263,7 @@ variable "default_nodepool_labels" {
   description = "Labels to add to the default node pool."
   type        = map(any)
   default = {
-    "kubernetes.azure.com/mode" = "system"
+    "kubernetes.com/mode" = "system"
   }
 }
 
