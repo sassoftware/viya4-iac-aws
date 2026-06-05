@@ -175,11 +175,11 @@ variable "efs_throughput_rate" {
 }
 
 ## Kubernetes
-# Kubernetes version for the EKS cluster. Default is '1.32'.
+# Kubernetes version for the EKS cluster. Default is '1.34'.
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.32"
+  default     = "1.34"
 }
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
@@ -779,6 +779,13 @@ variable "aws_fsx_ontap_deployment_type" {
 # The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API.
 variable "aws_fsx_ontap_fsxadmin_password" {
   description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API."
+  type        = string
+  default     = "v3RyS3cretPa$sw0rd"
+}
+
+# The ONTAP administrative password for the svmadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API.
+variable "aws_fsx_ontap_svmadmin_password" {
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API."
   type        = string
   default     = "v3RyS3cretPa$sw0rd"
 }

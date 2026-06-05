@@ -117,9 +117,30 @@ locals {
         }
       }
       labels = var.default_nodepool_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", var.default_nodepool_taints)}"
+          EOT
+        }
+      ], var.default_nodepool_custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(var.default_nodepool_custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -130,7 +151,6 @@ locals {
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-default" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
 
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
@@ -168,20 +188,41 @@ locals {
         }
       }
       labels = np_value.node_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", np_value.node_taints)}"
+          EOT
+        }
+      ], np_value.custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(np_value.custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
         http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
       }
+
       # Launch Template configuration
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
       launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
-      tags                            = var.autoscaling_enabled ? merge(local.tags, { "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned", propagate_at_launch = true }, { "k8s.io/cluster-autoscaler/enabled" = "true", propagate_at_launch = true }) : local.tags
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"
@@ -223,5 +264,25 @@ locals {
       "internal" : false
     }
   } : {}
+
+  # Used while tagging the EKS created ASGs with our user specified set of tags
+  node_group_names = keys(local.node_groups)
+  # Merge user tags with autoscaler tags when autoscaling is enabled
+  all_node_group_tags = var.autoscaling_enabled ? merge(
+    local.tags,
+    {
+      "k8s.io/cluster-autoscaler/${local.cluster_name}" = "owned"
+      "k8s.io/cluster-autoscaler/enabled"               = "true"
+    }
+  ) : local.tags
+  node_group_tags = flatten([
+    for ng_name in local.node_group_names : [
+      for tag_key, tag_value in local.all_node_group_tags : {
+        node_group = ng_name
+        key        = tag_key
+        value      = tag_value
+      }
+    ]
+  ])
 
 }

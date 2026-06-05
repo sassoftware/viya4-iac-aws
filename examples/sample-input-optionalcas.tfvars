@@ -36,42 +36,33 @@ default_nodepool_custom_data = ""
 efs_performance_mode = "maxIO"
 storage_type         = "standard"
 
+# ****************  OPTIONAL CAS CONFIGURATION  ****************
+# This configuration is optimized for SAS Viya Programming-only deployments.
+# 
+# Keep the cas block commented out to avoid CAS node pool creation:
+#    - No CAS node pool or EC2 instances created
+#    - Zero cost for CAS infrastructure
+# ******************************************************************
+
 ## Cluster Node Pools config
 node_pools = {
-  cas = {
-    "vm_type"      = "r6idn.2xlarge"
-    "cpu_type"     = "AL2023_x86_64_STANDARD"
-    "os_disk_type" = "gp2"
-    "os_disk_size" = 200
-    "os_disk_iops" = 0
-    "min_nodes"    = 1
-    "max_nodes"    = 5
-    "node_taints"  = ["workload.sas.com/class=cas:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class" = "cas"
-    }
-    "custom_data"                          = ""
-    "metadata_http_endpoint"               = "enabled"
-    "metadata_http_tokens"                 = "required"
-    "metadata_http_put_response_hop_limit" = 1
-  },
-  gpu_cas = {
-    "vm_type"      = "p2.8xlarge"
-    "cpu_type"     = "AL2023_x86_64_NVIDIA"
-    "os_disk_type" = "gp2"
-    "os_disk_size" = 200
-    "os_disk_iops" = 0
-    "min_nodes"    = 1
-    "max_nodes"    = 5
-    "node_taints"  = ["nvidia.com/gpu=present:NoSchedule"]
-    "node_labels" = {
-      "workload.sas.com/class" = "cas"
-    }
-    "custom_data"                          = ""
-    "metadata_http_endpoint"               = "enabled"
-    "metadata_http_tokens"                 = "required"
-    "metadata_http_put_response_hop_limit" = 1
-  },
+#  cas = {
+#    "vm_type"      = "r6idn.2xlarge"
+#    "cpu_type"     = "AL2023_x86_64_STANDARD"
+#    "os_disk_type" = "gp2"
+#    "os_disk_size" = 200
+#    "os_disk_iops" = 0
+#    "min_nodes"    = 0
+#    "max_nodes"    = 5
+#    "node_taints"  = ["workload.sas.com/class=cas:NoSchedule"]
+#    "node_labels" = {
+#      "workload.sas.com/class" = "cas"
+#    }
+#    "custom_data"                          = ""
+#    "metadata_http_endpoint"               = "enabled"
+#    "metadata_http_tokens"                 = "required"
+#    "metadata_http_put_response_hop_limit" = 1
+#  },
   compute = {
     "vm_type"      = "m6idn.xlarge"
     "cpu_type"     = "AL2023_x86_64_STANDARD"
@@ -126,5 +117,17 @@ node_pools = {
   }
 }
 
+
 # Jump Server
 create_jump_vm = true
+jump_vm_admin  = "jumpuser"
+jump_vm_type   = "t3.medium"
+
+# NFS Server
+# required ONLY when storage_type is "standard" to create NFS Server VM
+create_nfs_public_ip = false
+nfs_vm_admin         = "nfsuser"
+nfs_vm_type          = "m6in.xlarge"
+
+# NOTE: For multi-zone deployments, keep the CAS configuration changes above
+#       and refer to sample-input-multizone.tfvars for additional zone settings
