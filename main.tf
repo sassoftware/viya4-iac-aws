@@ -186,7 +186,7 @@ module "eks" {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
 
-  create_cni_ipv6_iam_policy = var.enable_ipv6
+  create_cni_ipv6_iam_policy = false
 
   ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {
