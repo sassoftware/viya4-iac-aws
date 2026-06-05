@@ -9,6 +9,11 @@ resource "helm_release" "cert_manager" {
   version    = var.cert_manager_version
   namespace  = "kube-system"
   
+  # Wait for resources to be ready
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
+  
   set {
     name  = "installCRDs"
     value = "true"
@@ -17,12 +22,24 @@ resource "helm_release" "cert_manager" {
   depends_on = [var.kubeconfig_depends_on]
 }
 
+# Wait for cert-manager webhook to be fully ready
+resource "time_sleep" "wait_for_cert_manager" {
+  create_duration = "60s"
+  
+  depends_on = [helm_release.cert_manager]
+}
+
 resource "helm_release" "aws_lb_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   version    = var.controller_version
   namespace  = "kube-system"
+  
+  # Wait for resources to be ready
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 600
   
   # Base configuration for all deployments
   set {
@@ -71,7 +88,10 @@ resource "helm_release" "aws_lb_controller" {
     value = "info"
   }
   
-  depends_on = [helm_release.cert_manager]
+  depends_on = [
+    helm_release.cert_manager,
+    time_sleep.wait_for_cert_manager
+  ]
 }
 
 resource "aws_iam_policy" "lb_controller_policy" {
