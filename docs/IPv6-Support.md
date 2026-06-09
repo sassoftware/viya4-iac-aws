@@ -1,5 +1,29 @@
 # IPv6 Support in viya4-iac-aws
 
+## Table of Contents
+
+- [IPv6 Support in viya4-iac-aws](#ipv6-support-in-viya4-iac-aws)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Background](#background)
+  - [Features](#features)
+    - [Automated IPv6 Infrastructure](#automated-ipv6-infrastructure)
+    - [EKS IPv6 Configuration](#eks-ipv6-configuration)
+    - [RDS Dual-Stack Support](#rds-dual-stack-support)
+    - [AWS Load Balancer Controller Automation](#aws-load-balancer-controller-automation)
+  - [Prerequisites](#prerequisites)
+    - [Required IAM Policy for IPv6 CNI](#required-iam-policy-for-ipv6-cni)
+      - [Manual Policy Creation Steps](#manual-policy-creation-steps)
+      - [Policy Attachment](#policy-attachment)
+  - [Usage](#usage)
+    - [Quick Start](#quick-start)
+    - [Docker Deployment](#docker-deployment)
+    - [Key Variables](#key-variables)
+    - [What Gets Deployed](#what-gets-deployed)
+  - [Version Compatibility](#version-compatibility)
+  - [Limitations](#limitations)
+  - [References](#references)
+
 ## Overview
 
 This document describes the IPv6 support implementation in viya4-iac-aws, which automates the creation of AWS EKS clusters with IPv6-only Pod and Service CIDRs. This implementation addresses the challenges and requirements documented in the SAS internal research on ["Creating an AWS EKS cluster with IPv6-only Pod and Service CIDRs"](https://rndconfluence.sas.com/display/FNDSVCS/Creating+an+AWS+EKS+cluster+with+IPv6-only+Pod+and+Service+CIDRs).
@@ -259,91 +283,10 @@ When `enable_ipv6 = true`:
    - Compatible with both protocol stacks
    - Intra-security-group communication for IPv6 pods
 
-## Integration with viya4-deployment
-
-This IPv6 EKS cluster is designed to work with the `ipv6` feature branch of viya4-deployment. Set the following in your `ansible-vars.yaml`:
-
-```yaml
-V4_CFPolicy Already Exists Error**: If you see `EntityAlreadyExists: A policy called AmazonEKS_CNI_IPv6_Policy already exists`, this is expected behavior. The policy was created previously and will be reused across all clusters in the account.
-
-2. **Ingress Not Working**: Ensure you're using the viya4-deployment `ipv6` branch which configures ingress-nginx for IPv6
-
-3. **AWS Load Balancer Controller Fails**: 
-   - Check cert-manager is running: `kubectl get pods -n kube-system | grep cert-manager`
-   - Verify the controller eventually starts after the 60-second wait period
-   - Check logs: `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller`
-
-4. **NLB Creation Fails**: The AWS Load Balancer Controller should be automatically installed; verify it's running in `kube-system` namespace
-
-5. **IPv6 Connectivity**: Ensure your local network and AWS Security Groups allow IPv6 traffic
-
-6. **RDS Connection Issues**: 
-   - Verify RDS has dual-stack enabled: Check `network_type` in AWS Console
-   - Ensure pods are in the same security group as RDS or security group rules allow traffic
-   - Test connectivity: `kubectl run -it --rm debug --image=postgres:15 --restart=Never -- psql -h <rds-endpoint> -U <username>`
-
-7he AWS Load Balancer Controller installed by this project will automatically handle the IPv6 NLB requirements for ingress-nginx.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Ingress Not Working**: Ensure you're using the viya4-deployment `ipv6` branch which configures ingress-nginx for IPv6
-2. **NLB Creation Fails**: The AWS Load Balancer Controller should be automatically installed; verify it's running in `kube-system` namespace
-3. **IPv6 Connectivity**: Ensure your local network and AWS Security Groups allow IPv6 traffic
-4. **EBS CSI Topology Errors**: If you see `no topology key found on CSINode` errors, this is automatically resolved by enabling IPv4 in the VPC CNI (configured during deployment)
-
-### EBS CSI Driver with IPv6
-
-When using IPv6, the EBS CSI driver requires topology information from the VPC CNI. This project automatically configures dual-stack mode in the VPC CNI by setting `ENABLE_IPv4=true` on the `aws-node` daemonset. This allows:
-
-- Pods to use IPv6 addresses (primary)
-- CSI drivers to receive proper topology information via IPv4
-- Full compatibility with AWS EBS volumes
-
-**Manual verification (if needed):**
-
-```bash
-# Check tpods have IPv6 addresses
-kubectl get pods -A -o wide
-
-# Verify AWS Load Balancer Controller is running
-kubectl get pods -n kube-system | grep aws-load-balancer-controller
-
-# Check cert-manager is running
-kubectl get pods -n kube-system | grep cert-manager
-
-# Verify VPC has IPv6 CIDR
-aws ec2 describe-vpcs --vpc-ids <vpc-id> --query 'Vpcs[0].Ipv6CidrBlockAssociationSet'
-
-# Check CNI IPv6 policy is attached to worker roles
-aws iam list-attached-role-policies --role-name <worker-role-name> | grep AmazonEKS_CNI_IPv6_Policy
-
-# Verify RDS dual-stack configuration (if using RDS)
-aws rds describe-db-instances --db-instance-identifier <db-identifier> --query 'DBInstances[0].NetworkType'
-# Should output: DUAL
-
-### Verification Commands
-
-```bash
-# Check IPv6 is enabled on cluster
-kubectl get nodes -o wide
-
-# Verify AWS Load Balancer Controller is running
-kubectl get pods -n kube-system | grep aws-load-balancer-controller
-
-# Check cert-manager is running
-kubectl get pods -n kube-system | grep cert-manager
-
-# Verify VPC has IPv6 CIDR
-aws ec2 describe-vpcs --vpc-ids <vpc-id> --query 'Vpcs[0].Ipv6CidrBlockAssociationSet'
-```
-
 ## Version Compatibility
 
 - **Manual Policy Creation**: The `AmazonEKS_CNI_IPv6_Policy` must be created manually before deployment
 - **Multi-Cluster Consideration**: One IPv6 CNI policy per AWS account is shared across all IPv6 EKS clusters
-- **viya4-deployment Dependency**: Requires the `ipv6` feature branch for proper ingress configuration
 - **Regional Availability**: Ensure your AWS region supports IPv6 for EKS
 - **RDS External Access**: IPv6 external access to RDS requires additional security group configuration (internal pod access works automatically)
 - **AWS CLI**: 2.24.16+
@@ -354,7 +297,6 @@ aws ec2 describe-vpcs --vpc-ids <vpc-id> --query 'Vpcs[0].Ipv6CidrBlockAssociati
 ## Limitations
 
 - **Single-stack Only**: AWS EKS does not support dual-stack (IPv4+IPv6) for Pods and Services
-- **viya4-deployment Dependency**: Requires the `ipv6` feature branch for proper ingress configuration
 - **Regional Availability**: Ensure your AWS region supports IPv6 for EKS
 
 ## References
