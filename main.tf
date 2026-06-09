@@ -337,6 +337,7 @@ module "postgresql" {
   instance_class    = each.value.instance_type     # Instance type
   allocated_storage = each.value.storage_size      # Storage size (GB)
   storage_encrypted = each.value.storage_encrypted # Enable storage encryption
+  network_type      = var.enable_ipv6 ? "DUAL" : "IPV4" # Enable dual-stack (IPv4 + IPv6) when IPv6 is enabled
 
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
