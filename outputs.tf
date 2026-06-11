@@ -25,6 +25,11 @@ output "workers_iam_role_arn" {
   value       = var.workers_iam_role_arn
 }
 
+output "nlb_security_group_id" {
+  description = "The ID of the security group for Network Load Balancers (NLB). Use this in Kubernetes Service annotations: service.beta.kubernetes.io/aws-load-balancer-security-groups"
+  value       = local.nlb_security_group_id
+}
+
 output "rwx_filestore_id" {
   description = "The ID that identifies the file system."
   value = (var.storage_type == "ha" && local.storage_type_backend == "efs"

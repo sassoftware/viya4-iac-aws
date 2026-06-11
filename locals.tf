@@ -19,6 +19,8 @@ locals {
   cluster_security_group_id = var.cluster_security_group_id == null ? aws_security_group.cluster_security_group[0].id : var.cluster_security_group_id
   # Workers security group ID, with a preference for the variable value
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
+  # NLB security group ID (only created when IPv6 is enabled)
+  nlb_security_group_id = var.enable_ipv6 ? aws_security_group.nlb_security_group[0].id : null
   # Name of the EKS cluster
   cluster_name = "${var.prefix}-eks"
   # Default tags applied to resources
