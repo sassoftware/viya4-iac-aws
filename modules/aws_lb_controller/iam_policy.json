@@ -13,6 +13,7 @@
                 "ec2:DescribeAddresses",
                 "ec2:DescribeNetworkInterfaces",
                 "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeVpcPeeringConnections",
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateTags",
                 "ec2:DeleteTags",
