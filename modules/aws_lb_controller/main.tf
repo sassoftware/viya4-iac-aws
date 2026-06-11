@@ -12,13 +12,24 @@ resource "helm_release" "cert_manager" {
   # Wait for resources to be ready
   wait          = true
   wait_for_jobs = true
-  timeout       = 600
+  timeout       = 3600  # 1 hour timeout for IPv6 environments and slow image pulls
   
   set {
     name  = "installCRDs"
     value = "true"
   }
-  
+  # Add image pull policy to help with IPv6
+  set {
+    name  = "image.pullPolicy"
+    value = "IfNotPresent"
+  }
+
+  # Increase webhook timeouts for slower environments
+  set {
+    name  = "webhook.timeoutSeconds"
+    value = "30"
+  }
+
   depends_on = [var.kubeconfig_depends_on]
 }
 
@@ -39,7 +50,7 @@ resource "helm_release" "aws_lb_controller" {
   # Wait for resources to be ready
   wait          = true
   wait_for_jobs = true
-  timeout       = 600
+  timeout       = 3600  # 1 hour timeout for IPv6 environments and slow image pulls
   
   # Base configuration for all deployments
   set {
@@ -75,6 +86,18 @@ resource "helm_release" "aws_lb_controller" {
   set {
     name  = "defaultTargetType"
     value = "ip"
+  }
+  
+  # Add image pull policy to help with IPv6
+  set {
+    name  = "image.pullPolicy"
+    value = "IfNotPresent"
+  }
+  
+  # Increase webhook timeouts for slower environments
+  set {
+    name  = "webhookTimeoutSeconds"
+    value = "30"
   }
   
   # Enhanced IPv6 support configuration
