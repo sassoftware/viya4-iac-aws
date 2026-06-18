@@ -851,3 +851,31 @@ variable "cert_manager_version" {
   type        = string
   default     = "v1.20.2"
 }
+
+variable "manage_controller_created_nlb_security_groups" {
+  description = "Automatically discover and add inbound rules to security groups created by AWS Load Balancer Controller (k8s-* pattern) attached to NLBs."
+  type        = bool
+  default     = true
+}
+
+variable "controller_nlb_security_group_inbound_cidrs" {
+  description = "IPv4 and/or IPv6 CIDRs to allow inbound on controller-created NLB security groups for ports 80 and 443."
+  type        = list(string)
+  default     = ["0.0.0.0/0", "::/0"]
+
+  validation {
+    condition     = alltrue([for cidr in var.controller_nlb_security_group_inbound_cidrs : can(cidrhost(cidr, 0))])
+    error_message = "All values must be valid CIDR blocks (e.g., '0.0.0.0/0' or '::/0')."
+  }
+}
+
+variable "controller_nlb_security_group_inbound_ports" {
+  description = "Ports to allow inbound on controller-created NLB security groups."
+  type        = list(number)
+  default     = [80, 443]
+
+  validation {
+    condition     = alltrue([for port in var.controller_nlb_security_group_inbound_ports : port >= 1 && port <= 65535])
+    error_message = "All ports must be between 1 and 65535."
+  }
+}

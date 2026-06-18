@@ -30,6 +30,16 @@ output "nlb_security_group_id" {
   value       = local.nlb_security_group_id
 }
 
+output "controller_nlb_security_group_ids" {
+  description = "Security group IDs (k8s-* pattern) discovered on AWS Load Balancer Controller-created NLBs. Managed by Terraform for inbound rules."
+  value       = var.manage_controller_created_nlb_security_groups ? keys(local.controller_nlb_security_groups) : []
+}
+
+output "controller_nlb_managed_ingress_rules" {
+  description = "Composite keys for managed ingress rules on controller-created NLB security groups. Format: <sg-id>|<port>|<cidr>"
+  value       = var.manage_controller_created_nlb_security_groups ? sort(keys(local.controller_nlb_ingress_matrix)) : []
+}
+
 output "rwx_filestore_id" {
   description = "The ID that identifies the file system."
   value = (var.storage_type == "ha" && local.storage_type_backend == "efs"

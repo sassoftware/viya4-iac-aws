@@ -291,75 +291,72 @@ resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22_ipv6" {
 ################################################################################
 # Network Load Balancer (NLB) Security Group
 ################################################################################
-# This security group is used by AWS Network Load Balancers created by the
-# AWS Load Balancer Controller. It allows external IPv4 and IPv6 traffic to
-# reach the NLB, which then forwards to worker nodes running ingress controllers.
-#
-# Usage: Reference this security group in your Kubernetes Service annotations:
-#   service.beta.kubernetes.io/aws-load-balancer-security-groups: "<nlb_security_group_id>"
-#
-# Required for IPv6 support: IPv6 NLBs with client IP preservation enabled
-# (default) require this security group to accept traffic from ::/0.
-
 resource "aws_security_group" "nlb_security_group" {
-  count = var.enable_ipv6 ? 1 : 0
-
+  count       = var.enable_ipv6 ? 1 : 0
   name        = "${var.prefix}-eks_nlb_sg"
   vpc_id      = module.vpc.vpc_id
   description = "Security group for AWS Network Load Balancers (NLB) with IPv6 support. Allows external traffic to reach ingress controllers."
-
+ 
   tags = merge(local.tags, { "Name" : "${var.prefix}-eks_nlb_sg" })
 }
-
+ 
+################################################################################
+# Egress rules: NLB → worker nodes
+################################################################################
 # Egress rule to allow NLB to forward traffic to worker nodes (IPv4)
 resource "aws_vpc_security_group_egress_rule" "nlb_to_workers_ipv4" {
   count = var.enable_ipv6 ? 1 : 0
-
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
   description       = "Allow NLB to forward traffic to worker nodes on all ports"
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
 }
-
+ 
 # Egress rule to allow NLB to forward traffic to worker nodes (IPv6)
 resource "aws_vpc_security_group_egress_rule" "nlb_to_workers_ipv6" {
   count = var.enable_ipv6 ? 1 : 0
-
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
   description       = "Allow NLB to forward IPv6 traffic to worker nodes on all ports"
   ip_protocol       = "-1"
   cidr_ipv6         = "::/0"
 }
-
-# Ingress rule to allow IPv4 HTTP traffic from the internet to NLB
-resource "aws_vpc_security_group_ingress_rule" "nlb_http_ipv4" {
-  count = var.enable_ipv6 ? 1 : 0
-
+ 
+################################################################################
+# Ingress rules: Internet → NLB (HTTP/HTTPS)
+################################################################################
+resource "aws_vpc_security_group_ingress_rule" "nlb_http" {
+  for_each = toset(var.default_public_access_cidrs)
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
-  description       = "Allow public IPv4 HTTP traffic to NLB"
+  description       = "Allow HTTP traffic to NLB from custom CIDRs"
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+ 
+  cidr_ipv4 = can(regex(":", each.key)) ? null : each.key
+  cidr_ipv6 = can(regex(":", each.key)) ? each.key : null
 }
-
-# Ingress rule to allow IPv4 HTTPS traffic from the internet to NLB
-resource "aws_vpc_security_group_ingress_rule" "nlb_https_ipv4" {
-  count = var.enable_ipv6 ? 1 : 0
-
+ 
+resource "aws_vpc_security_group_ingress_rule" "nlb_https" {
+  for_each = toset(var.default_public_access_cidrs)
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
-  description       = "Allow public IPv4 HTTPS traffic to NLB"
+  description       = "Allow HTTPS traffic to NLB from custom CIDRs"
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+ 
+  cidr_ipv4 = can(regex(":", each.key)) ? null : each.key
+  cidr_ipv6 = can(regex(":", each.key)) ? each.key : null
 }
-
+ 
 # Ingress rule to allow IPv6 HTTP traffic from the internet to NLB
 # CRITICAL: Required for IPv6 NLB functionality
 resource "aws_vpc_security_group_ingress_rule" "nlb_http_ipv6" {
   count = var.enable_ipv6 ? 1 : 0
-
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
   description       = "Allow public IPv6 HTTP traffic to NLB. Required for IPv6 client access."
   from_port         = 80
@@ -367,12 +364,12 @@ resource "aws_vpc_security_group_ingress_rule" "nlb_http_ipv6" {
   ip_protocol       = "tcp"
   cidr_ipv6         = "::/0"
 }
-
+ 
 # Ingress rule to allow IPv6 HTTPS traffic from the internet to NLB
 # CRITICAL: Required for IPv6 NLB functionality
 resource "aws_vpc_security_group_ingress_rule" "nlb_https_ipv6" {
   count = var.enable_ipv6 ? 1 : 0
-
+ 
   security_group_id = aws_security_group.nlb_security_group[0].id
   description       = "Allow public IPv6 HTTPS traffic to NLB. Required for IPv6 client access."
   from_port         = 443
@@ -380,13 +377,94 @@ resource "aws_vpc_security_group_ingress_rule" "nlb_https_ipv6" {
   ip_protocol       = "tcp"
   cidr_ipv6         = "::/0"
 }
-
+ 
 # Ingress rule to allow worker nodes to receive traffic from NLB
 resource "aws_vpc_security_group_ingress_rule" "workers_from_nlb" {
   count = var.enable_ipv6 && var.workers_security_group_id == null ? 1 : 0
-
+ 
   security_group_id            = aws_security_group.workers_security_group[0].id
   description                  = "Allow worker nodes to receive traffic from NLB on all ports"
   ip_protocol                  = "-1"
   referenced_security_group_id = aws_security_group.nlb_security_group[0].id
+}
+
+################################################################################
+# AWS Load Balancer Controller Auto-Created NLB Security Groups
+# Discover and add inbound rules to k8s-* SGs created by the controller
+################################################################################
+
+# Discover all NLBs tagged with the cluster name (created by AWS Load Balancer Controller)
+data "aws_lbs" "controller_created_nlbs" {
+  count = var.manage_controller_created_nlb_security_groups ? 1 : 0
+
+  tags = {
+    "elbv2.k8s.aws/cluster" = local.cluster_name
+  }
+}
+
+# Get details for each discovered NLB
+data "aws_lb" "controller_created_nlbs" {
+  for_each = var.manage_controller_created_nlb_security_groups ? {
+    for arn in try(data.aws_lbs.controller_created_nlbs[0].arns, []) : arn => arn
+  } : {}
+
+  arn = each.value
+}
+
+# Collect all security group IDs attached to discovered NLBs
+locals {
+  controller_created_nlb_sg_ids = distinct(flatten([
+    for lb in values(data.aws_lb.controller_created_nlbs) : (
+      lb.load_balancer_type == "network" ? lb.security_groups : []
+    )
+  ]))
+}
+
+# Fetch details for each security group to get the name
+data "aws_security_group" "controller_created_nlb_sgs" {
+  for_each = var.manage_controller_created_nlb_security_groups ? {
+    for sg_id in local.controller_created_nlb_sg_ids : sg_id => sg_id
+  } : {}
+
+  id = each.value
+}
+
+# Filter to only k8s-* security groups (created by the controller, not pre-existing)
+locals {
+  controller_nlb_security_groups = tomap({
+    for sg_id, sg in data.aws_security_group.controller_created_nlb_sgs : sg_id => sg
+    if can(regex("^k8s-", sg.name))
+  })
+}
+
+# Create a matrix of (security_group_id, port, cidr) for each inbound rule
+locals {
+  controller_nlb_ingress_matrix = {
+    for combo in setproduct(
+      keys(local.controller_nlb_security_groups),
+      var.controller_nlb_security_group_inbound_ports,
+      var.controller_nlb_security_group_inbound_cidrs
+    ) :
+    "${combo[0]}|${combo[1]}|${combo[2]}" => {
+      security_group_id = combo[0]
+      port              = combo[1]
+      cidr              = combo[2]
+      is_ipv6           = can(regex(":", combo[2]))
+    }
+  }
+}
+
+# Add inbound rules to controller-created NLB security groups
+resource "aws_vpc_security_group_ingress_rule" "controller_nlb" {
+  for_each = var.manage_controller_created_nlb_security_groups ? local.controller_nlb_ingress_matrix : {}
+
+  security_group_id = each.value.security_group_id
+  description       = "Allow ${each.value.is_ipv6 ? "IPv6" : "IPv4"} inbound traffic on port ${each.value.port} to Contour/Envoy NLB"
+  from_port         = each.value.port
+  to_port           = each.value.port
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value.is_ipv6 ? null : each.value.cidr
+  cidr_ipv6         = each.value.is_ipv6 ? each.value.cidr : null
+
+  tags = merge(local.tags, { "Name" : "controller-nlb-ingress-${each.value.port}" })
 }
