@@ -291,19 +291,8 @@ resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22_ipv6" {
 ################################################################################
 # Network Load Balancer (NLB) Security Group
 ################################################################################
-# This security group is used by AWS Network Load Balancers created by the
-# AWS Load Balancer Controller. It allows external IPv4 and IPv6 traffic to
-# reach the NLB, which then forwards to worker nodes running ingress controllers.
-#
-# Usage: Reference this security group in your Kubernetes Service annotations:
-#   service.beta.kubernetes.io/aws-load-balancer-security-groups: "<nlb_security_group_id>"
-#
-# Required for IPv6 support: IPv6 NLBs with client IP preservation enabled
-# (default) require this security group to accept traffic from ::/0.
-
 resource "aws_security_group" "nlb_security_group" {
-  count = var.enable_ipv6 ? 1 : 0
-
+  count       = var.enable_ipv6 ? 1 : 0
   name        = "${var.prefix}-eks_nlb_sg"
   vpc_id      = module.vpc.vpc_id
   description = "Security group for AWS Network Load Balancers (NLB) with IPv6 support. Allows external traffic to reach ingress controllers."
@@ -311,6 +300,9 @@ resource "aws_security_group" "nlb_security_group" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-eks_nlb_sg" })
 }
 
+################################################################################
+# Egress rules: NLB → worker nodes
+################################################################################
 # Egress rule to allow NLB to forward traffic to worker nodes (IPv4)
 resource "aws_vpc_security_group_egress_rule" "nlb_to_workers_ipv4" {
   count = var.enable_ipv6 ? 1 : 0
@@ -331,28 +323,33 @@ resource "aws_vpc_security_group_egress_rule" "nlb_to_workers_ipv6" {
   cidr_ipv6         = "::/0"
 }
 
-# Ingress rule to allow IPv4 HTTP traffic from the internet to NLB
-resource "aws_vpc_security_group_ingress_rule" "nlb_http_ipv4" {
-  count = var.enable_ipv6 ? 1 : 0
+################################################################################
+# Ingress rules: Internet → NLB (HTTP/HTTPS)
+################################################################################
+resource "aws_vpc_security_group_ingress_rule" "nlb_http" {
+  for_each = toset(var.default_public_access_cidrs)
 
   security_group_id = aws_security_group.nlb_security_group[0].id
-  description       = "Allow public IPv4 HTTP traffic to NLB"
+  description       = "Allow HTTP traffic to NLB from custom CIDRs"
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+
+  cidr_ipv4 = can(regex(":", each.key)) ? null : each.key
+  cidr_ipv6 = can(regex(":", each.key)) ? each.key : null
 }
 
-# Ingress rule to allow IPv4 HTTPS traffic from the internet to NLB
-resource "aws_vpc_security_group_ingress_rule" "nlb_https_ipv4" {
-  count = var.enable_ipv6 ? 1 : 0
+resource "aws_vpc_security_group_ingress_rule" "nlb_https" {
+  for_each = toset(var.default_public_access_cidrs)
 
   security_group_id = aws_security_group.nlb_security_group[0].id
-  description       = "Allow public IPv4 HTTPS traffic to NLB"
+  description       = "Allow HTTPS traffic to NLB from custom CIDRs"
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+
+  cidr_ipv4 = can(regex(":", each.key)) ? null : each.key
+  cidr_ipv6 = can(regex(":", each.key)) ? each.key : null
 }
 
 # Ingress rule to allow IPv6 HTTP traffic from the internet to NLB

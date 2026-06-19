@@ -27,6 +27,7 @@
                 "iam:CreateServiceLinkedRole",
                 "iam:GetServerCertificate",
                 "iam:ListServerCertificates",
+                "shield:GetSubscriptionState",
                 "cognito-idp:DescribeUserPoolClient",
                 "waf-regional:GetWebACLForResource",
                 "waf-regional:GetWebACL",
