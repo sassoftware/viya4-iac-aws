@@ -23,17 +23,13 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 # Enable IPv6 support for the VPC, subnets, and EKS cluster
 enable_ipv6 = true
 
-# AWS Load Balancer Controller versions (automatically installed when IPv6 is enabled)
-lb_controller_version = "1.14.1"   # AWS Load Balancer Controller Helm chart version (latest with enhanced IPv6 support)
-cert_manager_version  = "v1.13.2" # cert-manager Helm chart version (required dependency)
-
 # LOAD BALANCER BEHAVIOR with enable_ipv6 = true:
 # AWS EKS Configuration: IPv6 single-stack cluster for IPv6 pods and services
 # - EKS cluster: IPv6 single-stack (cluster_ip_family = "ipv6") 
 # - Pods: IPv6 addresses (e.g., 2001:db8::1:3b3b)
 # - Services: IPv6 addresses by default
 # - Load Balancers: IPv6 and dualstack support via annotations
-#   * IPv4 LB: aws-load-balancer-ip-address-type: "ipv4" (to override default IPv6)
+#   * IPv4 LB: aws-load-balancer-ip-address-type: "ipv4"
 #   * IPv6 LB: No annotations needed (default with IPv6 cluster)
 #   * Dualstack LB: aws-load-balancer-ip-address-type: "dualstack"
 # - IPv6 infrastructure: VPC, subnets, routing configured for IPv6
@@ -43,9 +39,9 @@ cert_manager_version  = "v1.13.2" # cert-manager Helm chart version (required de
 # Postgres config - By having this entry a database server is created. If you do not
 #                   need an external database server remove the 'postgres_servers'
 #                   block below.
-postgres_servers = {
-  default = {},
-}
+#postgres_servers = {
+#  default = {},
+#}
 
 ## Cluster config
 kubernetes_version           = "1.32"

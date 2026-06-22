@@ -403,15 +403,3 @@ module "lb_controller" {
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   count                   = var.enable_ipv6 ? 1 : 0
 }
-
-# Example variable definitions (add to variables.tf or root module):
-# variable "lb_controller_version" {
-#   description = "AWS Load Balancer Controller Helm chart version"
-#   type        = string
-#   default     = "1.6.2"
-# }
-# variable "cert_manager_version" {
-#   description = "Cert Manager Helm chart version"
-#   type        = string
-#   default     = "v1.13.2"
-# }
