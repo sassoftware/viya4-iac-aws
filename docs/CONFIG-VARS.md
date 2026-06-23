@@ -16,6 +16,8 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Networking](#networking)
     - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
+    - [VPC Endpoints](#vpc-endpoints)
+    - [IPv6 Support](#ipv6-support)
   - [IAM](#iam)
   - [General](#general)
   - [Node Pools](#node-pools)
@@ -185,11 +187,11 @@ subnet_ids = {
 
 | Name | Description | Type | Default | Notes |
 | :--- | ---: | ---: | ---: | ---: |
-| enable_ipv6 | Enable IPv6 for VPC, subnets, and EKS | bool | false | When true, creates IPv6-enabled VPC and EKS cluster with single-stack IPv6 for pods and services. See [IPv6 Support Documentation](./IPv6-Support.md) for full details. |
+| enable_ipv6 | Enable IPv6 for VPC, subnets, and EKS | bool | false | When true, creates IPv6-enabled VPC and EKS cluster with single-stack IPv6 for pods and services. See [IPv6 Support Documentation](./user/IPv6-Support.md) for full details. |
 
 **IPv6 Configuration Notes:**
 
-- **Manual IAM Policy Required**: Before setting `enable_ipv6 = true`, you must manually create the `AmazonEKS_CNI_IPv6_Policy` in your AWS account. This policy is required once per AWS account and shared across all IPv6 clusters. See [IPv6 Prerequisites](./IPv6-Support.md#prerequisites) for creation steps.
+- **Manual IAM Policy Required**: Before setting `enable_ipv6 = true`, you must manually create the `AmazonEKS_CNI_IPv6_Policy` in your AWS account. This policy is required once per AWS account and shared across all IPv6 clusters. See [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites) for creation steps.
 
 - **What Gets Configured**:
   - VPC with automatic IPv6 CIDR block assignment
@@ -208,7 +210,7 @@ subnet_ids = {
   - Requires viya4-deployment `ipv6` branch for proper ingress configuration
   - One `AmazonEKS_CNI_IPv6_Policy` per AWS account is shared across all clusters
 
-For comprehensive IPv6 setup instructions, troubleshooting, and architecture details, see [IPv6 Support Documentation](./IPv6-Support.md).
+For comprehensive IPv6 setup instructions, troubleshooting, and architecture details, see [IPv6 Support Documentation](./user/IPv6-Support.md).
 
 
 ## IAM
@@ -254,7 +256,7 @@ AWS-managed policies:
 - `AmazonEKS_CNI_Policy`
 - `AmazonEC2ContainerRegistryReadOnly`
 
-**IPv6 Additional Policy**: When `enable_ipv6 = true`, the `AmazonEKS_CNI_IPv6_Policy` is automatically attached to the worker node IAM roles. This policy must be created manually before deployment (see [IPv6 Prerequisites](./IPv6-Support.md#prerequisites)). The policy grants permissions for the VPC CNI plugin to assign IPv6 addresses to pods.
+**IPv6 Additional Policy**: When `enable_ipv6 = true`, the `AmazonEKS_CNI_IPv6_Policy` is automatically attached to the worker node IAM roles. This policy must be created manually before deployment (see [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites)). The policy grants permissions for the VPC CNI plugin to assign IPv6 addresses to pods.
 
 Custom policy:
 
