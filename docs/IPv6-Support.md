@@ -248,8 +248,8 @@ This volume mount:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `enable_ipv6` | Enable IPv6 for VPC, subnets, and EKS | `false` |
-| `lb_controller_version` | AWS Load Balancer Controller Helm chart version | `"1.6.2"` |
-| `cert_manager_version` | cert-manager Helm chart version | `"v1.13.2"` |
+| `lb_controller_version` | AWS Load Balancer Controller Helm chart version | `"3.3.0"` |
+| `cert_manager_version` | cert-manager Helm chart version | `"v1.20.2"` |
 
 ### What Gets Deployed
 
@@ -291,8 +291,8 @@ When `enable_ipv6 = true`:
 - **RDS External Access**: IPv6 external access to RDS requires additional security group configuration (internal pod access works automatically)
 - **AWS CLI**: 2.24.16+
 - **Kubernetes**: 1.32+ (default)
-- **AWS Load Balancer Controller**: 1.6.2+ (default)
-- **cert-manager**: v1.13.2+ (default)
+- **AWS Load Balancer Controller**: 3.3.0+ (default)
+- **cert-manager**: v1.20.2+ (default)
 
 ## Limitations
 
