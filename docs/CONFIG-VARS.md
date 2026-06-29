@@ -338,7 +338,7 @@ When `storage_type=ha` and `storage_type_backend=efs`, an [AWS Elastic File Syst
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
-| enable_efs_encryption | Enable encryption on EFS file systems | bool | false | When set to 'true', the EFS file systems will be encrypted. |
+| enable_efs_encryption | Enable encryption on EFS file systems | bool | true | When set to 'true', the EFS file systems will be encrypted. |
 | efs_throughput_mode | EFS throughput mode | string | bursting | Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required. |
 | efs_throughput_rate | EFS throughput rate, measured in MiB/s | number | 1024 | Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'. |
 
@@ -366,7 +366,7 @@ To encrypt EBS volumes the following variable is applicable:
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| enable_ebs_encryption | Enable encryption on EBS volumes | bool | false |  When set to 'true', the EBS volumes will be encrypted. |
+| enable_ebs_encryption | Enable encryption on EBS volumes | bool | true |  When set to 'true', the EBS volumes will be encrypted. |
 
 ## PostgreSQL Server
 
@@ -395,7 +395,7 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 | instance_type | The VM type for the PostgreSQL Server | string | "db.m6idn.xlarge" | |
 | storage_size | Max storage allowed for the PostgreSQL server in GB | number | 128 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
-| storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
+| storage_encrypted | Encrypt PostgreSQL data at rest | bool | true| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
 | administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin password must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
@@ -416,7 +416,7 @@ postgres_servers = {
   cds-postgres = {
     instance_type                = "db.m6idn.xlarge"
     storage_size                 = 128
-    storage_encrypted            = false
+    storage_encrypted            = true
     backup_retention_days        = 7
     multi_az                     = false
     deletion_protection          = false
