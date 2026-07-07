@@ -5,8 +5,8 @@ FROM hashicorp/terraform:$TERRAFORM_VERSION AS terraform
 FROM almalinux:minimal AS amin
 WORKDIR /app
 USER root
-ARG KUBECTL_VERSION=1.34.6
-ARG KUBECTL_CHECKSUM=3166155b17198c0af34ff5a360bd4d9d58db98bafadc6f3c2a57ae560563cd6b
+ARG KUBECTL_VERSION=1.35.6
+ARG KUBECTL_CHECKSUM=5d11e2ba01ea68ffd053f56e27738e2b4330013ee67f7e46c6da6c585d3c9926
 RUN /usr/bin/bash -eux \
   && curl -fSLO https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
   && chmod 755 ./kubectl \
