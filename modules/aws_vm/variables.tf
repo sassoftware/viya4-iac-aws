@@ -129,7 +129,7 @@ variable "subnet_id" {
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # If true, enables NIST features under development for compliance and security.

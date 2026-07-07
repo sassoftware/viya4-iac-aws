@@ -52,7 +52,7 @@ func TestPlanPostgreSQL(t *testing.T) {
 			AttributeJsonPath: "{$.deletion_protection}",
 		},
 		"storageEncryptedTest": {
-			Expected:          "false",
+			Expected:          "true",
 			ResourceMapName:   postgresResourceMapName,
 			AttributeJsonPath: "{$.storage_encrypted}",
 		},

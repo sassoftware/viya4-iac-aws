@@ -599,7 +599,7 @@ variable "postgres_server_defaults" {
   default = {
     instance_type           = "db.m6idn.xlarge"
     storage_size            = 128
-    storage_encrypted       = false
+    storage_encrypted       = true
     backup_retention_days   = 7
     multi_az                = false
     deletion_protection     = false
@@ -749,14 +749,14 @@ variable "autoscaling_enabled" {
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Enable encryption on EFS file systems.
 variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1
