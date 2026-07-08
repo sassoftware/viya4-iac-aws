@@ -113,6 +113,12 @@ resource "aws_instance" "vm" {
     )
   }
 
+  # Enforce IMDSv2 to protect against SSRF-based credential theft
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+
   # Tags to apply to the instance, merging static and variable tags
   tags = merge(var.tags, tomap({ Name : "${var.name}-vm" }))
 
