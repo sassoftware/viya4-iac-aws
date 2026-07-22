@@ -228,14 +228,14 @@ docker run --rm --group-add root \
   --user "$(id -u):$(id -g)" \
   --env-file $(pwd)/.aws_docker_creds.env \
   --volume $HOME/.ssh:/.ssh \
-  --volume $HOME/.cache:/root/.cache \
+  --volume $HOME/.cache:/.cache \
   --volume $(pwd):/workspace \
   viya4-iac-aws apply -auto-approve \
   -var-file /workspace/terraform.tfvars \
   -state /workspace/terraform.tfstate
 ```
 
-**Key addition**: `--volume $HOME/.cache:/root/.cache`
+**Key addition**: `--volume $HOME/.cache:/.cache`
 
 This volume mount:
 - Persists Helm repository cache across Docker runs
