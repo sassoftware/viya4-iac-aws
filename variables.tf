@@ -186,7 +186,7 @@ variable "kubernetes_version" {
 variable "tags" {
   description = "Map of common tags to be placed on all created AWS resources."
   type        = map(string)
-  default     = {}
+  default     = { project_name = "viya" }
 }
 
 variable "enable_tagged_default_storage_class" {
