@@ -15,6 +15,10 @@ provider "aws" {
   access_key               = var.aws_access_key_id        # AWS access key (see variables.tf: aws_access_key_id)
   secret_key               = var.aws_secret_access_key    # AWS secret key (see variables.tf: aws_secret_access_key)
   token                    = var.aws_session_token        # AWS session token for temporary credentials (see variables.tf: aws_session_token)
+
+  default_tags {
+    tags = local.tags # Apply all caller-provided tags to taggable AWS resources.
+  }
 }
 
 # Data source to get authentication token for EKS cluster. Used by the Kubernetes provider.
@@ -285,6 +289,29 @@ module "kubeconfig" {
   sg_id        = local.cluster_security_group_id # Security group for API access
 
   depends_on = [module.eks] # Wait for EKS cluster to be ready
+}
+
+# Create a tagged default StorageClass so future dynamic PVC volumes inherit caller-provided tags.
+resource "kubernetes_storage_class_v1" "ebs_csi_tagged_default" {
+  count = length(local.ebs_csi_storage_class_parameters) > 0 ? 1 : 0
+
+  metadata {
+    name = local.ebs_csi_tagged_storage_class_name
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" = "true"
+    }
+  }
+
+  storage_provisioner    = "ebs.csi.aws.com"
+  reclaim_policy         = "Delete"
+  volume_binding_mode    = "WaitForFirstConsumer"
+  allow_volume_expansion = true
+  parameters = merge({
+    type   = "gp2"
+    fstype = "ext4"
+  }, local.ebs_csi_storage_class_parameters)
+
+  depends_on = [module.kubeconfig.kube_config, terraform_data.run_command]
 }
 
 # Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.

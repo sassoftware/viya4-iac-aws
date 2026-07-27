@@ -21,10 +21,14 @@ locals {
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   # Name of the EKS cluster
   cluster_name = "${var.prefix}-eks"
-  # Default tags applied to resources
-  default_tags = { project_name = "viya" }
-  # Tags for the resources, defaults to project name if not provided
-  tags = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
+  # Tags for resources. Fully caller-driven via tfvars/CLI input.
+  tags = var.tags == null ? {} : var.tags
+  # A tagged default EBS CSI StorageClass for future dynamic PVC-backed volumes.
+  ebs_csi_tagged_storage_class_name = "gp2-tagged"
+  ebs_csi_storage_class_parameters = {
+    for index, key in sort(keys(local.tags)) :
+    "tagSpecification_${index + 1}" => "${key}=${local.tags[key]}"
+  }
 
   # aws_shared_credentials_file - is DEPRECATED and will be removed in a future release
   # Determine if the deprecated AWS shared credentials file variable is used
@@ -150,7 +154,10 @@ locals {
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
-      launch_template_tags            = { Name = "${local.cluster_name}-default" }
+      launch_template_tags = merge(local.tags, {
+        Name = "${local.cluster_name}-default"
+      })
+      tag_specifications = ["instance", "volume", "network-interface"]
 
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
@@ -222,7 +229,10 @@ locals {
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
-      launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
+      launch_template_tags = merge(local.tags, {
+        Name = "${local.cluster_name}-${key}"
+      })
+      tag_specifications = ["instance", "volume", "network-interface"]
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"

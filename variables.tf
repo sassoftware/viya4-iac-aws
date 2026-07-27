@@ -184,9 +184,9 @@ variable "kubernetes_version" {
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
 variable "tags" {
-  description = "Map of common tags to be placed on the resources."
-  type        = map(any)
-  default     = { project_name = "viya" }
+  description = "Map of common tags to be placed on all created AWS resources."
+  type        = map(string)
+  default     = {}
 }
 
 ## Default node pool config
