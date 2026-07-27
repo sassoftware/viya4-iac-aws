@@ -175,11 +175,11 @@ variable "efs_throughput_rate" {
 }
 
 ## Kubernetes
-# Kubernetes version for the EKS cluster. Default is '1.34'.
+# Kubernetes version for the EKS cluster. Default is '1.35'.
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.34"
+  default     = "1.35"
 }
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
@@ -604,13 +604,13 @@ variable "postgres_server_defaults" {
   default = {
     instance_type           = "db.m6idn.xlarge"
     storage_size            = 128
-    storage_encrypted       = false
+    storage_encrypted       = true
     backup_retention_days   = 7
     multi_az                = false
     deletion_protection     = false
     administrator_login     = "pgadmin"
     administrator_password  = "my$up3rS3cretPassw0rd"
-    server_version          = "15"
+    server_version          = "16"
     server_port             = "5432"
     ssl_enforcement_enabled = true
     parameters              = []
@@ -754,14 +754,14 @@ variable "autoscaling_enabled" {
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Enable encryption on EFS file systems.
 variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1
