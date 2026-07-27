@@ -21,6 +21,8 @@ resource "aws_security_group" "sg" {
 
   description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
 
+  revoke_rules_on_delete = true
+
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
@@ -137,6 +139,8 @@ resource "aws_security_group" "cluster_security_group" {
   vpc_id      = module.vpc.vpc_id
   description = "EKS cluster security group."
 
+  revoke_rules_on_delete = true
+
   tags = merge(local.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
 
 }
@@ -194,6 +198,9 @@ resource "aws_security_group" "workers_security_group" {
   description = "Security group for all nodes in the cluster."
   name        = "${var.prefix}-eks_worker_sg"
   vpc_id      = module.vpc.vpc_id
+
+  revoke_rules_on_delete = true
+
   tags = merge(local.tags,
     { "Name" : "${var.prefix}-eks_worker_sg" },
     { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
