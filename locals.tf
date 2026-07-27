@@ -21,8 +21,10 @@ locals {
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   # Name of the EKS cluster
   cluster_name = "${var.prefix}-eks"
-  # Tags for resources. Fully caller-driven via tfvars/CLI input.
-  tags = var.tags == null ? {} : var.tags
+  # Default tags applied to all resources when caller input is null or empty.
+  default_tags = { project_name = "viya" }
+  # Merge caller-provided tags over the default set so project_name always has a baseline value.
+  tags = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : merge(local.default_tags, var.tags)
   # A tagged default EBS CSI StorageClass for future dynamic PVC-backed volumes.
   ebs_csi_tagged_storage_class_name = "${var.tagged_default_storage_class_volume_type}-tagged"
   ebs_csi_storage_class_parameters = {
