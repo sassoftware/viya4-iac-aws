@@ -24,7 +24,7 @@ locals {
   # Tags for resources. Fully caller-driven via tfvars/CLI input.
   tags = var.tags == null ? {} : var.tags
   # A tagged default EBS CSI StorageClass for future dynamic PVC-backed volumes.
-  ebs_csi_tagged_storage_class_name = "gp2-tagged"
+  ebs_csi_tagged_storage_class_name = "${var.tagged_default_storage_class_volume_type}-tagged"
   ebs_csi_storage_class_parameters = {
     for index, key in sort(keys(local.tags)) :
     "tagSpecification_${index + 1}" => "${key}=${local.tags[key]}"

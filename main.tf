@@ -293,7 +293,7 @@ module "kubeconfig" {
 
 # Create a tagged default StorageClass so future dynamic PVC volumes inherit caller-provided tags.
 resource "kubernetes_storage_class_v1" "ebs_csi_tagged_default" {
-  count = length(local.ebs_csi_storage_class_parameters) > 0 ? 1 : 0
+  count = var.enable_tagged_default_storage_class && length(local.ebs_csi_storage_class_parameters) > 0 ? 1 : 0
 
   metadata {
     name = local.ebs_csi_tagged_storage_class_name
@@ -307,7 +307,7 @@ resource "kubernetes_storage_class_v1" "ebs_csi_tagged_default" {
   volume_binding_mode    = "WaitForFirstConsumer"
   allow_volume_expansion = true
   parameters = merge({
-    type   = "gp2"
+    type   = var.tagged_default_storage_class_volume_type
     fstype = "ext4"
   }, local.ebs_csi_storage_class_parameters)
 

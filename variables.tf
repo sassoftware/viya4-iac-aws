@@ -189,6 +189,31 @@ variable "tags" {
   default     = {}
 }
 
+variable "enable_tagged_default_storage_class" {
+  description = "Create a tagged default EBS CSI StorageClass for dynamic PVC volume tagging."
+  type        = bool
+  default     = false
+}
+
+variable "tagged_default_storage_class_volume_type" {
+  description = "EBS volume type for the tagged default EBS CSI StorageClass (for example gp2 or gp3)."
+  type        = string
+  default     = "gp3"
+
+  validation {
+    condition = contains([
+      "gp2",
+      "gp3",
+      "io1",
+      "io2",
+      "st1",
+      "sc1",
+      "standard",
+    ], lower(var.tagged_default_storage_class_volume_type))
+    error_message = "ERROR: Supported values for `tagged_default_storage_class_volume_type` are standard, gp2, gp3, io1, io2, st1, or sc1."
+  }
+}
+
 ## Default node pool config
 # Whether to create the default node pool for the cluster. If false, you must define your own node pools.
 variable "create_default_nodepool" { # tflint-ignore: terraform_unused_declarations
