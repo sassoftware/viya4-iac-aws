@@ -184,9 +184,34 @@ variable "kubernetes_version" {
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
 variable "tags" {
-  description = "Map of common tags to be placed on the resources."
-  type        = map(any)
+  description = "Map of common tags to be placed on all created AWS resources."
+  type        = map(string)
   default     = { project_name = "viya" }
+}
+
+variable "enable_tagged_default_storage_class" {
+  description = "Create a tagged default EBS CSI StorageClass for dynamic PVC volume tagging."
+  type        = bool
+  default     = false
+}
+
+variable "tagged_default_storage_class_volume_type" {
+  description = "EBS volume type for the tagged default EBS CSI StorageClass (for example gp2 or gp3)."
+  type        = string
+  default     = "gp3"
+
+  validation {
+    condition = contains([
+      "gp2",
+      "gp3",
+      "io1",
+      "io2",
+      "st1",
+      "sc1",
+      "standard",
+    ], lower(var.tagged_default_storage_class_volume_type))
+    error_message = "ERROR: Supported values for `tagged_default_storage_class_volume_type` are standard, gp2, gp3, io1, io2, st1, or sc1."
+  }
 }
 
 ## Default node pool config
@@ -319,7 +344,7 @@ variable "node_pools" {
     cas = {
       "vm_type"      = "r6idn.2xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -336,7 +361,7 @@ variable "node_pools" {
     compute = {
       "vm_type"      = "m6idn.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -354,7 +379,7 @@ variable "node_pools" {
     stateless = {
       "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -371,7 +396,7 @@ variable "node_pools" {
     stateful = {
       "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
