@@ -8,9 +8,9 @@ data "aws_security_group" "sg" {
 }
 
 # Note:
-# Using aws_vpc_security_group_egress_rule and aws_vpc_security_group_ingress_rule resources is the current best practice. 
-# Avoid using the aws_security_group_rule resource and the ingress and egress arguments of the aws_security_group resource 
-# for configuring in-line rules, as they struggle with managing multiple CIDR blocks, and tags and descriptions due to the 
+# Using aws_vpc_security_group_egress_rule and aws_vpc_security_group_ingress_rule resources is the current best practice.
+# Avoid using the aws_security_group_rule resource and the ingress and egress arguments of the aws_security_group resource
+# for configuring in-line rules, as they struggle with managing multiple CIDR blocks, and tags and descriptions due to the
 # historical lack of unique IDs.
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
@@ -20,8 +20,6 @@ resource "aws_security_group" "sg" {
   vpc_id = module.vpc.vpc_id
 
   description = "Auxiliary security group associated with RDS ENIs and VPC Endpoint ENIs as well as Jump/NFS VM ENIs when they have public IPs"
-
-  revoke_rules_on_delete = true
 
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
@@ -139,8 +137,6 @@ resource "aws_security_group" "cluster_security_group" {
   vpc_id      = module.vpc.vpc_id
   description = "EKS cluster security group."
 
-  revoke_rules_on_delete = true
-
   tags = merge(local.tags, { "Name" : "${var.prefix}-eks_cluster_sg" })
 
 }
@@ -198,8 +194,6 @@ resource "aws_security_group" "workers_security_group" {
   description = "Security group for all nodes in the cluster."
   name        = "${var.prefix}-eks_worker_sg"
   vpc_id      = module.vpc.vpc_id
-
-  revoke_rules_on_delete = true
 
   tags = merge(local.tags,
     { "Name" : "${var.prefix}-eks_worker_sg" },
