@@ -123,6 +123,26 @@ node_pools = {
     "metadata_http_endpoint"               = "enabled"
     "metadata_http_tokens"                 = "required"
     "metadata_http_put_response_hop_limit" = 1
+  },
+  # NOTE: IPv6 clusters require Nitro or bare metal instances for ALL node groups.
+  # Use only instance families like r6idn, m6idn, m6in, c6in, r6in, etc.
+  # Non-Nitro instances (e.g., r5, m4, c4) will cause a CreateNodegroup 400 error.
+  singlestore = {
+    "vm_type"      = "r6idn.4xlarge"
+    "cpu_type"     = "AL2023_x86_64_STANDARD"
+    "os_disk_type" = "gp3"
+    "os_disk_size" = 200
+    "os_disk_iops" = 0
+    "min_nodes"    = 0
+    "max_nodes"    = 7
+    "node_taints"  = ["workload.sas.com/class=singlestore:NoSchedule"]
+    "node_labels" = {
+      "workload.sas.com/class" = "singlestore"
+    }
+    "custom_data"                          = ""
+    "metadata_http_endpoint"               = "enabled"
+    "metadata_http_tokens"                 = "required"
+    "metadata_http_put_response_hop_limit" = 1
   }
 }
 
