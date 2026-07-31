@@ -227,6 +227,11 @@ variable "default_nodepool_vm_type" {
   description = "Type of the default node pool VMs."
   type        = string
   default     = "r6in.2xlarge"
+
+  validation {
+    condition     = !var.enable_ipv6 || length(regexall("^(m1|m2|m3|m4|c1|c3|c4|r3|r4|t1|t2|d2|i2|h1|x1|x1e|p2|g2|g3)\\.", lower(var.default_nodepool_vm_type))) == 0
+    error_message = "ERROR: When enable_ipv6=true, default_nodepool_vm_type must be a Nitro or bare-metal instance type (for example: m5+, m6+, c5+, c6+, r5+, r6+, t3+, etc.)."
+  }
 }
 
 # Disk type for default node pool VMs. Supported: 'gp3', 'gp2', 'io1'.
@@ -410,6 +415,14 @@ variable "node_pools" {
       "metadata_http_tokens"                 = "required"
       "metadata_http_put_response_hop_limit" = 1
     }
+  }
+
+  validation {
+    condition = !var.enable_ipv6 || alltrue([
+      for np in values(var.node_pools) :
+      length(regexall("^(m1|m2|m3|m4|c1|c3|c4|r3|r4|t1|t2|d2|i2|h1|x1|x1e|p2|g2|g3)\\.", lower(np.vm_type))) == 0
+    ])
+    error_message = "ERROR: When enable_ipv6=true, each node_pools[*].vm_type must be a Nitro or bare-metal instance type."
   }
 }
 
