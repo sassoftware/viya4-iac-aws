@@ -16,8 +16,10 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Networking](#networking)
     - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
+    - [VPC Endpoints](#vpc-endpoints)
   - [IAM](#iam)
   - [General](#general)
+  - [Instance Metadata Service](#instance-metadata-service)
   - [Node Pools](#node-pools)
     - [Default Node Pool](#default-node-pool)
     - [Additional Node Pools](#additional-node-pools)
@@ -269,6 +271,30 @@ Custom policy:
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
 | admin_access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Account_ID>:role/<rolename>"|
+
+## Instance Metadata Service
+
+The Jump VM and the NFS server VM (`storage_type=standard`) require IMDSv2. Their EC2 metadata endpoint remains enabled, but `HttpTokens` is set to `required`, which rejects IMDSv1 requests. The token response hop limit is set to `2`.
+
+This behavior is enforced by the Terraform module and has no configuration variable. For an existing deployment, run `terraform plan` and confirm that the Jump and NFS instance metadata options are updated in place without a replacement. Apply the change with `terraform apply`, then confirm **IMDSv2 required** in the EC2 console's **Metadata options** for both instances.
+
+Custom scripts and administrative tools that read instance metadata must use an IMDSv2 token. Current AWS SDKs and AWS CLI releases acquire tokens automatically. For direct metadata requests, use this pattern:
+
+```bash
+TOKEN=$(curl -sS -X PUT http://169.254.169.254/latest/api/token \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -sS -H "X-aws-ec2-metadata-token: ${TOKEN}" \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+To verify enforcement on either VM after apply, an IMDSv1 request must return HTTP `401`:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+Enforcing IMDSv2 does not introduce additional AWS charges.
 
 ## Node Pools
 

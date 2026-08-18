@@ -18,6 +18,18 @@ func TestPlanNfs(t *testing.T) {
 			ResourceMapName:   "module.nfs[0].aws_instance.vm",
 			AttributeJsonPath: "{$.associate_public_ip_address}",
 		},
+		"nfsVmImdsHttpEndpoint": {
+			Expected:          "enabled",
+			ResourceMapName:   "module.nfs[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_endpoint}",
+			Message:           "The NFS VM metadata endpoint should be enabled",
+		},
+		"nfsVmImdsHttpTokens": {
+			Expected:          "required",
+			ResourceMapName:   "module.nfs[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_tokens}",
+			Message:           "The NFS VM should require IMDSv2 tokens",
+		},
 		// todo figure out how to test this variable
 		/*
 			"nfs_vm_admin": {

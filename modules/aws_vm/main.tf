@@ -92,6 +92,12 @@ resource "aws_instance" "vm" {
   subnet_id                   = var.subnet_id
   associate_public_ip_address = var.create_public_ip
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
   # Configuration for the root block device (EBS volume)
   root_block_device {
     # The type of the volume, e.g., gp2, io1, specified in variables
