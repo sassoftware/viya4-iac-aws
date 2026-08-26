@@ -21,11 +21,6 @@ provider "aws" {
   }
 }
 
-# Data source to get authentication token for EKS cluster. Used by the Kubernetes provider.
-data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_name # Name of the EKS cluster (from module.eks)
-}
-
 # Data source to get all available AWS availability zones in the selected region.
 data "aws_availability_zones" "available" {}
 
@@ -62,11 +57,17 @@ EOT
   depends_on = [module.kubeconfig.kube_config] # Wait for kubeconfig to be ready
 }
 
-# Provider block for Kubernetes. Configures the Kubernetes provider to connect to the EKS cluster using the generated kubeconfig and token.
+# Provider block for Kubernetes. Configures the Kubernetes provider to connect to the EKS cluster using the generated kubeconfig.
+# The token is retrieved at runtime to prevent stale / unauthorized authentication tokens
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint             # EKS API endpoint
   cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)  # Cluster CA cert (from locals.tf)
-  token                  = data.aws_eks_cluster_auth.cluster.token # Auth token for EKS
+  token                  = null # Auth token for EKS
+  exec {
+    api_version = "client.authentication.k8s.io/v1"
+    args        = ["eks", "get-token", "--cluster-name", local.cluster_name, "--region", var.location]
+    command     = "aws"
+  }
 }
 
 # VPC Setup
