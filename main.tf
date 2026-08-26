@@ -113,7 +113,7 @@ module "eks" {
   subnet_ids  = module.vpc.private_subnets # Subnets for worker nodes
   vpc_id      = module.vpc.vpc_id          # VPC ID
   tags        = local.tags                 # Common tags
-  enable_irsa = var.autoscaling_enabled    # Enable IAM Roles for Service Accounts if autoscaling
+  enable_irsa = true                       # Enable IRSA required for autoscaling and EBS CSI
   ################################################################################
   # Cluster Security Group
   ################################################################################
