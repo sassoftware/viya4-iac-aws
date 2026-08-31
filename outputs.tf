@@ -239,6 +239,16 @@ output "validate_subnet_azs" {
   }
 }
 
+output "enable_ipv6" {
+  description = "Flag to enable IPv6 networking."
+  value       = var.enable_ipv6
+}
+
+output "eks_pod_cidr" {
+  description = "The VPC IPv6 CIDR used for EKS pod addressing."
+  value       = module.vpc.vpc_ipv6_cidr
+}
+
 output "enable_nist_features" {
   description = "Flag to enable NIST features."
   value       = var.enable_nist_features
