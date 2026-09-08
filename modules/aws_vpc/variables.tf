@@ -49,7 +49,12 @@ variable "cidr" {
   description = "The CIDR block for the VPC"
 }
 
-# Map of subnet roles to lists of subnet CIDR blocks. Used for custom subnet layouts.
+variable "enable_ipv6" {
+  description = "Enable IPv6. When true and creating a new VPC, AWS will automatically assign an IPv6 CIDR block using assign_generated_ipv6_cidr_block. No aws_vpc_ipv6_cidr_block_association resource is required."
+  type        = bool
+  default     = false
+}
+
 variable "subnets" {
   type        = map(any)
   description = "Map of list of subnet cidr_blocks"

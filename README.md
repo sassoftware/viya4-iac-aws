@@ -2,36 +2,41 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-  - [Technical Prerequisites](#technical-prerequisites)
-    - [Terraform Requirements](#terraform-requirements)
-    - [Docker Requirements](#docker-requirements)
-- [Getting Started](#getting-started)
-  - [Clone this Project](#clone-this-project)
-  - [Authenticate Terraform to Access AWS](#authenticate-terraform-to-access-aws)
-  - [Customize Input Values](#customize-input-values)
-- [Create and Manage Cloud Resources](#create-and-manage-cloud-resources)
-- [Increase the Max Prepared Transactions for External Postgres Database](#increase-the-max-prepared-transactions-for-external-postgres-database)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-- [Additional Resources](#additional-resources)
-  - [AWS Resources](#aws-resources)
-  - [Terraform Resources](#terraform-resources)
+- [SAS Viya 4 Infrastructure as Code (IaC) for Amazon Web Services (AWS)](#sas-viya-4-infrastructure-as-code-iac-for-amazon-web-services-aws)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Prerequisites](#prerequisites)
+    - [Technical Prerequisites](#technical-prerequisites)
+      - [Terraform Requirements:](#terraform-requirements)
+      - [Docker Requirements:](#docker-requirements)
+  - [Getting Started](#getting-started)
+    - [Clone this Project](#clone-this-project)
+    - [Authenticate Terraform to Access AWS](#authenticate-terraform-to-access-aws)
+    - [Customize Input Values](#customize-input-values)
+  - [Create and Manage Cloud Resources](#create-and-manage-cloud-resources)
+    - [Increase the Max Prepared Transactions for External Postgres Database](#increase-the-max-prepared-transactions-for-external-postgres-database)
+  - [Troubleshooting](#troubleshooting)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Additional Resources](#additional-resources)
+    - [AWS Resources](#aws-resources)
+    - [Terraform Resources](#terraform-resources)
 
 ## Overview
 
 This project contains Terraform scripts to provision the AWS cloud infrastructure resources that are required to deploy SAS Viya platform product offerings. Here is a list of resources that this project can create:
 
-  >- Amazon VPC and Security Group
-  >- Managed Amazon Elastic Kubernetes Service (EKS)
+  >- Amazon VPC and Security Group (with optional IPv6 support)
+  >- Managed Amazon Elastic Kubernetes Service (EKS) (with optional IPv6-only Pod/Service CIDRs)
   >- Amazon EKS managed node groups with required labels and taints
   >- Infrastructure to deploy the SAS Viya platform CAS server in SMP or MPP mode
   >- Amazon Elastic Block Storage (EBS) for NFS
   >- Amazon Elastic File System (EFS)
   >- Amazon FSx for NetApp ONTAP File System
   >- Amazon Relational Database Service (RDS)
+  >- AWS Load Balancer Controller (automatically installed for IPv6 clusters)
+
+**IPv6 Support**: This project supports creating EKS clusters with IPv6-only Pod and Service CIDRs. See [IPv6 Support Documentation](./docs/user/IPv6-Support.md) for details.
 
 [<img src="./docs/images/viya4-iac-aws-diag.png" alt="Architecture Diagram" width="750"/>](./docs/images/viya4-iac-aws-diag.png?raw=true)
 

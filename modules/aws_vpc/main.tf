@@ -42,10 +42,11 @@ data "aws_vpc" "vpc" {
 # VPC
 ######
 resource "aws_vpc" "vpc" {
-  count                = var.vpc_id == null ? 1 : 0
-  cidr_block           = var.cidr
-  enable_dns_hostnames = var.enable_dns_hostnames
-  enable_dns_support   = var.enable_dns_support
+  count                            = var.vpc_id == null ? 1 : 0
+  cidr_block                       = var.cidr
+  assign_generated_ipv6_cidr_block = var.enable_ipv6
+  enable_dns_hostnames             = var.enable_dns_hostnames
+  enable_dns_support               = var.enable_dns_support
   tags = merge(
     {
       "Name" = format("%s", "${var.name}-vpc")
@@ -54,6 +55,7 @@ resource "aws_vpc" "vpc" {
   )
 }
 
+
 # Resource block to manage private VPC endpoints for various AWS services
 resource "aws_vpc_endpoint" "private_endpoints" {
   for_each            = var.vpc_private_endpoints_enabled ? var.vpc_private_endpoints : {}
@@ -61,7 +63,7 @@ resource "aws_vpc_endpoint" "private_endpoints" {
   service_name        = "com.amazonaws.${var.region}.${each.key}"
   vpc_endpoint_type   = each.value
   security_group_ids  = each.value == "Interface" ? [var.security_group_id] : null
-  private_dns_enabled = each.value == "Interface" ? each.key != "s3" ? true : null : false
+  private_dns_enabled = each.value == "Interface" ? (each.key != "s3" ? true : null) : false
 
   tags = merge(
     {
@@ -102,12 +104,14 @@ data "aws_subnet" "control_plane" {
 # Public subnet
 ################
 resource "aws_subnet" "public" {
-  count                   = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
-  vpc_id                  = local.vpc_id
-  cidr_block              = element(var.subnets["public"], count.index)
-  availability_zone       = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
-  availability_zone_id    = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
-  map_public_ip_on_launch = var.map_public_ip_on_launch
+  count                           = local.existing_public_subnets ? 0 : local.create_subnets ? length(var.subnets["public"]) : 0
+  vpc_id                          = local.vpc_id
+  cidr_block                      = element(var.subnets["public"], count.index)
+  ipv6_cidr_block                 = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, count.index) : null
+  assign_ipv6_address_on_creation = var.enable_ipv6
+  availability_zone               = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) > 0 ? element(var.public_subnet_azs, count.index) : null
+  availability_zone_id            = length(regexall("^[a-z]{2}-", element(var.public_subnet_azs, count.index))) == 0 ? element(var.public_subnet_azs, count.index) : null
+  map_public_ip_on_launch         = var.map_public_ip_on_launch
 
   tags = merge(
     {
@@ -161,9 +165,21 @@ resource "aws_route_table" "public" {
 resource "aws_route" "public_internet_gateway" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 
-  route_table_id         = aws_route_table.public[0].id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.this[0].id
+  route_table_id              = aws_route_table.public[0].id
+  destination_cidr_block      = "0.0.0.0/0"
+  gateway_id                  = aws_internet_gateway.this[0].id
+
+  timeouts {
+    create = "5m"
+  }
+}
+
+resource "aws_route" "public_internet_gateway_ipv6" {
+  count = var.enable_ipv6 && !local.existing_public_subnets && local.create_subnets ? 1 : 0
+
+  route_table_id              = aws_route_table.public[0].id
+  destination_ipv6_cidr_block = "::/0"
+  gateway_id                  = aws_internet_gateway.this[0].id
 
   timeouts {
     create = "5m"
@@ -211,6 +227,8 @@ resource "aws_subnet" "private" {
   count                = local.existing_private_subnets ? 0 : length(var.subnets["private"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["private"], count.index)
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + count.index) : null
+  assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) > 0 ? element(var.private_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.private_subnet_azs, count.index))) == 0 ? element(var.private_subnet_azs, count.index) : null
 
@@ -255,6 +273,8 @@ resource "aws_subnet" "database" {
   count                = local.existing_database_subnets ? 0 : local.create_subnets ? length(var.subnets["database"]) : 0
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["database"], count.index)
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + count.index) : null
+  assign_ipv6_address_on_creation = var.enable_ipv6
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) > 0 ? element(var.database_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.database_subnet_azs, count.index))) == 0 ? element(var.database_subnet_azs, count.index) : null
 
@@ -293,6 +313,8 @@ resource "aws_subnet" "control_plane" {
   count                = local.existing_control_plane_subnets ? 0 : length(var.subnets["control_plane"])
   vpc_id               = local.vpc_id
   cidr_block           = element(var.subnets["control_plane"], count.index)
+  assign_ipv6_address_on_creation = var.enable_ipv6
+  ipv6_cidr_block      = var.enable_ipv6 && var.vpc_id == null ? cidrsubnet(aws_vpc.vpc[0].ipv6_cidr_block, 8, length(var.subnets["public"]) + length(var.subnets["private"]) + length(var.subnets["database"]) + count.index) : null
   availability_zone    = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) > 0 ? element(var.control_plane_subnet_azs, count.index) : null
   availability_zone_id = length(regexall("^[a-z]{2}-", element(var.control_plane_subnet_azs, count.index))) == 0 ? element(var.control_plane_subnet_azs, count.index) : null
 
@@ -357,9 +379,37 @@ resource "aws_nat_gateway" "nat_gateway" {
 resource "aws_route" "private_nat_gateway" {
   count = var.existing_nat_id == null ? local.create_nat_gateway ? 1 : 0 : 0
 
-  route_table_id         = element(aws_route_table.private[*].id, count.index)
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = element(aws_nat_gateway.nat_gateway[*].id, count.index)
+  route_table_id              = element(aws_route_table.private[*].id, count.index)
+  destination_cidr_block      = "0.0.0.0/0"
+  nat_gateway_id              = element(aws_nat_gateway.nat_gateway[*].id, count.index)
+
+  timeouts {
+    create = "5m"
+  }
+}
+
+# IPv6 Egress-only Internet Gateway
+resource "aws_egress_only_internet_gateway" "ipv6_egress_igw" {
+  count = var.enable_ipv6 ? 1 : 0
+  vpc_id = local.vpc_id
+
+  tags = merge(
+    {
+      "Name" = format(
+        "%s-ipv6-egress",
+        var.name,
+      )
+    },
+    var.tags,
+  )
+}
+
+resource "aws_route" "private_nat_gateway_ipv6" {
+  count = var.enable_ipv6 && !local.existing_private_subnets ? 1 : 0
+
+  route_table_id              = element(aws_route_table.private[*].id, count.index)
+  destination_ipv6_cidr_block = "::/0"
+  egress_only_gateway_id      = aws_egress_only_internet_gateway.ipv6_egress_igw[0].id
 
   timeouts {
     create = "5m"
