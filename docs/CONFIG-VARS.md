@@ -16,8 +16,11 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Networking](#networking)
     - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
+    - [VPC Endpoints](#vpc-endpoints)
+    - [IPv6 Support](#ipv6-support)
   - [IAM](#iam)
   - [General](#general)
+  - [Instance Metadata Service](#instance-metadata-service)
   - [Node Pools](#node-pools)
     - [Default Node Pool](#default-node-pool)
     - [Additional Node Pools](#additional-node-pools)
@@ -181,6 +184,35 @@ subnet_ids = {
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_private_endpoints_enabled | Enable the creation of VPC private endpoints | bool | true | Setting to false prevents IaC from creating and managing VPC private endpoints in the cluster |
 
+### IPv6 Support
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| enable_ipv6 | Enable IPv6 for VPC, subnets, and EKS | bool | false | When true, creates IPv6-enabled VPC and EKS cluster with single-stack IPv6 for pods and services. See [IPv6 Support Documentation](./user/IPv6-Support.md) for full details. |
+
+**IPv6 Configuration Notes:**
+
+- **Manual IAM Policy Required**: Before setting `enable_ipv6 = true`, you must manually create the `AmazonEKS_CNI_IPv6_Policy` in your AWS account. This policy is required once per AWS account and shared across all IPv6 clusters. See [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites) for creation steps.
+
+- **What Gets Configured**:
+  - VPC with automatic IPv6 CIDR block assignment
+  - Dual-stack subnets (IPv4 + IPv6) for all subnet types
+  - EKS cluster with single-stack IPv6 for pods and services
+  - AWS Load Balancer Controller with cert-manager (automatically installed)
+  - RDS PostgreSQL with dual-stack networking (if configured)
+  - IPv6 security group rules and routing
+
+- **RDS Dual-Stack**: When `enable_ipv6 = true`, PostgreSQL instances are automatically configured with `network_type = "DUAL"`, allowing pods to connect via IPv6 or IPv4.
+
+- **Load Balancer Controller**: The AWS Load Balancer Controller and cert-manager are automatically deployed with proper timing delays to ensure webhook stability.
+
+- **Limitations**: 
+  - AWS EKS only supports single-stack IPv6 (not dual-stack) for pods and services
+  - Requires viya4-deployment `ipv6` branch for proper ingress configuration
+  - One `AmazonEKS_CNI_IPv6_Policy` per AWS account is shared across all clusters
+
+For comprehensive IPv6 setup instructions, troubleshooting, and architecture details, see [IPv6 Support Documentation](./user/IPv6-Support.md).
+
 
 ## IAM
 
@@ -224,6 +256,8 @@ AWS-managed policies:
 - `AmazonEKSWorkerNodePolicy`
 - `AmazonEKS_CNI_Policy`
 - `AmazonEC2ContainerRegistryReadOnly`
+
+**IPv6 Additional Policy**: When `enable_ipv6 = true`, the `AmazonEKS_CNI_IPv6_Policy` is automatically attached to the worker node IAM roles. This policy must be created manually before deployment (see [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites)). The policy grants permissions for the VPC CNI plugin to assign IPv6 addresses to pods.
 
 Custom policy:
 
@@ -269,6 +303,32 @@ Custom policy:
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
 | admin_access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Account_ID>:role/<rolename>"|
+
+## Instance Metadata Service
+
+The Jump VM and the NFS server VM (`storage_type=standard`) require IMDSv2. Their EC2 metadata endpoint remains enabled, but `HttpTokens` is set to `required`, which rejects IMDSv1 requests. The token response hop limit is set to `2`.
+
+This behavior is enforced by the Terraform module and has no configuration variable. For an existing deployment, run `terraform plan` and confirm that the Jump and NFS instance metadata options are updated in place without a replacement. Apply the change with `terraform apply`, then confirm **IMDSv2 required** in the EC2 console's **Metadata options** for both instances.
+
+Custom scripts and administrative tools that read instance metadata must use an IMDSv2 token. Current AWS SDKs and AWS CLI releases acquire tokens automatically. For direct metadata requests, use this pattern:
+
+```bash
+TOKEN=$(curl -sS -X PUT http://169.254.169.254/latest/api/token \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -sS -H "X-aws-ec2-metadata-token: ${TOKEN}" \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+To verify enforcement on either VM after apply, an IMDSv1 request must return HTTP `401`:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+Enforcing IMDSv2 does not introduce additional AWS charges.
+| lb_controller_version | AWS Load Balancer Controller Helm chart version | string | "1.14.1" | Automatically installed when `enable_ipv6 = true`. Used to create IPv6-compatible Network Load Balancers. |
+| cert_manager_version | cert-manager Helm chart version | string | "v1.13.2" | Automatically installed as a prerequisite for AWS Load Balancer Controller when `enable_ipv6 = true`. |
 
 ## Node Pools
 
@@ -373,6 +433,8 @@ To encrypt EBS volumes the following variable is applicable:
 When setting up ***external database servers***, you must provide information about those servers in the `postgres_servers` variable block. Each entry in the variable block represents a ***single database server***.
 
 This code only configures database servers. No databases are created during the infrastructure setup.
+
+**IPv6 Dual-Stack Support**: When `enable_ipv6 = true`, all PostgreSQL RDS instances are automatically configured with `network_type = "DUAL"`, enabling both IPv4 and IPv6 connectivity. This allows IPv6 pods to connect directly to the database using either protocol. Database subnets are automatically configured with IPv6 CIDR blocks and proper routing.
 
 The variable has the following format:
 

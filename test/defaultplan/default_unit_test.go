@@ -50,6 +50,18 @@ func TestPlanDefaults(t *testing.T) {
 			AssertFunction:    assert.NotEqual,
 			Message:           "The Jump VM resource should exist",
 		},
+		"jumpVmImdsHttpEndpoint": {
+			Expected:          "enabled",
+			ResourceMapName:   "module.jump[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_endpoint}",
+			Message:           "The Jump VM metadata endpoint should be enabled",
+		},
+		"jumpVmImdsHttpTokens": {
+			Expected:          "required",
+			ResourceMapName:   "module.jump[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_tokens}",
+			Message:           "The Jump VM should require IMDSv2 tokens",
+		},
 		"jumpVmElasticIPNotNil": {
 			Expected:          "<nil>",
 			ResourceMapName:   "module.jump[0].aws_eip.eip[0]",

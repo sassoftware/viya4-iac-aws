@@ -454,7 +454,12 @@ variable "subnets" {
   }
 }
 
-# AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).
+variable "enable_ipv6" {
+  description = "Enable IPv6 on VPC, subnets, and EKS. When true, EKS cluster uses IPv6 single-stack (pods get IPv6 addresses). Load balancers support IPv6 and dualstack configurations."
+  type        = bool
+  default     = false
+}
+
 variable "subnet_azs" {
   description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
@@ -858,4 +863,16 @@ variable "admin_access_entry_role_arns" {
   description = "List of IAM role ARNs to create admin EKS access_entries for."
   type        = list(string)
   default     = null
+}
+
+variable "lb_controller_version" {
+  description = "AWS Load Balancer Controller Helm chart version"
+  type        = string
+  default     = "3.3.0"
+}
+
+variable "cert_manager_version" {
+  description = "Cert Manager Helm chart version"
+  type        = string
+  default     = "v1.20.2"
 }
