@@ -9,7 +9,7 @@ If you are updating the SAS Viya platform to version 2021.2.6, take some additio
 ```
   connect = {
     "vm_type" = "m5.8xlarge"
-    "os_disk_type" = "gp2"
+    "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes" = 0
