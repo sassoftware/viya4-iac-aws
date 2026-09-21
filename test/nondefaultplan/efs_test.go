@@ -21,7 +21,7 @@ func TestPlanEFS(t *testing.T) {
 			AttributeJsonPath: "{$.performance_mode}",
 		},
 		"enable_efs_encryption": {
-			Expected:          "false",
+			Expected:          "true",
 			ResourceMapName:   "aws_efs_file_system.efs-fs[0]",
 			AttributeJsonPath: "{$.encrypted}",
 		},

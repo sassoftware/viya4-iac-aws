@@ -21,10 +21,16 @@ locals {
   workers_security_group_id = var.workers_security_group_id == null ? aws_security_group.workers_security_group[0].id : var.workers_security_group_id
   # Name of the EKS cluster
   cluster_name = "${var.prefix}-eks"
-  # Default tags applied to resources
+  # Default tags applied to all resources when caller input is null or empty.
   default_tags = { project_name = "viya" }
-  # Tags for the resources, defaults to project name if not provided
-  tags = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : var.tags
+  # Merge caller-provided tags over the default set so project_name always has a baseline value.
+  tags = var.tags == null ? local.default_tags : length(var.tags) == 0 ? local.default_tags : merge(local.default_tags, var.tags)
+  # A tagged default EBS CSI StorageClass for future dynamic PVC-backed volumes.
+  ebs_csi_tagged_storage_class_name = "${var.tagged_default_storage_class_volume_type}-tagged"
+  ebs_csi_storage_class_parameters = {
+    for index, key in sort(keys(local.tags)) :
+    "tagSpecification_${index + 1}" => "${key}=${local.tags[key]}"
+  }
 
   # aws_shared_credentials_file - is DEPRECATED and will be removed in a future release
   # Determine if the deprecated AWS shared credentials file variable is used
@@ -117,9 +123,30 @@ locals {
         }
       }
       labels = var.default_nodepool_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", var.default_nodepool_taints)} ' "
-      pre_bootstrap_user_data = (var.default_nodepool_custom_data != "" ? file(var.default_nodepool_custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(var.default_nodepool_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", var.default_nodepool_taints)}"
+          EOT
+        }
+      ], var.default_nodepool_custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(var.default_nodepool_custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
@@ -129,7 +156,10 @@ locals {
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-default-lt"
       launch_template_use_name_prefix = true
-      launch_template_tags            = { Name = "${local.cluster_name}-default" }
+      launch_template_tags = merge(local.tags, {
+        Name = "${local.cluster_name}-default"
+      })
+      tag_specifications = ["instance", "volume", "network-interface"]
 
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
@@ -167,19 +197,44 @@ locals {
         }
       }
       labels = np_value.node_labels
-      # User data for bootstrapping the node
-      bootstrap_extra_args    = "--kubelet-extra-args '--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")} --register-with-taints=${join(",", np_value.node_taints)}' "
-      pre_bootstrap_user_data = (np_value.custom_data != "" ? file(np_value.custom_data) : "")
+      # User data for bootstrapping the node - AL2023 uses nodeadm with cloudinit
+      # Note: custom_data is included in cloudinit_pre_nodeadm because cloudinit_post_nodeadm
+      # only works with custom AMIs (enable_bootstrap_user_data = true)
+      cloudinit_pre_nodeadm = concat([
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                flags:
+                  - "--node-labels=${replace(replace(jsonencode(np_value.node_labels), "/[\"\\{\\}]/", ""), ":", "=")}"
+                  - "--register-with-taints=${join(",", np_value.node_taints)}"
+          EOT
+        }
+      ], np_value.custom_data != "" ? [
+        {
+          content_type = "text/x-shellscript; charset=\"us-ascii\""
+          content      = file(np_value.custom_data)
+        }
+      ] : [])
+      cloudinit_post_nodeadm = []
       metadata_options = {
         http_endpoint               = var.default_nodepool_metadata_http_endpoint
         http_tokens                 = var.default_nodepool_metadata_http_tokens
         http_put_response_hop_limit = var.default_nodepool_metadata_http_put_response_hop_limit
       }
+
       # Launch Template configuration
       create_launch_template          = true
       launch_template_name            = "${local.cluster_name}-${key}-lt"
       launch_template_use_name_prefix = true
-      launch_template_tags            = { Name = "${local.cluster_name}-${key}" }
+      launch_template_tags = merge(local.tags, {
+        Name = "${local.cluster_name}-${key}"
+      })
+      tag_specifications = ["instance", "volume", "network-interface"]
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"

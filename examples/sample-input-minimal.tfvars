@@ -27,7 +27,7 @@ tags = {} # e.g., { "key1" = "value1", "key2" = "value2" }
 # }
 
 ## Cluster config
-kubernetes_version           = "1.33"
+kubernetes_version           = "1.35"
 default_nodepool_node_count  = 1
 default_nodepool_vm_type     = "r6in.2xlarge"
 default_nodepool_custom_data = ""
@@ -42,7 +42,7 @@ node_pools = {
   cas = {
     "vm_type"      = "r6idn.2xlarge"
     "cpu_type"     = "AL2023_x86_64_STANDARD"
-    "os_disk_type" = "gp2"
+    "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes"    = 0
@@ -59,7 +59,7 @@ node_pools = {
   generic = {
     "vm_type"      = "m6idn.xlarge"
     "cpu_type"     = "AL2023_x86_64_STANDARD"
-    "os_disk_type" = "gp2"
+    "os_disk_type" = "gp3"
     "os_disk_size" = 200
     "os_disk_iops" = 0
     "min_nodes"    = 0

@@ -8,9 +8,9 @@ data "aws_security_group" "sg" {
 }
 
 # Note:
-# Using aws_vpc_security_group_egress_rule and aws_vpc_security_group_ingress_rule resources is the current best practice. 
-# Avoid using the aws_security_group_rule resource and the ingress and egress arguments of the aws_security_group resource 
-# for configuring in-line rules, as they struggle with managing multiple CIDR blocks, and tags and descriptions due to the 
+# Using aws_vpc_security_group_egress_rule and aws_vpc_security_group_ingress_rule resources is the current best practice.
+# Avoid using the aws_security_group_rule resource and the ingress and egress arguments of the aws_security_group resource
+# for configuring in-line rules, as they struggle with managing multiple CIDR blocks, and tags and descriptions due to the
 # historical lack of unique IDs.
 
 # Security Groups - https://www.terraform.io/docs/providers/aws/r/security_group.html
@@ -36,6 +36,19 @@ resource "aws_vpc_security_group_egress_rule" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
+# IPv6 egress rule to allow outbound traffic within VPC for IPv6 pods
+resource "aws_vpc_security_group_egress_rule" "sg_ipv6" {
+  count = var.enable_ipv6 ? 1 : 0
+
+  security_group_id = local.security_group_id
+
+  description = "Allow IPv6 outbound traffic within VPC."
+  ip_protocol = "-1"
+  cidr_ipv6   = module.vpc.vpc_ipv6_cidr
+
+  tags = merge(local.tags, { "Name" : "${var.prefix}-sg-ipv6" })
+}
+
 # Only create this/these ingress rule(s) if we are using VPC Endpoints
 # Creates an ingress rules for each vpc_endpoint_private_access_cidrs in the list
 resource "aws_vpc_security_group_ingress_rule" "sg" {
@@ -52,10 +65,9 @@ resource "aws_vpc_security_group_ingress_rule" "sg" {
   tags = merge(local.tags, { "Name" : "${var.prefix}-sg" })
 }
 
-# Ingress rule to allow SSH access to VMs from specified CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "vms" {
 
-  for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm) || (var.create_nfs_public_ip && var.storage_type == "standard")) ? toset(local.vm_public_access_cidrs) : toset([])
+  for_each = var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm)) ? toset(local.vm_public_access_cidrs) : toset([])
 
   security_group_id = local.security_group_id
 
@@ -64,6 +76,19 @@ resource "aws_vpc_security_group_ingress_rule" "vms" {
   to_port     = 22
   ip_protocol = "tcp"
   cidr_ipv4   = each.key
+}
+
+# IPv6 ingress rule to allow SSH access to VMs from IPv6 within VPC
+resource "aws_vpc_security_group_ingress_rule" "vms_ipv6" {
+  count = var.enable_ipv6 && var.security_group_id == null && ((var.create_jump_public_ip && var.create_jump_vm) || (var.create_nfs_public_ip && var.storage_type == "standard")) ? 1 : 0
+
+  security_group_id = local.security_group_id
+
+  description = "Allow SSH from IPv6 within VPC"
+  from_port   = 22
+  to_port     = 22
+  ip_protocol = "tcp"
+  cidr_ipv6   = module.vpc.vpc_ipv6_cidr
 }
 
 # Ingress rule to allow internal communication within the same security group
@@ -75,7 +100,6 @@ resource "aws_vpc_security_group_ingress_rule" "all" {
   referenced_security_group_id = local.security_group_id
 }
 
-# Ingress rule to allow PostgreSQL traffic within the network
 resource "aws_vpc_security_group_ingress_rule" "postgres_internal" {
 
   for_each = local.postgres_sgr_ports != null ? toset(local.postgres_sgr_ports) : toset([])
@@ -88,7 +112,6 @@ resource "aws_vpc_security_group_ingress_rule" "postgres_internal" {
   referenced_security_group_id = local.security_group_id
 }
 
-# Ingress rule to allow PostgreSQL traffic from specified external CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "postgres_external" {
 
   for_each = (length(local.postgres_public_access_cidrs) > 0
@@ -106,7 +129,6 @@ resource "aws_vpc_security_group_ingress_rule" "postgres_external" {
   security_group_id = local.security_group_id
 }
 
-# Security group for the EKS cluster
 resource "aws_security_group" "cluster_security_group" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
@@ -130,7 +152,16 @@ resource "aws_vpc_security_group_egress_rule" "cluster_security_group" {
   security_group_id = local.cluster_security_group_id
 }
 
-# Ingress rule to allow HTTPS access to the EKS cluster API server from specified CIDR blocks
+# IPv6 egress rule for EKS cluster to allow outbound traffic within VPC
+resource "aws_vpc_security_group_egress_rule" "cluster_security_group_ipv6" {
+  count = var.cluster_security_group_id == null && var.enable_ipv6 ? 1 : 0
+
+  description       = "Allow IPv6 outbound traffic within VPC."
+  ip_protocol       = "-1"
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
+  security_group_id = local.cluster_security_group_id
+}
+
 resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
 
   for_each = var.cluster_security_group_id == null ? toset(local.cluster_endpoint_private_access_cidrs) : toset([])
@@ -144,7 +175,6 @@ resource "aws_vpc_security_group_ingress_rule" "cluster_security_group" {
 }
 
 
-# Ingress rule to allow communication between EKS pods and the cluster API
 resource "aws_vpc_security_group_ingress_rule" "cluster_ingress" {
 
   count = var.cluster_security_group_id == null ? 1 : 0
@@ -157,7 +187,6 @@ resource "aws_vpc_security_group_ingress_rule" "cluster_ingress" {
   security_group_id            = local.cluster_security_group_id
 }
 
-# Security group for the EKS worker nodes
 resource "aws_security_group" "workers_security_group" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -165,6 +194,7 @@ resource "aws_security_group" "workers_security_group" {
   description = "Security group for all nodes in the cluster."
   name        = "${var.prefix}-eks_worker_sg"
   vpc_id      = module.vpc.vpc_id
+
   tags = merge(local.tags,
     { "Name" : "${var.prefix}-eks_worker_sg" },
     { "kubernetes.io/cluster/${local.cluster_name}" : "owned" }
@@ -181,6 +211,16 @@ resource "aws_vpc_security_group_egress_rule" "workers_security_group" {
   description       = "Allow cluster egress access to the Internet."
   ip_protocol       = "-1"
 
+}
+
+# IPv6 egress rule for EKS worker nodes to allow outbound traffic within VPC
+resource "aws_vpc_security_group_egress_rule" "workers_security_group_ipv6" {
+  count = var.workers_security_group_id == null && var.enable_ipv6 ? 1 : 0
+
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
+  security_group_id = local.workers_security_group_id
+  description       = "Allow IPv6 cluster egress access within VPC."
+  ip_protocol       = "-1"
 }
 
 # Ingress rule to allow communication between EKS worker nodes
@@ -207,7 +247,6 @@ resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api" {
   security_group_id            = aws_security_group.workers_security_group[0].id
 }
 
-# Ingress rule to allow communication from the cluster control plane to worker pods on port 443
 resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api_443" {
 
   count = var.workers_security_group_id == null ? 1 : 0
@@ -222,7 +261,6 @@ resource "aws_vpc_security_group_ingress_rule" "worker_cluster_api_443" {
 
 # TODO: Make sure tags are applied to all resources
 
-# Ingress rule to allow SSH access to a private IP based Jump VM from specified CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22" {
 
   for_each = (length(local.vm_private_access_cidrs) > 0
@@ -236,5 +274,17 @@ resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22" {
   to_port           = 22
   ip_protocol       = "tcp"
   cidr_ipv4         = each.key
+  security_group_id = aws_security_group.workers_security_group[0].id
+}
+
+# IPv6 ingress rule to allow SSH access to a private IPv6 based Jump VM within VPC
+resource "aws_vpc_security_group_ingress_rule" "vm_private_access_22_ipv6" {
+  count = var.enable_ipv6 && var.workers_security_group_id == null && ((var.create_jump_public_ip == false && var.create_jump_vm) || (var.create_nfs_public_ip == false && var.storage_type == "standard")) ? 1 : 0
+
+  description       = "Allow SSH to IPv6 Jump VM within VPC. Required for IPv6 DAC baseline client VM."
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
+  cidr_ipv6         = module.vpc.vpc_ipv6_cidr
   security_group_id = aws_security_group.workers_security_group[0].id
 }

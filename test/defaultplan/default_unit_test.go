@@ -25,7 +25,7 @@ func TestPlanDefaults(t *testing.T) {
 			AttributeJsonPath: "{$.name}",
 		},
 		"k8sVersionTest": {
-			Expected:          "1.33",
+			Expected:          "1.35",
 			ResourceMapName:   "module.eks.aws_eks_cluster.this[0]",
 			AttributeJsonPath: "{$.version}",
 		},
@@ -49,6 +49,18 @@ func TestPlanDefaults(t *testing.T) {
 			AttributeJsonPath: "{$}",
 			AssertFunction:    assert.NotEqual,
 			Message:           "The Jump VM resource should exist",
+		},
+		"jumpVmImdsHttpEndpoint": {
+			Expected:          "enabled",
+			ResourceMapName:   "module.jump[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_endpoint}",
+			Message:           "The Jump VM metadata endpoint should be enabled",
+		},
+		"jumpVmImdsHttpTokens": {
+			Expected:          "required",
+			ResourceMapName:   "module.jump[0].aws_instance.vm",
+			AttributeJsonPath: "{$.metadata_options[0].http_tokens}",
+			Message:           "The Jump VM should require IMDSv2 tokens",
 		},
 		"jumpVmElasticIPNotNil": {
 			Expected:          "<nil>",
