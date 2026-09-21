@@ -1,4 +1,4 @@
-FROM golang:1.24
+FROM golang:1.26
 
 # Install terraform from apt repository and terratest_log_parser
 RUN \
@@ -9,7 +9,7 @@ RUN \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
         | tee /etc/apt/sources.list.d/hashicorp.list \
     && apt update \
-    && apt install terraform \
+    && apt-get install -y terraform \
     && ssh-keygen -f ~/.ssh/id_rsa -P "" \
     && go install github.com/gruntwork-io/terratest/cmd/terratest_log_parser@latest
 

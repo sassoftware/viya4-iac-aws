@@ -1,0 +1,148 @@
+# AWS Load Balancer Controller Terraform module
+
+data "aws_caller_identity" "current" {}
+
+resource "helm_release" "cert_manager" {
+  name       = "cert-manager"
+  repository = "https://charts.jetstack.io"
+  chart      = "cert-manager"
+  version    = var.cert_manager_version
+  namespace  = "kube-system"
+  
+  # Wait for resources to be ready
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 3600  # 1 hour timeout for IPv6 environments and slow image pulls
+  
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+  # Add image pull policy to help with IPv6
+  set {
+    name  = "image.pullPolicy"
+    value = "IfNotPresent"
+  }
+
+  # Increase webhook timeouts for slower environments
+  set {
+    name  = "webhook.timeoutSeconds"
+    value = "30"
+  }
+
+  depends_on = [var.kubeconfig_depends_on]
+}
+
+# Wait for cert-manager webhook to be fully ready
+resource "time_sleep" "wait_for_cert_manager" {
+  create_duration = "60s"
+  
+  depends_on = [helm_release.cert_manager]
+}
+
+resource "helm_release" "aws_lb_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  version    = var.controller_version
+  namespace  = "kube-system"
+  
+  # Wait for resources to be ready
+  wait          = true
+  wait_for_jobs = true
+  timeout       = 3600  # 1 hour timeout for IPv6 environments and slow image pulls
+  
+  # Base configuration for all deployments
+  set {
+    name  = "clusterName"
+    value = var.cluster_name
+  }
+  
+  set {
+    name  = "region"
+    value = var.region
+  }
+  
+  set {
+    name  = "vpcId"
+    value = var.vpc_id
+  }
+  
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.lb_controller_role.arn
+  }
+  
+  set {
+    name  = "enableServiceMutatorWebhook"
+    value = "false"
+  }
+  
+  set {
+    name  = "defaultSSLPolicy"
+    value = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  }
+  
+  set {
+    name  = "defaultTargetType"
+    value = "ip"
+  }
+  
+  # Add image pull policy to help with IPv6
+  set {
+    name  = "image.pullPolicy"
+    value = "IfNotPresent"
+  }
+  
+  # Increase webhook timeouts for slower environments
+  set {
+    name  = "webhookTimeoutSeconds"
+    value = "30"
+  }
+  
+  # Enhanced IPv6 support configuration
+  set {
+    name  = "enableIPv6"
+    value = "true"
+  }
+  
+  set {
+    name  = "logLevel"
+    value = "info"
+  }
+  
+  depends_on = [
+    helm_release.cert_manager,
+    time_sleep.wait_for_cert_manager
+  ]
+}
+
+resource "aws_iam_policy" "lb_controller_policy" {
+  name        = "${var.cluster_name}-AWSLoadBalancerControllerIAMPolicy"
+  path        = "/"
+  description = "IAM policy for AWS Load Balancer Controller"
+  policy      = file("${path.module}/iam_policy.json")
+}
+
+resource "aws_iam_role" "lb_controller_role" {
+  name = "${var.cluster_name}-AWSLoadBalancerControllerRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(var.cluster_oidc_issuer_url, "https://", "")}" }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(var.cluster_oidc_issuer_url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${replace(var.cluster_oidc_issuer_url, "https://", "")}:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lb_controller_attach" {
+  role       = aws_iam_role.lb_controller_role.name
+  policy_arn = aws_iam_policy.lb_controller_policy.arn
+}

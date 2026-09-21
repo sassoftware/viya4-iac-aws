@@ -16,8 +16,11 @@ Supported configuration variables are listed in the tables below.  All variables
   - [Networking](#networking)
     - [Subnet requirements](#subnet-requirements)
     - [Use Existing](#use-existing)
+    - [VPC Endpoints](#vpc-endpoints)
+    - [IPv6 Support](#ipv6-support)
   - [IAM](#iam)
   - [General](#general)
+  - [Instance Metadata Service](#instance-metadata-service)
   - [Node Pools](#node-pools)
     - [Default Node Pool](#default-node-pool)
     - [Additional Node Pools](#additional-node-pools)
@@ -181,6 +184,35 @@ subnet_ids = {
  | :--- | ---: | ---: | ---: | ---: |
  | vpc_private_endpoints_enabled | Enable the creation of VPC private endpoints | bool | true | Setting to false prevents IaC from creating and managing VPC private endpoints in the cluster |
 
+### IPv6 Support
+
+| Name | Description | Type | Default | Notes |
+| :--- | ---: | ---: | ---: | ---: |
+| enable_ipv6 | Enable IPv6 for VPC, subnets, and EKS | bool | false | When true, creates IPv6-enabled VPC and EKS cluster with single-stack IPv6 for pods and services. See [IPv6 Support Documentation](./user/IPv6-Support.md) for full details. |
+
+**IPv6 Configuration Notes:**
+
+- **Manual IAM Policy Required**: Before setting `enable_ipv6 = true`, you must manually create the `AmazonEKS_CNI_IPv6_Policy` in your AWS account. This policy is required once per AWS account and shared across all IPv6 clusters. See [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites) for creation steps.
+
+- **What Gets Configured**:
+  - VPC with automatic IPv6 CIDR block assignment
+  - Dual-stack subnets (IPv4 + IPv6) for all subnet types
+  - EKS cluster with single-stack IPv6 for pods and services
+  - AWS Load Balancer Controller with cert-manager (automatically installed)
+  - RDS PostgreSQL with dual-stack networking (if configured)
+  - IPv6 security group rules and routing
+
+- **RDS Dual-Stack**: When `enable_ipv6 = true`, PostgreSQL instances are automatically configured with `network_type = "DUAL"`, allowing pods to connect via IPv6 or IPv4.
+
+- **Load Balancer Controller**: The AWS Load Balancer Controller and cert-manager are automatically deployed with proper timing delays to ensure webhook stability.
+
+- **Limitations**: 
+  - AWS EKS only supports single-stack IPv6 (not dual-stack) for pods and services
+  - Requires viya4-deployment `ipv6` branch for proper ingress configuration
+  - One `AmazonEKS_CNI_IPv6_Policy` per AWS account is shared across all clusters
+
+For comprehensive IPv6 setup instructions, troubleshooting, and architecture details, see [IPv6 Support Documentation](./user/IPv6-Support.md).
+
 
 ## IAM
 
@@ -225,6 +257,8 @@ AWS-managed policies:
 - `AmazonEKS_CNI_Policy`
 - `AmazonEC2ContainerRegistryReadOnly`
 
+**IPv6 Additional Policy**: When `enable_ipv6 = true`, the `AmazonEKS_CNI_IPv6_Policy` is automatically attached to the worker node IAM roles. This policy must be created manually before deployment (see [IPv6 Prerequisites](./user/IPv6-Support.md#prerequisites)). The policy grants permissions for the VPC CNI plugin to assign IPv6 addresses to pods.
+
 Custom policy:
 
 ```yaml
@@ -263,12 +297,38 @@ Custom policy:
 | create_jump_public_ip | Add public IP address to jump VM | bool | true | |
 | jump_vm_admin | OS admin user for the jump VM | string | "jumpuser" | |
 | jump_rwx_filestore_path | File store mount point on jump VM | string | "/viya-share" | This location cannot include "/mnt" as its root location. This disk is ephemeral on Ubuntu, which is the operating system being used for the jump VM and NFS servers. |
-| tags | Map of common tags to be placed on all AWS resources created by this script | map | { project_name = "viya" } | If left unspecified, or if a null or empty tags map value is provided, the tags variable will be set to the default value.|
+| tags | Map of common tags to be placed on all AWS resources created by this script | map(string) | { project_name = "viya" } | Default includes `project_name=viya`. Provide your organization's additional keys (for example, resourceowner and jiraticketid) in tfvars. |
 | autoscaling_enabled | Enable cluster autoscaling | bool | true | |
 | ssh_public_key | File name of public ssh key for jump and nfs VM | string | "~/.ssh/id_rsa.pub" | Required with `create_jump_vm=true` or `storage_type=standard` |
 | cluster_api_mode | Public or private IP for the cluster api| string|"public"|Valid Values: "public", "private" |
 | authentication_mode | The authentication mode for the EKS cluster.| string|"API_AND_CONFIG_MAP"| Valid values are CONFIG_MAP, API or API_AND_CONFIG_MAP |
 | admin_access_entry_role_arns | Create an EKS access entry associated with the AmazonEKSClusterAdminPolicy for each of the existing IAM role ARNs that are included in this list. | list of strings | | **Note:** Do not include the assumed-role that is used to authenticate to Terraform in this list. The format for role ARNs resembles the following example: "arn:aws:iam::<Account_ID>:role/<rolename>"|
+
+## Instance Metadata Service
+
+The Jump VM and the NFS server VM (`storage_type=standard`) require IMDSv2. Their EC2 metadata endpoint remains enabled, but `HttpTokens` is set to `required`, which rejects IMDSv1 requests. The token response hop limit is set to `2`.
+
+This behavior is enforced by the Terraform module and has no configuration variable. For an existing deployment, run `terraform plan` and confirm that the Jump and NFS instance metadata options are updated in place without a replacement. Apply the change with `terraform apply`, then confirm **IMDSv2 required** in the EC2 console's **Metadata options** for both instances.
+
+Custom scripts and administrative tools that read instance metadata must use an IMDSv2 token. Current AWS SDKs and AWS CLI releases acquire tokens automatically. For direct metadata requests, use this pattern:
+
+```bash
+TOKEN=$(curl -sS -X PUT http://169.254.169.254/latest/api/token \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -sS -H "X-aws-ec2-metadata-token: ${TOKEN}" \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+To verify enforcement on either VM after apply, an IMDSv1 request must return HTTP `401`:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' \
+  http://169.254.169.254/latest/meta-data/instance-id
+```
+
+Enforcing IMDSv2 does not introduce additional AWS charges.
+| lb_controller_version | AWS Load Balancer Controller Helm chart version | string | "1.14.1" | Automatically installed when `enable_ipv6 = true`. Used to create IPv6-compatible Network Load Balancers. |
+| cert_manager_version | cert-manager Helm chart version | string | "v1.13.2" | Automatically installed as a prerequisite for AWS Load Balancer Controller when `enable_ipv6 = true`. |
 
 ## Node Pools
 
@@ -338,7 +398,7 @@ When `storage_type=ha` and `storage_type_backend=efs`, an [AWS Elastic File Syst
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
 | efs_performance_mode | EFS performance mode | string | generalPurpose | Supported values are `generalPurpose` or `maxIO` |
-| enable_efs_encryption | Enable encryption on EFS file systems | bool | false | When set to 'true', the EFS file systems will be encrypted. |
+| enable_efs_encryption | Enable encryption on EFS file systems | bool | true | When set to 'true', the EFS file systems will be encrypted. |
 | efs_throughput_mode | EFS throughput mode | string | bursting | Supported values are 'bursting' and 'provisioned'. When using 'provisioned', 'efs_throughput_rate' is required. |
 | efs_throughput_rate | EFS throughput rate, measured in MiB/s | number | 1024 | Valid values range from 1 to 1024 - MiB/s. Only applicable with 'efs_throughput_mode' set to 'provisioned'. |
 
@@ -353,6 +413,7 @@ When `storage_type=ha` and `storage_type_backend=ontap`, an [AWS FSx for NetApp 
 | aws_fsx_ontap_file_system_storage_capacity | The storage capacity of the ONTAP file system in GiB. | number | 1024 | Valid values range from  1024 to 196608. |
 | aws_fsx_ontap_file_system_throughput_capacity | The throughput capacity of the ONTAP file system in MBps. | number | 256 | Valid values are 128, 256, 512, 1024, 2048 and 4096. |
 | aws_fsx_ontap_fsxadmin_password | The ONTAP administrative password for the fsxadmin user. | string | "v3RyS3cretPa$sw0rd" | |
+| aws_fsx_ontap_svmadmin_password | The ONTAP administrative password for the vsadmin user. | string | "v3RyS3cretPa$sw0rd" | |
 
 **Note:** The base [IAM Policy](../files/policies/devops-iac-eks-policy.json) document has been updated for the 7.2.0 release to support FSx for NetApp ONTAP. You will need to add the iam:AttachUserPolicy and iam:DetachUserPolicy permissions to your user's existing base policy document to use FSx for NetApp ONTAP features added in the 7.2.0 release.
 
@@ -365,13 +426,15 @@ To encrypt EBS volumes the following variable is applicable:
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| enable_ebs_encryption | Enable encryption on EBS volumes | bool | false |  When set to 'true', the EBS volumes will be encrypted. |
+| enable_ebs_encryption | Enable encryption on EBS volumes | bool | true |  When set to 'true', the EBS volumes will be encrypted. |
 
 ## PostgreSQL Server
 
 When setting up ***external database servers***, you must provide information about those servers in the `postgres_servers` variable block. Each entry in the variable block represents a ***single database server***.
 
 This code only configures database servers. No databases are created during the infrastructure setup.
+
+**IPv6 Dual-Stack Support**: When `enable_ipv6 = true`, all PostgreSQL RDS instances are automatically configured with `network_type = "DUAL"`, enabling both IPv4 and IPv6 connectivity. This allows IPv6 pods to connect directly to the database using either protocol. Database subnets are automatically configured with IPv6 CIDR blocks and proper routing.
 
 The variable has the following format:
 
@@ -390,11 +453,11 @@ Each server element, like `foo = {}`, can contain none, some, or all of the para
 <!--| Name | Description | Type | Default | Notes | -->
 | <div style="width:50px">Name</div> | <div style="width:150px">Description</div> | <div style="width:50px">Type</div> | <div style="width:75px">Default</div> | <div style="width:150px">Notes</div> |
 | :--- | :--- | :--- | :--- | :--- |
-| server_version | The version of the PostgreSQL server | string | "15" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
+| server_version | The version of the PostgreSQL server | string | "16" | Refer to the [SAS Viya platform Administration Guide](https://documentation.sas.com/?cdcId=sasadmincdc&cdcVersion=default&docsetId=itopssr&docsetTarget=p05lfgkwib3zxbn1t6nyihexp12n.htm#p1wq8ouke3c6ixn1la636df9oa1u) for the supported versions of PostgreSQL for the SAS Viya platform. |
 | instance_type | The VM type for the PostgreSQL Server | string | "db.m6idn.xlarge" | |
 | storage_size | Max storage allowed for the PostgreSQL server in GB | number | 128 |  |
 | backup_retention_days | Backup retention days for the PostgreSQL server | number | 7 | Supported values are between 7 and 35 days. |
-| storage_encrypted | Encrypt PostgreSQL data at rest | bool | false| |
+| storage_encrypted | Encrypt PostgreSQL data at rest | bool | true| |
 | administrator_login | The Administrator Login for the PostgreSQL Server | string | "pgadmin" | The admin login name can not be 'admin', must start with a letter, and must be between 1-16 characters in length, and can only contain underscores, letters, and numbers. Changing this forces a new resource to be created |
 | administrator_password | The Password associated with the administrator_login for the PostgreSQL Server | string | "my$up3rS3cretPassw0rd" | The admin password must have more than 8 characters, and be composed of any printable characters except the following / ' \" @ characters. |
 | multi_az | Specifies if PostgreSQL instance is multi-AZ | bool | false | |
@@ -415,13 +478,13 @@ postgres_servers = {
   cds-postgres = {
     instance_type                = "db.m6idn.xlarge"
     storage_size                 = 128
-    storage_encrypted            = false
+    storage_encrypted            = true
     backup_retention_days        = 7
     multi_az                     = false
     deletion_protection          = false
     administrator_login          = "cdsadmin"
     administrator_password       = "1tsAB3aut1fulDay"
-    server_version               = "15"
+    server_version               = "16"
     server_port                  = "5432"
     ssl_enforcement_enabled      = true
     parameters                   = [{ "apply_method": "pending-reboot", "name": "shared_preload_libraries", "value": "PGAUDIT,PG_CRON,PG_STAT_STATEMENTS" }, { "apply_method": "pending-reboot", "name": "bar", "value": "false" }]
