@@ -175,18 +175,43 @@ variable "efs_throughput_rate" {
 }
 
 ## Kubernetes
-# Kubernetes version for the EKS cluster. Default is '1.32'.
+# Kubernetes version for the EKS cluster. Default is '1.35'.
 variable "kubernetes_version" {
   description = "The EKS cluster Kubernetes version."
   type        = string
-  default     = "1.32"
+  default     = "1.35"
 }
 
 # Map of tags to apply to all resources. Used for cost allocation, project tracking, etc.
 variable "tags" {
-  description = "Map of common tags to be placed on the resources."
-  type        = map(any)
+  description = "Map of common tags to be placed on all created AWS resources."
+  type        = map(string)
   default     = { project_name = "viya" }
+}
+
+variable "enable_tagged_default_storage_class" {
+  description = "Create a tagged default EBS CSI StorageClass for dynamic PVC volume tagging."
+  type        = bool
+  default     = false
+}
+
+variable "tagged_default_storage_class_volume_type" {
+  description = "EBS volume type for the tagged default EBS CSI StorageClass (for example gp2 or gp3)."
+  type        = string
+  default     = "gp3"
+
+  validation {
+    condition = contains([
+      "gp2",
+      "gp3",
+      "io1",
+      "io2",
+      "st1",
+      "sc1",
+      "standard",
+    ], lower(var.tagged_default_storage_class_volume_type))
+    error_message = "ERROR: Supported values for `tagged_default_storage_class_volume_type` are standard, gp2, gp3, io1, io2, st1, or sc1."
+  }
 }
 
 ## Default node pool config
@@ -319,7 +344,7 @@ variable "node_pools" {
     cas = {
       "vm_type"      = "r6idn.2xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -336,7 +361,7 @@ variable "node_pools" {
     compute = {
       "vm_type"      = "m6idn.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -354,7 +379,7 @@ variable "node_pools" {
     stateless = {
       "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -371,7 +396,7 @@ variable "node_pools" {
     stateful = {
       "vm_type"      = "m6in.xlarge"
       "cpu_type"     = "AL2023_x86_64_STANDARD"
-      "os_disk_type" = "gp2"
+      "os_disk_type" = "gp3"
       "os_disk_size" = 200
       "os_disk_iops" = 0
       "min_nodes"    = 1
@@ -429,7 +454,12 @@ variable "subnets" {
   }
 }
 
-# AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets).
+variable "enable_ipv6" {
+  description = "Enable IPv6 on VPC, subnets, and EKS. When true, EKS cluster uses IPv6 single-stack (pods get IPv6 addresses). Load balancers support IPv6 and dualstack configurations."
+  type        = bool
+  default     = false
+}
+
 variable "subnet_azs" {
   description = "AZs you want the subnets to created in - This variable is ignored when `subnet_ids` is set (AKA bring your own subnets)."
   type        = map(list(string))
@@ -599,13 +629,13 @@ variable "postgres_server_defaults" {
   default = {
     instance_type           = "db.m6idn.xlarge"
     storage_size            = 128
-    storage_encrypted       = false
+    storage_encrypted       = true
     backup_retention_days   = 7
     multi_az                = false
     deletion_protection     = false
     administrator_login     = "pgadmin"
     administrator_password  = "my$up3rS3cretPassw0rd"
-    server_version          = "15"
+    server_version          = "16"
     server_port             = "5432"
     ssl_enforcement_enabled = true
     parameters              = []
@@ -749,14 +779,14 @@ variable "autoscaling_enabled" {
 variable "enable_ebs_encryption" {
   description = "Enable encryption on EBS volumes."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # Enable encryption on EFS file systems.
 variable "enable_efs_encryption" {
   description = "Enable encryption on EFS file systems."
   type        = bool
-  default     = false
+  default     = true
 }
 
 # The FSx filesystem availability zone deployment type. Supports MULTI_AZ_1 and SINGLE_AZ_1
@@ -774,6 +804,13 @@ variable "aws_fsx_ontap_deployment_type" {
 # The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API.
 variable "aws_fsx_ontap_fsxadmin_password" {
   description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your file system using the ONTAP CLI and REST API."
+  type        = string
+  default     = "v3RyS3cretPa$sw0rd"
+}
+
+# The ONTAP administrative password for the svmadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API.
+variable "aws_fsx_ontap_svmadmin_password" {
+  description = "The ONTAP administrative password for the fsxadmin user that you can use to administer your Storage Virtual Machine using the ONTAP CLI and REST API."
   type        = string
   default     = "v3RyS3cretPa$sw0rd"
 }
@@ -826,4 +863,16 @@ variable "admin_access_entry_role_arns" {
   description = "List of IAM role ARNs to create admin EKS access_entries for."
   type        = list(string)
   default     = null
+}
+
+variable "lb_controller_version" {
+  description = "AWS Load Balancer Controller Helm chart version"
+  type        = string
+  default     = "3.3.0"
+}
+
+variable "cert_manager_version" {
+  description = "Cert Manager Helm chart version"
+  type        = string
+  default     = "v1.20.2"
 }

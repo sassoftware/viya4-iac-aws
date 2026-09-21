@@ -132,6 +132,18 @@ The include rules, their Ports, protocols, and source groups
       - From: 22
       - To: 22
 
+### Instance Metadata Service (IMDSv2) Enforcement
+
+All EC2 instances created by this IaC project enforce **IMDSv2** to protect against Server-Side Request Forgery (SSRF) attacks that could expose IAM credentials.
+
+**Configuration Details:**
+- **http_endpoint**: `enabled` - Metadata service is accessible
+- **http_tokens**: `required` - Session-based authentication tokens are mandatory
+- **Affected Resources**: Jump VM, NFS Server, and all EC2 instances created via the `aws_vm` module
+- **Security Impact**: Eliminates the attack vector where SSRF vulnerabilities could be used to steal IAM credentials via IMDSv1
+
+**Compatibility:** Modern tools and AWS SDKs support IMDSv2 by default. If you have legacy applications or scripts that depend on IMDSv1, they will need to be updated to support IMDSv2 token-based access.
+
 ---
 
 ## EKS - Elastic Kubernetes Cluster

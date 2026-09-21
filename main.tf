@@ -15,6 +15,10 @@ provider "aws" {
   access_key               = var.aws_access_key_id        # AWS access key (see variables.tf: aws_access_key_id)
   secret_key               = var.aws_secret_access_key    # AWS secret key (see variables.tf: aws_secret_access_key)
   token                    = var.aws_session_token        # AWS session token for temporary credentials (see variables.tf: aws_session_token)
+
+  default_tags {
+    tags = local.tags # Apply all caller-provided tags to taggable AWS resources.
+  }
 }
 
 # Data source to get authentication token for EKS cluster. Used by the Kubernetes provider.
@@ -65,6 +69,15 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token # Auth token for EKS
 }
 
+# Provider block for Helm. Configures the Helm provider to connect to the EKS cluster using the same configuration as Kubernetes provider.
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint             # EKS API endpoint
+    cluster_ca_certificate = base64decode(local.kubeconfig_ca_cert)  # Cluster CA cert (from locals.tf)
+    token                  = data.aws_eks_cluster_auth.cluster.token # Auth token for EKS
+  }
+}
+
 # VPC Setup
 module "vpc" {
   source = "./modules/aws_vpc"
@@ -77,6 +90,7 @@ module "vpc" {
   cluster_security_group_id     = var.cluster_security_group_id     # EKS cluster security group
   workers_security_group_id     = var.workers_security_group_id     # Node group security group
   cidr                          = var.vpc_cidr                      # VPC CIDR block
+  enable_ipv6                   = var.enable_ipv6
   public_subnet_azs             = local.public_subnet_azs           # AZs for public subnets
   private_subnet_azs            = local.private_subnet_azs          # AZs for private subnets
   database_subnet_azs           = local.database_subnet_azs         # AZs for database subnets
@@ -102,6 +116,7 @@ module "eks" {
   cluster_endpoint_private_access      = true                                                                       # Always enable private endpoint
   cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false                            # Enable public endpoint if requested
   cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs                                 # CIDRs allowed for public endpoint
+  cluster_ip_family                    = var.enable_ipv6 ? "ipv6" : "ipv4"  # IPv6 pods when IPv6 is enabled, IPv4 otherwise
 
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
   control_plane_subnet_ids = module.vpc.control_plane_subnets # Subnets for EKS control plane
@@ -149,7 +164,7 @@ module "eks" {
       to_port          = 0
       type             = "egress"
       cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
+      ipv6_cidr_blocks = var.enable_ipv6 ? ["::/0"] : []
     }
   }
   # We already set our own rules above, no need to use Amazon's defaults.
@@ -175,6 +190,8 @@ module "eks" {
     "additional" : "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   }
 
+  create_cni_ipv6_iam_policy = false
+
   ## Use this to define any values that are common and applicable to all Node Groups
   eks_managed_node_group_defaults = {
     create_security_group  = false
@@ -183,10 +200,33 @@ module "eks" {
     # BYO - EKS Workers IAM Role
     create_iam_role = var.workers_iam_role_arn == null ? true : false
     iam_role_arn    = var.workers_iam_role_arn
+
+    # Tags to propagate to node groups and their Auto Scaling Groups
+    tags = local.tags
   }
 
   ## Any individual Node Group customizations should go here
   eks_managed_node_groups = local.node_groups # Node group definitions (from locals)
+}
+
+# Tag the EKS created ASGs - ensures tags are explicitly applied to AutoScalingGroups
+# This is more reliable than relying solely on EKS module propagation
+resource "aws_autoscaling_group_tag" "node_group_tags" {
+  # The for_each loop results in one resource created per node group per tag
+  for_each = {
+    for item in local.node_group_tags :
+    "${item.node_group}-${item.key}" => item
+  }
+  # Reference the single ASG for this node group
+  autoscaling_group_name = module.eks.eks_managed_node_groups[each.value.node_group].node_group_autoscaling_group_names[0]
+
+  tag {
+    key                 = each.value.key
+    value               = each.value.value
+    propagate_at_launch = true
+  }
+
+  depends_on = [module.eks]
 }
 
 # Resource to create EKS access entries for admin IAM roles. Used for EKS RBAC.
@@ -226,7 +266,7 @@ module "autoscaling" {
 # ebs - Resource to create EBS CSI driver for EKS. Used for dynamic volume provisioning.
 # This module creates the necessary IAM roles, policies, and Kubernetes resources for EBS CSI.
 module "ebs" {
-  source = "./modules/aws_ebs_csi"
+  source  = "./modules/aws_ebs_csi"
 
   prefix       = var.prefix                         # Resource name prefix
   cluster_name = local.cluster_name                 # EKS cluster name
@@ -237,7 +277,7 @@ module "ebs" {
 # ontap - Resource to create FSx for ONTAP file system. Used for shared storage.
 # This module creates the necessary IAM roles, policies, and Kubernetes resources for FSx ONTAP.
 module "ontap" {
-  source = "./modules/aws_fsx_ontap"
+  source  = "./modules/aws_fsx_ontap"
   count  = var.storage_type_backend == "ontap" ? 1 : 0
 
   prefix        = var.prefix                     # Resource name prefix
@@ -262,6 +302,29 @@ module "kubeconfig" {
   sg_id        = local.cluster_security_group_id # Security group for API access
 
   depends_on = [module.eks] # Wait for EKS cluster to be ready
+}
+
+# Create a tagged default StorageClass so future dynamic PVC volumes inherit caller-provided tags.
+resource "kubernetes_storage_class_v1" "ebs_csi_tagged_default" {
+  count = var.enable_tagged_default_storage_class && length(local.ebs_csi_storage_class_parameters) > 0 ? 1 : 0
+
+  metadata {
+    name = local.ebs_csi_tagged_storage_class_name
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" = "true"
+    }
+  }
+
+  storage_provisioner    = "ebs.csi.aws.com"
+  reclaim_policy         = "Delete"
+  volume_binding_mode    = "WaitForFirstConsumer"
+  allow_volume_expansion = true
+  parameters = merge({
+    type   = var.tagged_default_storage_class_volume_type
+    fstype = "ext4"
+  }, local.ebs_csi_storage_class_parameters)
+
+  depends_on = [module.kubeconfig.kube_config, terraform_data.run_command]
 }
 
 # Normally, the use of local-exec below is avoided. It is used here to patch the gp2 storage class as the default storage class for EKS 1.30 and later clusters.
@@ -289,6 +352,7 @@ module "postgresql" {
   instance_class    = each.value.instance_type     # Instance type
   allocated_storage = each.value.storage_size      # Storage size (GB)
   storage_encrypted = each.value.storage_encrypted # Enable storage encryption
+  network_type      = var.enable_ipv6 ? "DUAL" : "IPV4" # Enable dual-stack (IPv4 + IPv6) when IPv6 is enabled
 
   # NOTE: Do NOT use 'user' as the value for 'username' as it throws:
   # "Error creating DB Instance: InvalidParameterValue: MasterUsername
@@ -352,4 +416,17 @@ resource "aws_resourcegroups_group" "aws_rg" {
 }
 JSON
 }
+}
+
+# AWS Load Balancer Controller Setup
+module "lb_controller" {
+  source                  = "./modules/aws_lb_controller"
+  cluster_name            = local.cluster_name
+  region                  = var.location
+  vpc_id                  = module.vpc.vpc_id
+  controller_version      = var.lb_controller_version
+  cert_manager_version    = var.cert_manager_version
+  kubeconfig_depends_on   = module.kubeconfig.kube_config
+  cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
+  count                   = var.enable_ipv6 ? 1 : 0
 }

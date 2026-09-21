@@ -22,7 +22,7 @@ func TestPlanPostgreSQL(t *testing.T) {
 
 	tests := map[string]helpers.TestCase{
 		"engineVersionTest": {
-			Expected:          "15",
+			Expected:          "16",
 			ResourceMapName:   postgresResourceMapName,
 			AttributeJsonPath: "{$.engine_version}",
 		},
@@ -52,7 +52,7 @@ func TestPlanPostgreSQL(t *testing.T) {
 			AttributeJsonPath: "{$.deletion_protection}",
 		},
 		"storageEncryptedTest": {
-			Expected:          "false",
+			Expected:          "true",
 			ResourceMapName:   postgresResourceMapName,
 			AttributeJsonPath: "{$.storage_encrypted}",
 		},
