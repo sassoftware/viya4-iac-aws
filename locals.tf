@@ -248,14 +248,14 @@ locals {
   # PostgreSQL
   # Servers configuration for PostgreSQL, merging defaults with user-provided values
   postgres_servers = var.postgres_servers == null ? {} : { for k, v in var.postgres_servers : k => merge(var.postgres_server_defaults, v, ) }
-  # Extracting server ports for PostgreSQL security group rules
-  postgres_sgr_ports = var.postgres_servers != null ? length(local.postgres_servers) != 0 ? [for k, v in local.postgres_servers :
-    v.server_port
-  ] : [] : []
+  # Extracting unique server ports for PostgreSQL security group rules
+  postgres_sgr_ports = var.postgres_servers != null ? length(local.postgres_servers) != 0 ? distinct([
+    for k, v in local.postgres_servers : v.server_port
+  ]) : [] : []
   # Creating CIDR and port pairs for PostgreSQL access rules
   postgres_cidr_port_pairs = setproduct(local.postgres_sgr_ports, local.postgres_public_access_cidrs)
 
-  # Ingress pairs for PostgreSQL, mapping server ports to CIDRs
+  # Ingress pairs for PostgreSQL, mapping unique server ports to CIDRs
   ingress_pairs = length(local.postgres_cidr_port_pairs) != 0 ? { for pair in local.postgres_cidr_port_pairs :
     "${pair[0]}-${pair[1]}" => {
       "server_port" : pair[0],
