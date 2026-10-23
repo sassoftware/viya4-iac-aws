@@ -107,31 +107,33 @@ module "vpc" {
 
 # EKS Setup - https://github.com/terraform-aws-modules/terraform-aws-eks
 module "eks" {
-  source                               = "terraform-aws-modules/eks/aws"
-  version                              = "~> 20.0"
-  cluster_name                         = local.cluster_name                                                         # EKS cluster name
-  cluster_version                      = var.kubernetes_version                                                     # Kubernetes version
-  cluster_enabled_log_types            = var.cluster_enabled_log_types == null ? [] : var.cluster_enabled_log_types # EKS audit log types
-  create_cloudwatch_log_group          = var.cluster_enabled_log_types == null ? false : true                       # Create CloudWatch log group if logging enabled
-  cluster_endpoint_private_access      = true                                                                       # Always enable private endpoint
-  cluster_endpoint_public_access       = var.cluster_api_mode == "public" ? true : false                            # Enable public endpoint if requested
-  cluster_endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs                                 # CIDRs allowed for public endpoint
-  cluster_ip_family                    = var.enable_ipv6 ? "ipv6" : "ipv4"  # IPv6 pods when IPv6 is enabled, IPv4 otherwise
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 21.29"
+
+  name = local.cluster_name
+  kubernetes_version = var.kubernetes_version
+  enabled_log_types = var.cluster_enabled_log_types == null ? [] : var.cluster_enabled_log_types
+  create_cloudwatch_log_group = var.cluster_enabled_log_types == null ? false : true
+  endpoint_private_access = true
+  endpoint_public_access = var.cluster_api_mode == "public" ? true : false
+  endpoint_public_access_cidrs = local.cluster_endpoint_public_access_cidrs
+  ip_family = var.enable_ipv6 ? "ipv6" : "ipv4"
 
   # AWS requires two or more subnets in different Availability Zones for your cluster's control plane.
-  control_plane_subnet_ids = module.vpc.control_plane_subnets # Subnets for EKS control plane
+  control_plane_subnet_ids = module.vpc.control_plane_subnets
   # Specifies the list of subnets in which the worker nodes of the EKS cluster will be launched.
-  subnet_ids  = module.vpc.private_subnets # Subnets for worker nodes
-  vpc_id      = module.vpc.vpc_id          # VPC ID
-  tags        = local.tags                 # Common tags
-  enable_irsa = true                       # Enable IRSA required for autoscaling and EBS CSI
+  subnet_ids = module.vpc.private_subnets
+  vpc_id     = module.vpc.vpc_id
+  tags       = local.tags
+  enable_irsa = true
+
   ################################################################################
   # Cluster Security Group
   ################################################################################
-  create_cluster_security_group = false                           # Use custom security group
-  cluster_security_group_id     = local.cluster_security_group_id # Security group for EKS control plane
+  create_security_group = false
+  security_group_id     = local.cluster_security_group_id
   # Extend cluster security group rules
-  cluster_security_group_additional_rules = {
+  security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
       description                = "To node 1025-65535"
       protocol                   = "tcp"
@@ -145,8 +147,8 @@ module "eks" {
   ################################################################################
   # Node Security Group
   ################################################################################
-  create_node_security_group = false                           # Use custom node security group
-  node_security_group_id     = local.workers_security_group_id # Security group for nodes
+  create_node_security_group = false
+  node_security_group_id     = local.workers_security_group_id
   # Extend node-to-node security group rules
   node_security_group_additional_rules = {
     ingress_self_all = {
@@ -170,18 +172,18 @@ module "eks" {
   # We already set our own rules above, no need to use Amazon's defaults.
   node_security_group_enable_recommended_rules = false
 
-  # enabled by default in v19, setting to false to preserve original behavior.
-  create_kms_key            = false # Do not create KMS key
-  cluster_encryption_config = []    # No encryption config
+  # Keep the default AWS-managed encryption unless a custom CMK is intentionally configured.
+  create_kms_key = false
+  encryption_config = null
 
   ################################################################################
   # Handle BYO IAM Roles & Policies
   ################################################################################
   # BYO - EKS Cluster IAM Role
-  create_iam_role = var.cluster_iam_role_arn == null ? true : false # Create IAM role if not provided
-  iam_role_arn    = var.cluster_iam_role_arn                        # Use provided IAM role if any
+  create_iam_role = var.cluster_iam_role_arn == null ? true : false
+  iam_role_arn    = var.cluster_iam_role_arn
 
-  authentication_mode = var.authentication_mode # EKS authentication mode
+  authentication_mode = var.authentication_mode
 
   # Create access entry for current caller identity as a cluster admin
   enable_cluster_creator_admin_permissions = true
@@ -192,21 +194,8 @@ module "eks" {
 
   create_cni_ipv6_iam_policy = false
 
-  ## Use this to define any values that are common and applicable to all Node Groups
-  eks_managed_node_group_defaults = {
-    create_security_group  = false
-    vpc_security_group_ids = [local.workers_security_group_id]
-
-    # BYO - EKS Workers IAM Role
-    create_iam_role = var.workers_iam_role_arn == null ? true : false
-    iam_role_arn    = var.workers_iam_role_arn
-
-    # Tags to propagate to node groups and their Auto Scaling Groups
-    tags = local.tags
-  }
-
   ## Any individual Node Group customizations should go here
-  eks_managed_node_groups = local.node_groups # Node group definitions (from locals)
+  eks_managed_node_groups = local.node_groups
 }
 
 # Tag the EKS created ASGs - ensures tags are explicitly applied to AutoScalingGroups

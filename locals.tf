@@ -161,6 +161,13 @@ locals {
       })
       tag_specifications = ["instance", "volume", "network-interface"]
 
+      # Default node group security/identity settings for v21.x module
+      create_security_group  = false
+      vpc_security_group_ids = [local.workers_security_group_id]
+      create_iam_role        = var.workers_iam_role_arn == null ? true : false
+      iam_role_arn           = var.workers_iam_role_arn
+      tags                  = local.tags
+
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-default-eks-node-group"
@@ -235,6 +242,14 @@ locals {
         Name = "${local.cluster_name}-${key}"
       })
       tag_specifications = ["instance", "volume", "network-interface"]
+
+      # Node group security/identity settings for v21.x module
+      create_security_group  = false
+      vpc_security_group_ids = [local.workers_security_group_id]
+      create_iam_role        = var.workers_iam_role_arn == null ? true : false
+      iam_role_arn           = var.workers_iam_role_arn
+      tags                  = local.tags
+
       # Node Pool IAM Configuration
       iam_role_use_name_prefix = false
       iam_role_name            = "${var.prefix}-${key}-eks-node-group"
